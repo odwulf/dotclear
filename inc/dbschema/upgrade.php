@@ -142,6 +142,48 @@ function dotclearUpgrade($core)
 					$cur->update($sqlstr);
 				}
 			}
+
+			if (version_compare($version,'2.3','<'))
+			{
+				# Add global favorites
+				$init_fav = array();
+
+				$init_fav['new_post'] = array('new_post',__('New entry'),'post.php',
+					'images/menu/edit.png','images/menu/edit-b.png',
+					'usage,contentadmin',null,'menu-new-post');
+				$init_fav['posts'] = array('posts',__('Entries'),'posts.php',
+					'images/menu/entries.png','images/menu/entries-b.png',
+					'usage,contentadmin',null,null);
+				$init_fav['comments'] = array('comments',__('Comments'),'comments.php',
+					'images/menu/comments.png','images/menu/comments-b.png',
+					'usage,contentadmin',null,null);
+				$init_fav['prefs'] = array('prefs',__('My preferences'),'preferences.php',
+					'images/menu/user-pref.png','images/menu/user-pref-b.png',
+					'*',null,null);
+				$init_fav['blog_pref'] = array('blog_pref',__('Blog settings'),'blog_pref.php',
+					'images/menu/blog-pref.png','images/menu/blog-pref-b.png',
+					'admin',null,null);
+				$init_fav['blog_theme'] = array('blog_theme',__('Blog appearance'),'blog_theme.php',
+					'images/menu/themes.png','images/menu/blog-theme-b.png',
+					'admin',null,null);
+
+				$init_fav['pages'] = array('pages',__('Pages'),'plugin.php?p=pages',
+					'index.php?pf=pages/icon.png','index.php?pf=pages/icon-big.png',
+					'contentadmin,pages',null,null);
+				$init_fav['blogroll'] = array('blogroll',__('Blogroll'),'plugin.php?p=blogroll',
+					'index.php?pf=blogroll/icon-small.png','index.php?pf=blogroll/icon.png',
+					'usage,contentadmin',null,null);
+
+				$count = 0;
+				foreach ($init_fav as $k => $f) {
+					$t = array('name' => $f[0],'title' => $f[1],'url' => $f[2], 'small-icon' => $f[3],
+						'large-icon' => $f[4],'permissions' => $f[5],'id' => $f[6],'class' => $f[7]);
+					$sqlstr = 'INSERT INTO '.$core->prefix.'pref (pref_id, user_id, pref_ws, pref_value, pref_type, pref_label) VALUES ('.
+						'\''.sprintf("g%03s",$count).'\',NULL,\'favorites\',\''.serialize($t).'\',\'string\',NULL);';
+					$core->con->execute($sqlstr);
+					$count++;
+				}
+			}
 			
 			$core->setVersion('core',DC_VERSION);
 			$core->blogDefaults();
