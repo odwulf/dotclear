@@ -35,7 +35,6 @@ $(function() {
 	});
 	
 	// Predefined styles
-	// /!\ needs geek master to add locale for attr title="Choose a predefined style" in select tag
 	var styles_combo = document.createElement('select');
 	$(styles_combo).append('<option value="">&nbsp;</option>');
 	$(styles_combo).append('<option value="none">none</option>');
