@@ -185,7 +185,7 @@ if ($user_id == $core->auth->userID()) {
 }
 
 echo
-'<form action="user.php" method="post"id="user-form">'.
+'<form action="user.php" method="post" id="user-form">'.
 '<fieldset><legend>'.__('User information').'</legend>'.
 '<div class="two-cols">'.
 '<div class="col">'.
@@ -311,5 +311,6 @@ if ($user_id)
 	'</fieldset>';
 }
 
+dcPage::helpBlock('core_user');
 dcPage::close();
 ?>

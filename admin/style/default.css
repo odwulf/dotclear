@@ -134,7 +134,7 @@ abbr {
 	width: 20em;
 }
 #info-box a img, #info-box2 a img {
-	vertical-align: middle; 
+	vertical-align: middle;
 	padding-left: .3em;
 	}
 #info-box a, #info-box2 a {
@@ -143,7 +143,9 @@ abbr {
 	color: #fff;
 	border-bottom-color: #ccc;
 }
-#info-box a {margin-left: 2em;}
+#info-box a {
+	margin-left: 2em;
+}
 
 #wrapper {
 	width: 100%;
@@ -155,13 +157,8 @@ abbr {
 	margin-top: 0;
 }
 #content {
-	margin-left: 13em;
-	margin-bottom: 4em;
-	margin-top: .5em;
-	margin-right: 1.5em;
-	padding-top: 10px;
-	padding-left: 1em;
-	padding-right: 1em;
+	margin: .5em 1.5em 4em 13em;
+	padding: 1em;
 	background: #fff;
 	-webkit-border-radius: .5em;
 	-moz-border-radius: .5em;
@@ -174,7 +171,7 @@ abbr {
 	width: 13em;
 	float: left;
 	margin-top: 1em;
-	margin-bottom: 10px;
+	margin-bottom: 1em;
 }
 
 #main-menu h3 {
@@ -215,17 +212,10 @@ abbr {
 	margin-left: 0;
 }
 
-/* favoris en haut */
-#fav-add { 
-	position: absolute;
-	top: 3.5em;
-	right: 2em;
-}
-
 #footer {
 	clear: both;
 	padding: .75em 2em;
-	margin: 6em 1em .5em 1em;
+	margin: 6em 15px .5em 15px;
 	-webkit-border-radius: .3em;
 	-moz-border-radius: .3em;
 	border-radius: .3em;
@@ -242,7 +232,7 @@ abbr {
 	color: #f5f5f5;
 }
 #footer p span.credit {
-	font-size: .85em; 
+	font-size: .85em;
 	font-weight: normal;
 }
 
@@ -271,8 +261,13 @@ abbr {
 #dashboard-main {
 	float: left;
 	overflow: hidden;
-	padding: 1em 1%;
-	width: 66%;
+	padding: 1em 2% 1em 0;
+	width: 70%;
+}
+#dashboard-main.fullwidth {
+	width: 100%;
+	padding: 1em 0;
+	float: none;
 }
 #dashboard-main #icons {
 	overflow: hidden;
@@ -313,9 +308,8 @@ abbr {
 
 #dashboard-items {
 	float: left;
-	width: 29%;
+	width: 27%;
 	overflow: hidden;
-	margin-left: 2%;
 	padding-bottom: 1em;
 	padding-top: 3em;
 }
@@ -341,6 +335,7 @@ abbr {
 #dashboard-items #news dd p {
 	margin: 0.2em 0 0 0;
 }
+
 #upg-notify {
 }
 #upg-notify ul {
@@ -352,11 +347,11 @@ abbr {
 
 /* POST */
 #entry-sidebar {
-	width: 200px;
+	width: 17em;
 	float: right;
 }
 #entry-content {
-	margin-right: 220px;
+	margin-right: 18em;
 }
 #comments {
 	clear: both;
@@ -368,8 +363,8 @@ abbr {
 }
 #categories ul {
 	list-style: none;
-	margin: 0 0 0 0;
-	padding: 0 0 0 0;
+	margin: 0;
+	padding: 0;
 }
 #categories ul li {
 	margin: .5em 0;
@@ -540,20 +535,22 @@ select#del_cat {
 }
 
 /* POPUP */
-body.popup #wrapper {
-	background-position: -130px 0;
+body.popup #wrapper, body.popup #top {
+	margin-top: -1.5em;
 }
 body.popup #top h1 {
-	background-position: -130px 0;
+	background: transparent;
 }
 body.popup #main {
 	margin-left: -35px;
+	margin-bottom: 1em;
 }
 body.popup #content {
 	margin-left: 35px;
+	margin-left: 2em;  /* 3.2 */
 }
 body.popup #footer {
-	background-position: -130px 0;
+	display: none; /* 3.2 */
 }
 body.popup #footer p {
 	margin-left: 35px;
@@ -562,6 +559,8 @@ body.popup #footer p {
 
 /* CLASSES
 -------------------------------------------------------- */
+
+/* -------------- paragraphe pour bouton Nouveau bidule ----------- */
 p.top-add {
 	text-align: right;
 	margin: 0;
@@ -595,15 +594,12 @@ div.clearer {
 	height: 1px;
 	font-size: 1px;
 }
-
 .hide {
 	display: none;
 }
-
 .right {
 	text-align: right;
 }
-
 .frame-shrink {
 	border: 1px solid #666;
 	padding: 0.5em;
@@ -668,7 +664,6 @@ ul.nice li {
 	width: 33.3%;
 	margin-left: 0;
 }
-
 .two-cols {
 	position: static;
 }
@@ -990,7 +985,7 @@ td.expand {
 	border-collapse: separate;
 }
 .dragable tbody td {
-	
+
 }
 .handle {
 	padding: 0;
@@ -1069,12 +1064,21 @@ label input, label select, label span {
 	display: block;
 }
 p.form-note {
-	font-style:normal;
-	background: #eef url(info.png) no-repeat .2em .2em;
-	border: 1px solid #99f;
-	padding: .2em 1em .1em 24px;
+	font-style:italic;
 	margin-top: -.7em;
 	color: #666;
+}
+p.form-note.warn, p.form-note.info {
+	font-style: normal;
+	padding: .2em 1em .1em 24px;
+}
+p.form-note.warn {
+	background: #ffd url(warning.png) no-repeat .2em .2em;
+	border: 1px solid #f0c020;
+}
+p.form-note.info {
+	background: #eef url(info.png) no-repeat .2em .2em;
+	border: 1px solid #99f;
 }
 .form-note a {border-bottom: 1px solid #99f;}
 
@@ -1105,7 +1109,7 @@ label.inline {
 }
 p.field {
 	position: relative;
-	
+
 }
 p.field label {
 	display: block;
@@ -1171,26 +1175,26 @@ h2 a.button {
 	vertical-align: middle;
 }
 /* commun */
-input[type=submit], 
-input[type=reset], 
-input[type=button], 
+input[type=submit],
+input[type=reset],
+input[type=button],
 a.button,
-a.button.add, 
+a.button.add,
 a.back {
 	display: inline-block;
 	outline: none;
 	cursor: pointer;
 	text-align: center;
 	text-decoration: none;
-	padding: .1em .75em .1em;
+	padding: .1em .5em;
 	text-shadow: 0 1px 1px rgba(0,0,0,.3);
-	-webkit-border-radius: .2em; 
+	-webkit-border-radius: .2em;
 	-moz-border-radius: .2em;
 	border-radius: .2em;
 	margin-bottom: .1em;
 }
 /* validation */
-input[type=submit], 
+input[type=submit],
 input[type=button],
 a.button.add {
 	color: #fff;
@@ -1199,11 +1203,11 @@ a.button.add {
 	background: -webkit-gradient(linear, left top, left bottom, from(#2C8FD1), to(#2373A8));
 	background: -moz-linear-gradient(top,  #2C8FD1,  #2373A8);
 }
-input[type=submit]:hover, 
-input[type=reset]:hover, 
+input[type=submit]:hover,
+input[type=reset]:hover,
 input[type=button]:hover,
-input[type=submit]:focus, 
-input[type=reset]:focus, 
+input[type=submit]:focus,
+input[type=reset]:focus,
 input[type=button]:focus,
 a.button.add:hover,
 a.button.add:focus {
@@ -1214,9 +1218,9 @@ a.button.add:focus {
 	border: 1px solid #2C8FD1;
 }
 /* suppression et reset */
-a.button, 
-a.back, 
-input[type=submit].reset, 
+a.button,
+a.back,
+input[type=submit].reset,
 input[type=submit].delete {
 	border: 1px solid #999;
 	background: #f5f5f5;
@@ -1225,13 +1229,13 @@ input[type=submit].delete {
 	background: -moz-linear-gradient(top,  #f5f5f5,  #e5e5e5);
 	text-shadow: none;
 	}
-a.button:hover, 
-a.back:hover, 
-input[type=submit].reset:hover, 
+a.button:hover,
+a.back:hover,
+input[type=submit].reset:hover,
 input[type=submit].delete:hover,
-a.button:focus, 
-a.back:focus, 
-input[type=submit].reset:focus, 
+a.button:focus,
+a.back:focus,
+input[type=submit].reset:focus,
 input[type=submit].delete:focus {
 	background: #e5e5e5;
 	background: -webkit-gradient(linear, left top, left bottom, from(#e5e5e5), to(#f5f5f5));
