@@ -1,0 +1,330 @@
+@charset "UTF-8";
+
+/* seuils retenus :
+< 480px: tout en une colonne, sidebar et stickers en bas
+> 480px: stickers en haut
+> 640px: sidebar toujours en bas mais divisé en deux colonnes
+> 1024px: passage à deux colonnes, sidebar à droite
+> 1280px: décalage du post-info vers la gauche
+> 1600px: marges plus grandes */
+
+/* --------------------------------------------------------------------
+	Moins de 480px (téléphones)
+-------------------------------------------------------------------- */
+@media only screen and (max-width:480px) {
+	.nosmall {
+		display: none !important;
+		}
+	h1 {
+		font-size: 1.8em;
+		}
+	h1 a {
+		display: block;
+		padding: 6px 8px;
+		background: #f4f4f5;
+		background: -webkit-gradient(linear, left top, left bottom, from(#f4f4f5), to(#d7d7dC));
+		background: -moz-linear-gradient(top,  #f4f4f5,  #d7d7dC);
+		border-right: 1px solid #aaa;
+		border-bottom: 1px solid #ccc;
+		}
+	.supranav, #prelude {
+		border:none;
+		margin: 8px 0 0;
+		background: #fff;
+		}
+	.supranav li a, #prelude li a {
+		border-right: 0;
+		display: block;
+		padding: 4px 8px;
+		border-bottom: 1px solid #ccc;
+		text-decoration: none;
+		white-space: nowrap;
+		margin-bottom: 4px;
+		-webkit-border-bottom-left-radius: 7px;
+		-moz-border-radius-bottomleft: 7px;
+		border-bottom-left-radius: 7px;
+		}
+	#gotop li {
+		text-transform: none;
+		}
+	#prelude li a {
+		background: transparent url(img/menumobile.png) no-repeat right center;
+		 }
+	#sn-bottom li a {
+		background: transparent url(img/menumobile.png) no-repeat right top;
+		}
+	#gotop li a {
+		background: transparent url(img/menumobile.png) no-repeat right -150px;
+		}
+	.post-title {
+		font-size: 1.5em;
+		font-weight: bold;
+		font-family: "Franklin gothic medium","arial narrow","DejaVu Sans Condensed","helvetica neue",helvetica,sans-serif;
+		}
+	.post-title a {
+		font-style: normal;
+		font-weight: bold;
+		}
+	#stickers {
+		margin: 0;
+		padding: 0;
+		border-bottom: 8px solid #fff;
+		}
+	#stickers li {
+		position: relative;
+		padding: .5em 0;
+		margin-left: 0;
+		border-style: solid;
+		border-color: #fff;
+		border-width: 2px 6px;
+		overflow: hidden;
+		}
+	#stickers img {
+		position: absolute;
+		top: -2px;
+		clip: rect(0 32px 36px 0);
+		clip: rect(0, 32px, 36px, 0);
+		}
+	#stickers span {
+		margin-left: 40px;
+		}
+	#stickers a {
+		text-decoration: none;
+		}
+}
+
+/* --------------------------------------------------------------------
+	Autres (plus de 480px)
+-------------------------------------------------------------------- */
+
+@media only screen and (min-width: 481px) {
+	.nobig {
+		display: none;
+		}
+	#prelude {
+		position: absolute;
+		margin: 0;
+		top: 0;
+		left: 3px;
+		color: #fff;
+		font-size: .875em;
+		list-style-type: none;
+		}
+	#prelude li {
+		display: inline;
+		text-transform: none !important;
+		}
+	#prelude a, #prelude a:hover, #prelude a:visited {
+		position:absolute;
+		left:0;
+		top:-500px;
+		width:1px;
+		height:1px;
+		overflow:hidden;
+		background-image: none !important;
+		}
+	#prelude a:active, #prelude a:focus {
+		position:static;
+		width:auto;
+		height:auto;
+		}
+	#top {
+		padding-top: 24px;
+		}
+	h1 {
+		font-size: 2em;
+		padding-right: 240px;
+		padding-bottom: 4px;
+		margin-left: 32px;
+		}
+	#sn-bottom {
+		display: none;
+		}
+	.supranav {
+		margin: 36px 0 0;
+		border-bottom: 1px solid #ccc;
+		}
+	.supranav li {
+		display: inline;
+		padding: 8px 0;
+		}
+	.supranav li a {
+		display: inline-block;
+		padding: 8px 32px 8px 28px;
+		border-right: 1px solid #ccc;
+	 	}
+	.supranav li a span {
+		display: block;
+		}
+	.post-title {
+		font-size: 2.5em;
+		font-weight: normal;
+		}
+	.post-title a {
+		font-style: italic;
+		font-weight: normal;
+		}
+	#stickers {
+		position: absolute;
+		top: 0;
+		right: 0;
+		padding-right: 3%;
+		font-size: .75em;
+		}
+	#stickers li {
+		display: block;
+		float: right;
+		text-align: center;
+		width: 60px;
+		padding: 0;
+		}
+	#stickers li span {
+		display: block;
+		text-align: center;
+		}
+	#stickers li a:hover,
+	#stickers li a:active,
+	#stickers li a:focus {
+		background-color: #fff;
+		}
+	#stickers a:hover, #stickers a:focus {
+		color: #666;
+		background: #fff;
+		}
+}
+
+/* ------------------------------------------------------ special redimensionnement paysage */
+@media screen and (max-width:640px) and (orientation: landscape) { 
+  body { 
+   -webkit-text-size-adjust: 70%; 
+  } 
+}
+
+/* ------------------------------------------------------ règles communes > 640px */
+@media only screen and (max-width:639px) {
+	body {
+		-webkit-text-size-adjust: none;
+		}
+	#wrapper {
+		padding: 0 2%;
+		}
+	img {
+		max-width: 100%;
+		height: auto;
+		width: auto\9; /* pour ie8 */
+		}
+}
+
+/* ------------------------------------------------------ spécifique 640px à 1024px */
+@media only screen and (min-width: 640px) and (max-width: 1023px) {
+	#wrapper {
+		padding: 0 10%;
+		}
+	#blognav, #blogextra { 
+		width: 48%; float:left;
+		}
+	#blognav {
+		margin-right: 4%;
+		}
+	#stickers {
+		padding-right: 10%;
+		}
+}
+
+/* ------------------------------------------------------ spécifique 840px à 1024px */
+@media only screen and (min-width: 840px) and (max-width: 1023px) {
+	#wrapper {
+		padding: 0 13%;
+		}
+	#stickers {
+		padding-right: 13%;
+		}	
+}
+
+/* ------------------------------------------------------ 
+	au-delà de 1024px on passe à deux colonnes
+------------------------------------------------------ */
+@media only screen and (min-width: 1024px) {
+	#wrapper {
+		padding: 0 7%;
+		}
+	#main {
+		width : 100%;
+		margin : 0 -17em 0 0;
+		float : left;
+		display: inline;
+		}
+	#content {
+		margin : 0 20em 0 0;
+		padding : 0 0 2em 0;
+		}
+	#sidebar {
+		width : 17em;
+		float : right;
+		}
+	#blognav, #blogextra {
+		margin : 0;
+		}
+	#stickers {
+		padding-right: 7%;
+		}
+	#sidebar #blognav div:first-child {
+		margin-top: 4.66em;
+		}
+	#sidebar div#search:first-child { 
+		background: none;
+		margin-top: 0;
+		margin-bottom: 2em;
+		padding-bottom: 2px;
+		font-size: 1em;
+		border: 1px solid #ddd;
+		border-top: none 0;
+		}
+	#sidebar div#search:first-child h2 {
+		font-size: 1em;
+		text-transform: uppercase;
+		text-shadow: 0 1px 1px rgba(0,0,0,.2);
+		vertical-align: top;
+		color: #666;
+		}
+	#sidebar div#search:first-child p {
+		margin: .33em 0;
+		}
+	.dc-archive #content {
+		margin: 0 17em 0 0;
+		}
+}
+
+/* ------------------------------------------------------ 
+	au-delà de 1280px on décale le post-info à gauche
+------------------------------------------------------- */
+@media only screen and (min-width: 1280px) {
+	#content {
+		margin : 0 20em 0 220px;
+		}
+	.post-attr { 
+		margin-left: -220px; 
+		float: left; 
+		width: 180px; 
+		text-align: right;
+		}
+	.post-attr a, .post-info, .post-tags {
+		padding-right: 0 !important;
+		}
+	.dc-archive-month .post-attr {
+		margin-left: 0;
+		float:none;
+		width: auto;
+		text-align: left;
+		}
+}
+
+/* ------------------------------------------------------ au-delà de 1600px */
+@media only screen and (min-width: 1600px) {
+	#wrapper {
+		padding: 0 10%;
+		}
+	#stickers {
+		padding-right: 10%;
+		}
+}
