@@ -1,0 +1,2 @@
+msgid "Additionnal style directives"
+msgstr "Directives CSS supplémentaires"

@@ -1,0 +1,30 @@
+<div id="header">
+
+	<div id="top">
+  	<h1><span><a href="{{tpl:BlogURL}}">{{tpl:BlogName encode_html="1"}}</a></span></h1>
+		<p id="blogdesc" class="nosmall">{{tpl:BlogDescription}}</p>
+	</div>
+
+	<ul id="prelude">
+		<li class="nosmall"><a href="#main">{{tpl:lang To content}}</a></li>
+		<li><a href="#blognav">{{tpl:lang To menu}}</a></li>
+		<li><a href="#search">{{tpl:lang To search}}</a></li>
+	</ul>
+
+	<!-- # --BEHAVIOR-- publicTopAfterContent -->
+	{{tpl:SysBehavior behavior="publicTopAfterContent"}}
+
+	<!-- Pour Franck: 
+	Ajouter une classe incrémental (ex: li<n>)
+	Par défaut : accueil, archives (rien dans le span)
+	-->
+	<ul id="sn-top" class="supranav nosmall">
+		<li class="li1" class="active"><a href="{{tpl:BlogURL}}">Accueil<span> articles récents</span></a></li>
+		<li class="li2"><a href="#">Construire un thème<span> tutoriels</span></a></li>
+		<li class="li3"><a href="#">Maquettes<span> projets graphiques</span></a></li>
+		<li class="li4"><a href="{{tpl:BlogURL}}archive">Archives<span> 2005-2011</span></a></li>
+	</ul>
+
+	<!-- {{tpl:SimpleMenu class="supranav nosmall"}} -->
+	
+</div>
