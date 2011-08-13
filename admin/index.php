@@ -190,14 +190,12 @@ dcPage::open(__('Dashboard'),
 	$core->callBehavior('adminDashboardHeaders')
 );
 
-echo '<h2>'.html::escapeHTML($core->blog->name).' &rsaquo; <span class="page-title">'.__('Dashboard').'</span>';
+echo '<h2>'.html::escapeHTML($core->blog->name).' &rsaquo; <span class="page-title">'.__('Dashboard').'</span></h2>';
 
 if ($core->auth->getInfo('user_default_blog') != $core->blog->id && $core->auth->blog_count > 1) {
 	echo
-	' - <a href="index.php?default_blog=1" class="button">'.__('Make this blog my default blog').'</a>';
+	'<p><a href="index.php?default_blog=1" class="button">'.__('Make this blog my default blog').'</a></p>';
 }
-
-echo '</h2>';
 
 if ($core->blog->status == 0) {
 	echo '<p class="static-msg">'.__('This blog is offline').'</p>';
@@ -314,7 +312,7 @@ if ($core->auth->user_prefs->dashboard->quickentry) {
 		'<div id="quick">'.
 		'<h3>'.__('Quick entry').'</h3>'.
 		'<form id="quick-entry" action="post.php" method="post">'.
-		'<fieldset>'.
+		'<fieldset><legend>'.__('New entry').'</legend>'.
 		'<p class="col"><label for="post_title" class="required"><abbr title="'.__('Required field').'">*</abbr> '.__('Title:').
 		form::field('post_title',20,255,'','maximal').
 		'</label></p>'.
@@ -326,7 +324,7 @@ if ($core->auth->user_prefs->dashboard->quickentry) {
 		form::combo('cat_id',$categories_combo).'</label></p>'.
 		'<p><input type="submit" value="'.__('Save').'" name="save" /> '.
 		($core->auth->check('publish',$core->blog->id)
-			? '<input type="hidden" value="'.__('save and publish').'" name="save-publish" />'
+			? '<input type="hidden" value="'.__('Save and publish').'" name="save-publish" />'
 			: '').
 		$core->formNonce().
 		form::hidden('post_status',-2).

@@ -530,7 +530,7 @@ msgid "JPEG or PNG file, 800 pixels wide, maximum size %s"
 msgstr "Fichier JPEG ou PNG, 800 pixels de large et de taille maximale %s"
 
 msgid "Preview"
-msgstr "Prévisualisation"
+msgstr "Prévisualiser"
 
 msgid "Sidebar"
 msgstr "Bandeau"
@@ -1020,7 +1020,7 @@ msgid "previous page"
 msgstr "page précédente"
 
 msgid "Are you sure you want to delete this page?"
-msgstr "Êtes-vous certain de vouloir supprimer cette pages ?"
+msgstr "Êtes-vous certain de vouloir supprimer cette page ?"
 
 msgid "Page has been successfully updated."
 msgstr "La page a été mise à jour avec succès."
@@ -1169,7 +1169,7 @@ msgid "Link to all tags:"
 msgstr "Lien vers tous les mots-clefs :"
 
 msgid "Edit tag"
-msgstr "Modifier un tag"
+msgstr "Modifier le tag"
 
 msgid "Tag has been successfully renamed"
 msgstr "Tag renommé avec succès"
@@ -1179,6 +1179,9 @@ msgstr "Retour à la liste des tags"
 
 msgid "Rename this tag:"
 msgstr "Renommer ce tag :"
+
+msgid "Rename"
+msgstr "Renommer"
 
 msgid "Delete this tag"
 msgstr "Supprimer ce tag"
@@ -1363,10 +1366,10 @@ msgstr "Bandeau de navigation"
 msgid "Extra sidebar"
 msgstr "Bandeau d'extra"
 
-msgid "update sidebars"
+msgid "Update sidebars"
 msgstr "Mettre à jour les bandeaux"
 
-msgid "reset sidebars"
+msgid "Reset sidebars"
 msgstr "Réinitialiser les bandeaux"
 
 msgid "Widget templates tags"
@@ -1443,3 +1446,6 @@ msgstr "Supprimer le widget"
 
 #~ msgid "Invalid page URL"
 #~ msgstr "URL de la page non valide"
+
+msgid "Goto:"
+msgstr "Aller à :"

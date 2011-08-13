@@ -237,10 +237,10 @@ msgid "Parameters"
 msgstr "Paramètres"
 
 msgid "URL scan method:"
-msgstr "Méthode de lecture de l'URL"
+msgstr "Méthode de lecture de l'URL :"
 
 msgid "Blog status:"
-msgstr "État du blog"
+msgstr "État du blog :"
 
 msgid "Blog configuration"
 msgstr "Configuration du blog"
@@ -382,8 +382,8 @@ msgstr "Utilisateurs de ce blog"
 msgid "No users"
 msgstr "Aucun utilisateur"
 
-msgid "change permissions"
-msgstr "changer les permissions"
+msgid "Change permissions"
+msgstr "Changer les permissions"
 
 msgid "Super administrator"
 msgstr "Super administrateur"
@@ -419,8 +419,11 @@ msgstr "(nécessite \"%s\")"
 msgid "Stylesheet"
 msgstr "Feuille de style"
 
+msgid "Configure theme"
+msgstr "Configurer le thème"
+
 msgid "Theme configuration"
-msgstr "Configuration du thème"
+msgstr "Configurer le thème"
 
 msgid "Blog themes"
 msgstr "Thèmes du blog"
@@ -454,10 +457,10 @@ msgstr "Thèmes"
 msgid "You are currently using \"%s\""
 msgstr "Vous utilisez actuellement \"%s\""
 
-msgid "use selected theme"
-msgstr "utiliser le thème sélectionné"
+msgid "Use selected theme"
+msgstr "Utiliser le thème sélectionné"
 
-msgid "delete selected theme"
+msgid "Delete selected theme"
 msgstr "Supprimer le thème sélectionné"
 
 msgid "Install or upgrade a theme"
@@ -749,8 +752,8 @@ msgstr "en attente"
 msgid "mark as junk"
 msgstr "indésirable"
 
-msgid "delete"
-msgstr "supprimer"
+msgid "Delete"
+msgstr "Supprimer"
 
 msgid "Type:"
 msgstr "Type :"
@@ -852,8 +855,8 @@ msgstr "Contenu :"
 msgid "Category:"
 msgstr "Catégorie :"
 
-msgid "save and publish"
-msgstr "enregister et publier"
+msgid "Save and publish"
+msgstr "Enregister et publier"
 
 #, php-format
 msgid "PHP version is %s (5.0 or earlier needed)."
@@ -975,8 +978,8 @@ msgstr "Nom :"
 msgid "Username and password"
 msgstr "Identifiant et mot de passe"
 
-msgid "save"
-msgstr "enregistrer"
+msgid "Save"
+msgstr "Enregistrer"
 
 msgid "All done!"
 msgstr "Terminé !"
@@ -1158,10 +1161,10 @@ msgstr "Confirmer la suppression"
 msgid "Are you sure you want to remove %s?"
 msgstr "Êtes-vous certain de vouloir supprimer %s ?"
 
-msgid "cancel"
+msgid "Cancel"
 msgstr "annuler"
 
-msgid "yes"
+msgid "Yes"
 msgstr "oui"
 
 msgid "Directory has been successfully created."
@@ -1199,6 +1202,9 @@ msgstr "Aucun fichier."
 msgid "Sort files:"
 msgstr "Trier les fichiers :"
 
+msgid "Sort"
+msgstr "Trier"
+
 msgid "Add files"
 msgstr "Ajouter des fichiers"
 
@@ -1218,8 +1224,8 @@ msgstr "Privé"
 msgid "To send several files at the same time, you can activate the enhanced uploader in"
 msgstr "Pour envoyer plusieurs fichiers à la fois, vous pouvez activer l'interface avancée dans"
 
-msgid "send"
-msgstr "envoyer"
+msgid "Send"
+msgstr "Envoyer"
 
 msgid "New directory"
 msgstr "Nouveau répertoire"
@@ -1418,7 +1424,7 @@ msgstr "Billets par page"
 msgid "Choose one or more blogs to which you want to give permissions to users %s."
 msgstr "Choisissez un ou plusieurs blogs pour lesquels les utilisateurs suivants auront des permissions : %s."
 
-msgid "set permissions"
+msgid "Set permissions"
 msgstr "définir les permissions"
 
 msgid "select"
@@ -1607,6 +1613,9 @@ msgstr "Pièces jointes"
 
 msgid "remove"
 msgstr "supprimer"
+
+msgid "Remove"
+msgstr "Supprimer"
 
 msgid "No attachment."
 msgstr "Aucune pièce jointe"
@@ -2827,3 +2836,6 @@ msgstr "L'erreur suivante a été rencontrée lors de la tentative d'accès à l
 
 #~ msgid "Modify numbers in fields to change favorites order."
 #~ msgstr "Modifiez les nombres dans les champs pour changer l'ordre des favoris."
+
+msgid "Save and create another"
+msgstr "Enregistrer et créer un nouveau"

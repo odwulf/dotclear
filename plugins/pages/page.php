@@ -319,20 +319,17 @@ if (!empty($_GET['xconv']))
 }
 
 echo '<h2>'.html::escapeHTML($core->blog->name).
-' &rsaquo; <a href="'.$p_url.'">'.__('Pages').'</a> &rsaquo; <span class="page-title">'.$page_title.'</span>';
+' &rsaquo; <a href="'.$p_url.'">'.__('Pages').'</a> &rsaquo; <span class="page-title">'.$page_title; 
+	if ($post_id) {
+		echo ' &ldquo;'.$post_title.'&rdquo;';
+	}
+echo	'</span></h2>';
 
 if ($post_id && $post->post_status == 1) {
-	echo ' - <a id="post-preview" href="'.$post->getURL().'" class="button">'.__('View page').'</a>';
-} elseif ($post_id) {
-	$preview_url =
-	$core->blog->url.$core->url->getBase('pagespreview').'/'.
-	$core->auth->userID().'/'.
-	http::browserUID(DC_MASTER_KEY.$core->auth->userID().$core->auth->getInfo('user_pwd')).
-	'/'.$post->post_url;
-	echo ' - <a id="post-preview" href="'.$preview_url.'" class="button">'.__('Preview page').'</a>';
+	echo '<p><a href="'.$post->getURL().'" onclick="window.open(this.href);return false;" title="'.$post_title.' ('.__('new window').')'.'">'.__('Go to this page on the site').' <img src="images/outgoing-blue.png" alt="" /></a></p>';
 }
 
-echo '</h2>';
+echo '';
 
 if ($post_id)
 {
@@ -362,7 +359,7 @@ if ($can_edit_page)
 	echo '<form action="'.html::escapeURL($redir_url).'" method="post" id="entry-form">';
 
 	echo '<div id="entry-wrapper">';
-	echo '<div id="entry-content"><fieldset class="constrained">';
+	echo '<div id="entry-content"><div class="constrained">';
 	
 	echo
 	'<p class="col"><label for="post_title" class="required"><abbr title="'.__('Required field').'">*</abbr> '.__('Title:').
@@ -390,12 +387,23 @@ if ($can_edit_page)
 	'<p>'.
 	($post_id ? form::hidden('id',$post_id) : '').
 	'<input type="submit" value="'.__('Save').' (s)" '.
-	'accesskey="s" name="save" /> '.
+	'accesskey="s" name="save" /> ';
+
+	if ($post_id) {
+		$preview_url =
+		$core->blog->url.$core->url->getBase('pagespreview').'/'.
+		$core->auth->userID().'/'.
+		http::browserUID(DC_MASTER_KEY.$core->auth->userID().$core->auth->getInfo('user_pwd')).
+		'/'.$post->post_url;
+		echo '<a id="post-preview" href="'.$preview_url.'" class="button">'.__('Preview').'</a>';
+	}
+	
+	echo
 	($can_delete ? '<input type="submit" class="delete" value="'.__('Delete').'" name="delete" />' : '').
 	$core->formNonce().
 	'</p>';
 	
-	echo '</fieldset></div>';		// End #entry-content
+	echo '</div></div>';		// End #entry-content
 	echo '</div>';		// End #entry-wrapper
 
 	echo '<div id="entry-sidebar">';
@@ -569,7 +577,7 @@ if ($post_id)
 	'<h3>'.__('Add a comment').'</h3>'.
 	
 	'<form action="comment.php" method="post" id="comment-form">'.
-	'<fieldset class="constrained">'.
+	'<div class="constrained">'.
 	'<p><label for="comment_author" class="required"><abbr title="'.__('Required field').'">*</abbr> '.__('Name:').
 	form::field('comment_author',30,255,html::escapeHTML($core->auth->getInfo('user_cn'))).
 	'</label></p>'.
@@ -589,7 +597,7 @@ if ($post_id)
 	'<p>'.form::hidden('post_id',$post_id).
 	$core->formNonce().
 	'<input type="submit" name="add" value="'.__('Save').'" /></p>'.
-	'</fieldset>'.
+	'</div>'.
 	'</form>'.
 	'</div>';
 }

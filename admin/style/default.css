@@ -77,30 +77,32 @@ abbr {
 	cursor: help;
 }
 
-
 /* LAYOUT
 -------------------------------------------------------- */
-/* prelude */
-#prelude {
-	background: #575859;
-	line-height: 1.8em;
-	margin: 0;
-	overflow: hidden;
-	}
-#prelude li {
-	list-style-type: none;
-	margin: 0 1em 0 0;
-	background:transparent;
-	}
-#prelude a {
-	color:#fff;
-	}
 /* header */
 #header {
 	background: #575859;
 	height: 3em;
 	position: relative;
 }
+#prelude {
+	background: #575859;
+	line-height: 1.5em;
+	margin: 0;
+	padding: 0 1.7em 0 1em;
+	overflow: hidden;
+	position: absolute;
+	top: 1.2em;
+	left: 0;
+	}
+#prelude li {
+	list-style-type: none;
+	margin: 0 1em 0 0;
+	background:transparent;
+	}
+#prelude li a {
+	color:#fff;
+	}
 #top {
 	margin: 0;
 	padding: 0;
@@ -138,7 +140,7 @@ abbr {
 }
 #info-box2 {
 	margin: .1em 0 0 0;
-	padding: .5em 1em 4px 0;
+	padding: .5em 1.3em 4px 0;
 	color: #fff;
 	float: right;
 	text-align: right;
@@ -187,7 +189,7 @@ abbr {
 	margin-top: 0;
 }
 #content {
-	margin: .5em 1.5em 4em 13em;
+	margin: 1.5em 1.5em 4em 13em;
 	padding: 1em;
 	background: #fff;
 	-webkit-border-radius: .5em;
@@ -321,8 +323,7 @@ abbr {
 	text-transform: none;
 }
 #favorites-menu a {
-	color: #000;
-	font-weight: normal;
+	color: #333;
 }
 #favorites-menu .active {
 	background-color: transparent;
@@ -330,6 +331,7 @@ abbr {
 }
 #favorites-menu .active a {
 	font-weight: bold;
+	color: #666;
 }
 /* ------------------------------------------------------------------ footer */
 #footer {
@@ -369,7 +371,7 @@ abbr {
 	margin-bottom: .5em;
 	margin-left: .5em;
 }
-#login-screen fieldset {
+#login-screen fieldset, #login-screen .fieldset {
 	border: 1px solid #999;
 	padding: 1em 1em 0 1em;
 	-moz-border-radius: 4px;
@@ -915,6 +917,10 @@ div.static-msg a, p.static-msg a {
 }
 /* -------------------------------------------------------------------- CLASSES COMMUNES */
 
+.no-margin {
+	margin: 0;
+}
+
 /* paragraphe pour bouton Nouveau bidule */
 p.top-add {
 	text-align: right;
@@ -1007,6 +1013,14 @@ table {
 tr.line:hover {
 	background: #ddd;
 }
+caption {
+	color: #333;
+	font-size: 1.2em;
+	font-weight: bold;
+	text-align: left;
+	margin-bottom: .5em;
+}
+
 th, td {
 	border-width: 0 0 1px 0;
 	border-style: solid;
@@ -1076,7 +1090,7 @@ form {
 	margin: 0;
 	padding: 0;
 }
-fieldset {
+fieldset, .fieldset {
 	display: block;
 	margin: 0 0 1em 0;
 	padding: 1em 0.5em;
@@ -1165,6 +1179,7 @@ label.area, p.area {
 .area textarea {
 	display: block;
 	width: 100%;
+	resize: vertical;
 }
 label.required {
 	font-weight: bold;
@@ -1193,6 +1208,9 @@ p.field input, p.field select {
 label .maximal, textarea.maximal, input.maximal {
 	width: 100%;
 }
+textarea.maximal {
+	resize: vertical;
+}
 
 a.form-control {
 	display: none;
@@ -1201,7 +1219,7 @@ a.form-control {
 	color: green;
 	padding-left: 20px;
 }
-fieldset.constrained {
+.constrained {
 	margin: 0;
 	padding: 0;
 	border: none;
@@ -1227,7 +1245,7 @@ a.submit {
 	cursor: pointer;
 	text-align: center;
 	text-decoration: none;
-	padding: .1em .5em;
+	padding: .1em .5em 0 .5em;
 	text-shadow: 0 1px 1px rgba(0,0,0,.3);
 	-webkit-border-radius: .2em;
 	-moz-border-radius: .2em;
@@ -1287,6 +1305,10 @@ a.delete,
 input.delete,
 input[type=submit].delete {
 	color: #c00;
+	padding-bottom: .1em;
+}
+#entry-content .delete {
+	margin-left: 1em;
 }
 a.delete:hover,
 input.delete:hover,
@@ -1312,9 +1334,9 @@ a.button.add {
 	-moz-border-radius: .5em;
 	border-radius: .5em;
 	margin-bottom: .1em;	
-	background: #2C8FD1 url(add.png) no-repeat .2em center;
+	background: #2C8FD1 url(add.png) no-repeat 6px center;
 	color: #fff;
-	padding: .1em 1em .2em 28px;
+	padding: .2em 16px .2em 30px;
 	border: 1px solid #2373A8;
 }
 a.button.add:hover, a.button.add:focus {
