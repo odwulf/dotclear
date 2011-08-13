@@ -389,7 +389,7 @@ msgstr "Korisnik ovog bloga"
 msgid "No users"
 msgstr "Nijedan korisnik"
 
-msgid "change permissions"
+msgid "Change permissions"
 msgstr "promenite prava"
 
 msgid "Super administrator"
@@ -461,8 +461,8 @@ msgstr "Thèmes"
 msgid "You are currently using \"%s\""
 msgstr "Vous utilisez actuellement \"%s\""
 
-msgid "use selected theme"
-msgstr "utiliser le thème sélectionné"
+msgid "Use selected theme"
+msgstr "Utiliser le thème sélectionné"
 
 msgid "delete selected theme"
 msgstr "Supprimer le thème sélectionné"
@@ -770,7 +770,7 @@ msgstr "en attente"
 msgid "mark as junk"
 msgstr "indésirable"
 
-msgid "delete"
+msgid "Delete"
 msgstr "supprimer"
 
 msgid "Type:"
@@ -1003,7 +1003,7 @@ msgstr "Dernière mise à jour"
 msgid "Username and password"
 msgstr "Korisnik ili lozinka je pogrešna"
 
-msgid "save"
+msgid "Save"
 msgstr "Sadržati"
 
 msgid "All done!"

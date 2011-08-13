@@ -153,7 +153,11 @@ if (isset($_POST['user_name']))
 			# --BEHAVIOR-- adminAfterUserCreate
 			$core->callBehavior('adminAfterUserCreate',$cur,$new_id);
 			
-			http::redirect('user.php?id='.$new_id.'&add=1');
+			if (!empty($_POST['saveplus'])) {
+				http::redirect('user.php?add=1');
+			} else {
+				http::redirect('user.php?id='.$new_id.'&add=1');
+			}
 		}
 	}
 	catch (Exception $e)
@@ -272,12 +276,11 @@ __('Super administrator').'</label></p>'.
 $core->callBehavior('adminUserForm',isset($rs) ? $rs : null);
 
 echo
-'<fieldset>'.
 '<p><label for="your_pwd" '.($user_id != '' ? '' : 'class="required"').'>'.
 ($user_id != '' ? '' : '<abbr title="'.__('Required field').'">*</abbr> ').__('Your password:').
 form::password('your_pwd',20,255).'</label></p>'.
-'</fieldset>'.
-'<p class="clear"><input type="submit" accesskey="s" value="'.__('Save').'" />'.
+'<p class="clear"><input type="submit" name="save" accesskey="s" value="'.__('Save').'" />'.
+($user_id != '' ? '' : ' <input type="submit" name="saveplus" value="'.__('Save and create another').'" />').
 ($user_id != '' ? form::hidden('id',$user_id) : '').
 $core->formNonce().
 '</p>'.
@@ -286,7 +289,7 @@ $core->formNonce().
 
 if ($user_id)
 {
-	echo '<fieldset class="clear"><legend>'.__('Permissions').'</legend>';
+	echo '<div class="clear fieldset"><h3>'.__('Permissions').'</h3>';
 	
 	$permissions = $core->getUserPermissions($user_id);
 	$perm_types = $core->auth->getPermissionsTypes();
@@ -304,7 +307,7 @@ if ($user_id)
 				echo '<h4><a href="blog.php?id='.html::escapeHTML($k).'">'.
 				html::escapeHTML($v['name']).'</a> ('.html::escapeHTML($k).') - '.
 				'<a href="permissions.php?blog_id[]='.$k.'&amp;user_id[]='.$user_id.'">'
-				.__('change permissions').'</a></h4>';
+				.__('Change permissions').'</a></h4>';
 				
 				echo '<ul>';
 				foreach ($v['p'] as $p => $V) {
@@ -320,7 +323,7 @@ if ($user_id)
 	echo
 	'<p><a href="permissions_blog.php?user_id[]='.$user_id.'">'.
 	__('Add new permissions').'</a></p>'.
-	'</fieldset>';
+	'</div>';
 }
 
 dcPage::helpBlock('core_user');

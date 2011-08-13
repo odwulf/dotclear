@@ -130,12 +130,12 @@ form::field('cat_title',30,255).'</label></p>'.
 '<option value="0">'.__('Top level').'</option>';
 while ($rs->fetch()) {
 	echo '<option value="'.$rs->cat_id.'">'.
-		str_repeat('&nbsp;&nbsp;',$rs->level-1).($categories->level-1 == 0 ? '' : '&bull; ').
+		str_repeat('&nbsp;&nbsp;',$rs->level-1).($rs->level-1 == 0 ? '' : '&bull; ').
 		html::escapeHTML($rs->cat_title).'</option>';
 }
 echo
 '</select></label></p>'.
-'<p><input type="submit" value="'.__('Save').'" /></p>'.
+'<p><input type="submit" value="'.__('Create').'" /></p>'.
 $core->formNonce().
 '</fieldset>'.
 '</form>';
@@ -166,7 +166,7 @@ if (!$rs->isEmpty())
 		'<fieldset><legend>'.__('Remove a category').'</legend>'.
 		'<p><label for="del_cat">'.__('Choose a category to remove:').' '.
 		form::combo('del_cat',$deletable).'</label></p> '.
-		'<p><input type="submit" value="'.__('ok').'" /></p>'.
+		'<p><input type="submit" value="'.__('Delete').'" class="delete" /></p>'.
 		$core->formNonce().
 		'</fieldset>'.
 		'</form>';
