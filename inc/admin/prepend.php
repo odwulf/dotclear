@@ -57,6 +57,30 @@ function dc_load_locales() {
 	l10n::set(dirname(__FILE__).'/../../locales/'.$_lang.'/plugins');
 }
 
+function dc_admin_icon_url($img)
+{
+	global $core;
+	
+	$core->auth->user_prefs->addWorkspace('interface');
+	$user_ui_iconset = @$core->auth->user_prefs->interface->iconset;
+	if (($user_ui_iconset) && ($img)) {
+		$icon = false;
+		if ((preg_match('/^images\/menu\/(.+)$/',$img,$m)) || 
+			(preg_match('/^index\.php\?pf=(.+)$/',$img,$m))) {
+			if ($m[1]) {
+				$icon = path::real(dirname(__FILE__).'/../../admin/images/iconset/'.$user_ui_iconset.'/'.$m[1],false);
+				if ($icon !== false) {
+					$allow_types = array('png','jpg','jpeg','gif');
+					if (is_file($icon) && is_readable($icon) && in_array(files::getExtension($icon),$allow_types)) {
+						return DC_ADMIN_URL.'images/iconset/'.$user_ui_iconset.'/'.$m[1];
+					}
+				}
+			}
+		}
+	}
+	return $img;
+}
+
 if (defined('DC_AUTH_SESS_ID') && defined('DC_AUTH_SESS_UID'))
 {
 	# We have session information in constants
