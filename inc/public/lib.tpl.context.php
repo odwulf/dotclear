@@ -126,7 +126,11 @@ class context
 		if ($lower_case) {
 			$str = self::lower_case($str);
 		} elseif ($upper_case) {
-			$str = self::upper_case($str);
+			if ($upper_case == 2) {
+				$str = self::capitalize($str);
+			} else {
+				$str = self::upper_case($str);
+			}
 		}
 		
 		# --BEHAVIOR-- publicAfterContentFilter
@@ -159,6 +163,14 @@ class context
 	public static function upper_case($str)
 	{
 		return mb_strtoupper($str);
+	}
+
+	public static function capitalize($str)
+	{
+		if ($str != '') {
+		   $str[0] = mb_strtoupper($str[0]);
+		}
+		return $str;
 	}
 	
 	public static function categoryPostParam(&$p)
@@ -335,12 +347,71 @@ class context
 		if (!isset($GLOBALS['__smilies']) || !is_array($GLOBALS['__smilies'])) {
 			return $str;
 		}
-		
-		return preg_replace(array_keys($GLOBALS['__smilies']),array_values($GLOBALS['__smilies']),$str);
+
+		# Process part adapted from SmartyPants engine (J. Gruber et al.) :
+
+		$tokens = self::tokenizeHTML($str);
+		$result = '';
+		$in_pre = 0;  # Keep track of when we're inside <pre> or <code> tags.
+
+		foreach ($tokens as $cur_token) {
+			if ($cur_token[0] == "tag") {
+				# Don't mess with quotes inside tags.
+				$result .= $cur_token[1];
+				if (preg_match('@<(/?)(?:pre|code|kbd|script|math)[\s>]@', $cur_token[1], $matches)) {
+					$in_pre = isset($matches[1]) && $matches[1] == '/' ? 0 : 1;
+				}
+			} else {
+				$t = $cur_token[1];
+				if (!$in_pre) {
+					$t = preg_replace(array_keys($GLOBALS['__smilies']),array_values($GLOBALS['__smilies']),$t);
+				}
+				$result .= $t;
+			}
+		}
+
+		return $result;
 	}
-	
+
+	private static function tokenizeHTML($str)
+	{
+		# Function from SmartyPants engine (J. Gruber et al.)
+		#
+		#   Parameter:  String containing HTML markup.
+		#   Returns:    An array of the tokens comprising the input
+		#               string. Each token is either a tag (possibly with nested,
+		#               tags contained therein, such as <a href="<MTFoo>">, or a
+		#               run of text between tags. Each element of the array is a
+		#               two-element array; the first is either 'tag' or 'text';
+		#               the second is the actual value.
+		#
+		#
+		#   Regular expression derived from the _tokenize() subroutine in 
+		#   Brad Choate's MTRegex plugin.
+		#   <http://www.bradchoate.com/past/mtregex.php>
+		#
+		$index = 0;
+		$tokens = array();
+
+		$match = '(?s:<!(?:--.*?--\s*)+>)|'.	# comment
+				 '(?s:<\?.*?\?>)|'.				# processing instruction
+												# regular tags
+				 '(?:<[/!$]?[-a-zA-Z0-9:]+\b(?>[^"\'>]+|"[^"]*"|\'[^\']*\')*>)'; 
+
+		$parts = preg_split("{($match)}", $str, -1, PREG_SPLIT_DELIM_CAPTURE);
+
+		foreach ($parts as $part) {
+			if (++$index % 2 && $part != '') 
+				$tokens[] = array('text', $part);
+			else
+				$tokens[] = array('tag', $part);
+		}
+		return $tokens;
+	}
+
+
 	# First post image helpers
-	public static function EntryFirstImageHelper($size,$with_category,$class="")
+	public static function EntryFirstImageHelper($size,$with_category,$class="",$no_tag=false,$content_only=false,$cat_only=false)
 	{
 		global $core, $_ctx;
 		
@@ -354,20 +425,21 @@ class context
 		$p_root = $core->blog->public_path;
 		
 		$pattern = '(?:'.preg_quote($p_site,'/').')?'.preg_quote($p_url,'/');
-		$pattern = sprintf('/<img.+?src="%s(.*?\.(?:jpg|jpeg|gif|png))"[^>]+/msu',$pattern);
+		$pattern = sprintf('/<img.+?src="%s(.*?\.(?:jpg|jpeg|gif|png))"[^>]+/msui',$pattern);
 		
 		$src = '';
 		$alt = '';
 		
 		# We first look in post content
-		if ($_ctx->posts)
+		if (!$cat_only && $_ctx->posts)
 		{
-			$subject = $_ctx->posts->post_excerpt_xhtml.$_ctx->posts->post_content_xhtml;
+			$subject = ($content_only ? '' : $_ctx->posts->post_excerpt_xhtml).$_ctx->posts->post_content_xhtml;
 			if (preg_match_all($pattern,$subject,$m) > 0)
 			{
 				foreach ($m[1] as $i => $img) {
 					if (($src = self::ContentFirstImageLookup($p_root,$img,$size)) !== false) {
-						$src = $p_url.(dirname($img) != '/' ? dirname($img) : '').'/'.$src;
+						$dirname = str_replace('\\', '/', dirname($img)); 
+						$src = $p_url.($dirname != '/' ? $dirname : '').'/'.$src;
 						if (preg_match('/alt="([^"]+)"/',$m[0][$i],$malt)) {
 							$alt = $malt[1];
 						}
@@ -384,7 +456,8 @@ class context
 			{
 				foreach ($m[1] as $i => $img) {
 					if (($src = self::ContentFirstImageLookup($p_root,$img,$size)) !== false) {
-						$src = $p_url.(dirname($img) != '/' ? dirname($img) : '').'/'.$src;
+						$dirname = str_replace('\\', '/', dirname($img)); 
+						$src = $p_url.($dirname != '/' ? $dirname : '').'/'.$src;
 						if (preg_match('/alt="([^"]+)"/',$m[0][$i],$malt)) {
 							$alt = $malt[1];
 						}
@@ -395,7 +468,11 @@ class context
 		}
 		
 		if ($src) {
-			return '<img alt="'.$alt.'" src="'.$src.'" class="'.$class.'" />';
+			if ($no_tag) {
+				return $src;
+			} else {
+				return '<img alt="'.$alt.'" src="'.$src.'" class="'.$class.'" />';
+			}
 		}
 	}
 	
@@ -431,6 +508,14 @@ class context
 				$res = $base.'.png';
 			} elseif (file_exists($f.'.gif')) {
 				$res = $base.'.gif';
+			} elseif (file_exists($f.'.JPG')) {
+				$res = $base.'.JPG';
+			} elseif (file_exists($f.'.JPEG')) {
+				$res = $base.'.JPEG';
+			} elseif (file_exists($f.'.PNG')) {
+				$res = $base.'.PNG';
+			} elseif (file_exists($f.'.GIF')) {
+				$res = $base.'.GIF';
 			}
 		}
 		
