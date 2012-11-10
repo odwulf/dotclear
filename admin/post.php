@@ -65,6 +65,7 @@ try {
 foreach ($core->blog->getAllPostStatus() as $k => $v) {
 	$status_combo[$v] = (string) $k;
 }
+$img_status_pattern = '<img class="img_select_option" alt="%1$s" title="%1$s" src="images/%2$s" />';
 
 # Formaters combo
 foreach ($core->getFormaters() as $v) {
@@ -86,6 +87,8 @@ while ($rs->fetch()) {
 unset($all_langs);
 unset($rs);
 
+# Validation flag
+$bad_dt = false;
 
 # Get entry informations
 if (!empty($_REQUEST['id']))
@@ -165,8 +168,19 @@ if (!empty($_POST) && $can_edit_post)
 	if (empty($_POST['post_dt'])) {
 		$post_dt = '';
 	} else {
-		$post_dt = strtotime($_POST['post_dt']);
-		$post_dt = date('Y-m-d H:i',$post_dt);
+		try
+		{
+			$post_dt = strtotime($_POST['post_dt']);
+			if ($post_dt == false || $post_dt == -1) {
+				$bad_dt = true;
+				throw new Exception(__('Invalid publication date'));
+			}
+			$post_dt = date('Y-m-d H:i',$post_dt);
+		}
+		catch (Exception $e)
+		{
+			$core->error->add($e->getMessage());
+		}
 	}
 	
 	$post_open_comment = !empty($_POST['post_open_comment']);
@@ -188,7 +202,7 @@ if (!empty($_POST) && $can_edit_post)
 }
 
 # Create or update post
-if (!empty($_POST) && !empty($_POST['save']) && $can_edit_post)
+if (!empty($_POST) && !empty($_POST['save']) && $can_edit_post && !$bad_dt)
 {
 	$cur = $core->con->openCursor($core->prefix.'post');
 	
@@ -292,38 +306,52 @@ dcPage::open($page_title.' - '.__('Entries'),
 );
 
 if (!empty($_GET['upd'])) {
-		echo '<p class="message">'.__('Entry has been successfully updated.').'</p>';
+	dcPage::message(__('Entry has been successfully updated.'));
 }
 elseif (!empty($_GET['crea'])) {
-		echo '<p class="message">'.__('Entry has been successfully created.').'</p>';
+	dcPage::message(__('Entry has been successfully created.'));
 }
 elseif (!empty($_GET['attached'])) {
-	echo '<p class="message">'.__('File has been successfully attached.').'</p>';
+	dcPage::message(__('File has been successfully attached.'));
 }
 elseif (!empty($_GET['rmattach'])) {
-	echo '<p class="message">'.__('Attachment has been successfully removed.').'</p>';
+	dcPage::message(__('Attachment has been successfully removed.'));
 }
 
 if (!empty($_GET['creaco'])) {
-		echo '<p class="message">'.__('Comment has been successfully created.').'</p>';
-	}
+	dcPage::message(__('Comment has been successfully created.'));
+}
 
 # XHTML conversion
 if (!empty($_GET['xconv']))
 {
 	$post_excerpt = $post_excerpt_xhtml;
 	$post_content = $post_content_xhtml;
-	$post_title = $post_title_xhtml;
 	$post_format = 'xhtml';
 	
-	echo '<p class="message">'.__('Don\'t forget to validate your XHTML conversion by saving your post.').'</p>';
+	dcPage::message(__('Don\'t forget to validate your XHTML conversion by saving your post.'));
 }
 
 echo '<h2>'.html::escapeHTML($core->blog->name).' &rsaquo; '.'<a href="posts.php">'.__('Entries').'</a> &rsaquo; <span class="page-title">'.$page_title;
-
-	if ($post_id) {
-		echo ' &ldquo;'.$post_title.'&rdquo;';
+if ($post_id) {
+	switch ($post_status) {
+		case 1:
+			$img_status = sprintf($img_status_pattern,__('published'),'check-on.png');
+			break;
+		case 0:
+			$img_status = sprintf($img_status_pattern,__('unpublished'),'check-off.png');
+			break;
+		case -1:
+			$img_status = sprintf($img_status_pattern,__('scheduled'),'scheduled.png');
+			break;
+		case -2:
+			$img_status = sprintf($img_status_pattern,__('pending'),'check-wrn.png');
+			break;
+		default:
+			$img_status = '';
 	}
+	echo ' &ldquo;'.$post_title.'&rdquo;'.' '.$img_status;
+}
 echo	'</span></h2>';
 
 if ($post_id && $post->post_status == 1) {
@@ -411,7 +439,7 @@ if ($can_edit_post)
 	'</label></p>'.
 	
 	'<p><label for="post_dt">'.__('Published on:').
-	form::field('post_dt',16,16,$post_dt).
+	form::field('post_dt',16,16,$post_dt,($bad_dt ? 'invalid' : '')).
 	'</label></p>'.
 	
 	'<p><label for="post_format">'.__('Text formating:').
@@ -422,8 +450,20 @@ if ($can_edit_post)
 	
 	'<p><label for="post_open_comment" class="classic">'.form::checkbox('post_open_comment',1,$post_open_comment).' '.
 	__('Accept comments').'</label></p>'.
+	($core->blog->settings->system->allow_comments ? 
+		(isContributionAllowed($post_id,strtotime($post_dt),true) ? 
+			'' :
+			'<p class="form-note warn">'.__('Warning: Comments are not more accepted for this entry.').'</p>') : 
+		'<p class="form-note warn">'.__('Warning: Comments are not accepted on this blog.').'</p>').
+
 	'<p><label for="post_open_tb" class="classic">'.form::checkbox('post_open_tb',1,$post_open_tb).' '.
 	__('Accept trackbacks').'</label></p>'.
+	($core->blog->settings->system->allow_trackbacks ? 
+		(isContributionAllowed($post_id,strtotime($post_dt),false) ? 
+			'' :
+			'<p class="form-note warn">'.__('Warning: Trackbacks are not more accepted for this entry.').'</p>') : 
+		'<p class="form-note warn">'.__('Warning: Trackbacks are not accepted on this blog.').'</p>').
+
 	'<p><label for="post_selected" class="classic">'.form::checkbox('post_selected',1,$post_selected).' '.
 	__('Selected entry').'</label></p>'.
 	
@@ -567,6 +607,27 @@ if ($post_id)
 	'</div>';
 }
 
+# Controls comments or trakbacks capabilities
+function isContributionAllowed($id,$dt,$com=true)
+{
+	global $core;
+
+	if (!$id) {
+		return true;
+	}
+	if ($com) {
+		if (($core->blog->settings->system->comments_ttl == 0) || 
+			(time() - $core->blog->settings->system->comments_ttl*86400 < $dt)) {
+			return true;
+		}
+	} else {
+		if (($core->blog->settings->system->trackbacks_ttl == 0) || 
+			(time() - $core->blog->settings->system->trackbacks_ttl*86400 < $dt)) {
+			return true;
+		}
+	}
+	return false;
+}
 
 # Show comments or trackbacks
 function showComments($rs,$has_action,$tb=false)

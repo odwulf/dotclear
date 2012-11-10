@@ -193,6 +193,15 @@ msgstr "année/titre"
 msgid "title"
 msgstr "titre"
 
+msgid "post id/title"
+msgstr "identificateur du billet/titre"
+
+msgid "post id"
+msgstr "identificateur du billet"
+
+msgid "(none)"
+msgstr "(aucun)"
+
 msgid "Title"
 msgstr "Titre"
 
@@ -264,6 +273,15 @@ msgstr "Note de copyright :"
 
 msgid "New post URL format:"
 msgstr "Format d'URL des nouveaux billets :"
+
+msgid "Note title HTML tag:"
+msgstr "Balise HTML pour le titre des notes :"
+
+msgid "Note"
+msgstr "Note"
+
+msgid "Notes"
+msgstr "Notes"
 
 msgid "Enable XML/RPC interface"
 msgstr "Activer l'interface XML/RPC"
@@ -549,6 +567,9 @@ msgstr "Page(s)"
 msgid "Entries"
 msgstr "Billets"
 
+msgid "Entries (all types)"
+msgstr "Billets & pages"
+
 msgid "Status"
 msgstr "État"
 
@@ -804,6 +825,9 @@ msgstr "Documentation et support"
 msgid "Latest news"
 msgstr "Actualités"
 
+msgid "(external link)"
+msgstr "(lien externe)"
+
 msgid "Dashboard"
 msgstr "Tableau de bord"
 
@@ -814,7 +838,7 @@ msgid "This blog is offline"
 msgstr "Ce blog est hors ligne"
 
 msgid "This blog is removed"
-msgstr "Ce blog est supprimé"
+msgstr "Ce blog est retiré de la publication"
 
 msgid "is not defined, you should edit your configuration file."
 msgstr "n'est pas défini, vous devriez corriger votre fichier de configuration."
@@ -1388,6 +1412,12 @@ msgstr "Date du fichier :"
 msgid "New directory:"
 msgstr "Nouveau répertoire :"
 
+msgid "Delete this media"
+msgstr "Supprimer ce média"
+
+msgid "Are you sure to delete this media?"
+msgstr "Êtes-vous sûr de vouloir supprimer ce média ?"
+
 msgid "Change file"
 msgstr "Changer le fichier"
 
@@ -1479,6 +1509,9 @@ msgstr "Télécharger l'extension"
 msgid "To enable this function, please give write access to your plugins directory."
 msgstr "Pour activer cette fonction, donnez un accès en écriture à votre répertoire d'extensions."
 
+msgid "Plugin from official distribution"
+msgstr "Extension de la distribution officielle"
+
 msgid "Add a link"
 msgstr "Ajouter un lien"
 
@@ -1565,6 +1598,18 @@ msgstr "Format du texte :"
 
 msgid "Convert to XHTML"
 msgstr "Convertir en XHTML"
+
+msgid "Warning: Comments are not more accepted for this entry."
+msgstr "Attention : les commentaires ne sont plus acceptés pour ce billet."
+
+msgid "Warning: Comments are not accepted on this blog."
+msgstr "Attention : les commentaires ne sont pas acceptés sur ce blog."
+
+msgid "Warning: Trackbacks are not more accepted for this entry."
+msgstr "Attention : les rétroliens ne sont plus acceptés pour ce billet."
+
+msgid "Warning: Trackbacks are not accepted on this blog."
+msgstr "Attention : les rétroliens ne sont pas acceptés sur ce blog."
 
 msgid "Selected entry"
 msgstr "Billet sélectionné"
@@ -1787,7 +1832,7 @@ msgid "Dashboard modules"
 msgstr "Modules du tableau de bord"
 
 msgid "Display documentation links"
-msgstr "Display documentation links"
+msgstr "Afficher les liens vers la documentation"
 
 msgid "Display Dotclear news"
 msgstr "Afficher les nouvelles de Dotclear"
@@ -1893,6 +1938,9 @@ msgstr "Rétroliens déjà envoyés"
 
 msgid "Dotclear update"
 msgstr "Mise à jour de Dotclear"
+
+msgid "Manage backup files"
+msgstr "Gestion des fichiers de sauvegarde"
 
 #, php-format
 msgid "Unable to delete file %s"
@@ -2499,7 +2547,7 @@ msgid "offline"
 msgstr "hors ligne"
 
 msgid "removed"
-msgstr "supprimé"
+msgstr "retiré"
 
 msgid "You are not an administrator"
 msgstr "Vous n'êtes pas administrateur"
@@ -2806,7 +2854,7 @@ msgstr "Connexion à la base de données impossible"
 
 #, php-format
 msgid "<p>This either means that the username and password information in your <strong>config.php</strong> file is incorrect or we can't contact the database server at \"<em>%s</em>\". This could mean your host's database server is down.</p> <ul><li>Are you sure you have the correct username and password?</li><li>Are you sure that you have typed the correct hostname?</li><li>Are you sure that the database server is running?</li></ul><p>If you're unsure what these terms mean you should probably contact your host. If you still need help you can always visit the <a href=\"http://forum.dotclear.net/\">Dotclear Support Forums</a>.</p>"
-msgstr "<p>Cela signifie soit que les informations d'identifiant ou de mot de passe de votre fichier <strong>config.php</strong> sont incorrects, soit que nous ne pouvons pas contacter le serveur de base de données à l'adresse \"<em>%s</em>\". Cela peut vouloir dire que le serveur en question est éteint.</p> <ul><li>Êtes-vous sûr que l'identifiant et le mot de passe sont corrects ?</li><li>Êtes-vous sûr d'avoir entré le bon nom de serveur ?</li><li> Êtes-vous sûr que le serveur fonctionne ?</li></ul><p>S vous n'êtes pas sûr de la signification de ces termes, vous devriez probablement contacter votre hébergeur. Si vous avez besoin d'une aide supplémentaire, vous pouvez vous rendre sur <a href=\"http://forum.dotclear.net/\">le forum d'entraide Dotclear</a>.</p>"
+msgstr "<p>Cela signifie soit que les informations d'identifiant ou de mot de passe de votre fichier <strong>config.php</strong> sont incorrects, soit que nous ne pouvons pas contacter le serveur de base de données à l'adresse \"<em>%s</em>\". Cela peut vouloir dire que le serveur en question est éteint.</p> <ul><li>Êtes-vous sûr que l'identifiant et le mot de passe sont corrects ?</li><li>Êtes-vous sûr d'avoir entré le bon nom de serveur ?</li><li> Êtes-vous sûr que le serveur fonctionne ?</li></ul><p>Si vous n'êtes pas sûr de la signification de ces termes, vous devriez probablement contacter votre hébergeur. Si vous avez besoin d'une aide supplémentaire, vous pouvez vous rendre sur <a href=\"http://forum.dotclear.net/\">le forum d'entraide Dotclear</a>.</p>"
 
 msgid "The following error was encountered while trying to read the database:"
 msgstr "L'erreur suivante a été rencontrée lors de la tentative d'accès à la base de données :"
@@ -2822,3 +2870,15 @@ msgstr "L'erreur suivante a été rencontrée lors de la tentative d'accès à l
 
 #~ msgid "users"
 #~ msgstr "utilisateurs"
+
+msgid "Default image insertion attributes"
+msgstr "Attributs par défaut pour l'insertion d'image"
+
+msgid "The current blog cannot be deleted"
+msgstr "Le blog courant ne peut être détruit"
+
+msgid "Only superadmin can delete a blog"
+msgstr "Seul un superadministrateur peut supprimer un blog"
+
+msgid "Invalid publication date"
+msgstr "Date de publication invalide"

@@ -17,10 +17,15 @@ class defaultWidgets
 	{
 		global $core;
 		
+		if (($w->homeonly == 1 && $core->url->type != 'default') ||
+			($w->homeonly == 2 && $core->url->type == 'default')) {
+			return;
+		}
+
 		$value = isset($GLOBALS['_search']) ? html::escapeHTML($GLOBALS['_search']) : '';
 		
 		return
-		'<div id="search">'.
+		'<div id="search"'.($w->class ? ' class="'.html::escapeHTML($w->class).'"' : '').'>'.
 		($w->title ? '<h2><label for="q">'.html::escapeHTML($w->title).'</label></h2>' : '').
 		'<form action="'.$core->blog->url.'" method="get">'.
 		'<fieldset>'.
@@ -35,8 +40,13 @@ class defaultWidgets
 	{
 		global $core;
 		
+		if (($w->homeonly == 1 && $core->url->type != 'default') ||
+			($w->homeonly == 2 && $core->url->type == 'default')) {
+			return;
+		}
+
 		$res =
-		'<div id="topnav">'.
+		'<div id="topnav"'.($w->class ? ' class="'.html::escapeHTML($w->class).'"' : '').'>'.
 		($w->title ? '<h2>'.html::escapeHTML($w->title).'</h2>' : '').
 		'<ul>';
 		
@@ -61,13 +71,18 @@ class defaultWidgets
 	{
 		global $core, $_ctx;
 		
+		if (($w->homeonly == 1 && $core->url->type != 'default') ||
+			($w->homeonly == 2 && $core->url->type == 'default')) {
+			return;
+		}
+
 		$rs = $core->blog->getCategories(array('post_type'=>'post'));
 		if ($rs->isEmpty()) {
 			return;
 		}
 		
 		$res =
-		'<div class="categories">'.
+		'<div class="categories'.($w->class ? ' '.html::escapeHTML($w->class) : '').'">'.
 		($w->title ? '<h2>'.html::escapeHTML($w->title).'</h2>' : '');
 		
 		$ref_level = $level = $rs->level-1;
@@ -110,7 +125,8 @@ class defaultWidgets
 	{
 		global $core;
 		
-		if ($w->homeonly && $core->url->type != 'default') {
+		if (($w->homeonly == 1 && $core->url->type != 'default') ||
+			($w->homeonly == 2 && $core->url->type == 'default')) {
 			return;
 		}
 		
@@ -127,7 +143,7 @@ class defaultWidgets
 		}
 		
 		$res =
-		'<div class="selected">'.
+		'<div class="selected'.($w->class ? ' '.html::escapeHTML($w->class) : '').'">'.
 		($w->title ? '<h2>'.html::escapeHTML($w->title).'</h2>' : '').
 		'<ul>';
 		
@@ -144,7 +160,8 @@ class defaultWidgets
 	{
 		global $core, $_ctx;
 		
-		if ($w->homeonly && $core->url->type != 'default' && $core->url->type != 'lang') {
+		if (($w->homeonly == 1 && $core->url->type != 'default' && $core->url->type != 'lang') ||
+			($w->homeonly == 2 && ($core->url->type == 'default' || $core->url->type == 'lang'))) {
 			return;
 		}
 		
@@ -156,7 +173,7 @@ class defaultWidgets
 		
 		$langs = l10n::getISOcodes();
 		$res =
-		'<div class="langs">'.
+		'<div class="langs'.($w->class ? ' '.html::escapeHTML($w->class) : '').'">'.
 		($w->title ? '<h2>'.html::escapeHTML($w->title).'</h2>' : '').
 		'<ul>';
 		
@@ -184,7 +201,8 @@ class defaultWidgets
 	{
 		global $core;
 		
-		if ($w->homeonly && $core->url->type != 'default') {
+		if (($w->homeonly == 1 && $core->url->type != 'default') ||
+			($w->homeonly == 2 && $core->url->type == 'default')) {
 			return;
 		}
 		
@@ -195,7 +213,7 @@ class defaultWidgets
 		$c_title = __('This blog\'s comments %s feed');
 		
 		$res =
-		'<div class="syndicate">'.
+		'<div class="syndicate'.($w->class ? ' '.html::escapeHTML($w->class) : '').'">'.
 		($w->title ? '<h2>'.html::escapeHTML($w->title).'</h2>' : '').
 		'<ul>';
 		
@@ -227,7 +245,8 @@ class defaultWidgets
 		
 		global $core;
 		
-		if ($w->homeonly && $core->url->type != 'default') {
+		if (($w->homeonly == 1 && $core->url->type != 'default') ||
+			($w->homeonly == 2 && $core->url->type == 'default')) {
 			return;
 		}
 		
@@ -243,7 +262,7 @@ class defaultWidgets
 		}
 		
 		$res =
-		'<div class="feed">'.
+		'<div class="feed'.($w->class ? ' '.html::escapeHTML($w->class) : '').'">'.
 		($w->title ? '<h2>'.html::escapeHTML($w->title).'</h2>' : '').
 		'<ul>';
 		
@@ -277,12 +296,13 @@ class defaultWidgets
 	{
 		global $core;
 		
-		if ($w->homeonly && $core->url->type != 'default') {
+		if (($w->homeonly == 1 && $core->url->type != 'default') ||
+			($w->homeonly == 2 && $core->url->type == 'default')) {
 			return;
 		}
 		
 		$res =
-		'<div class="text">'.
+		'<div class="text'.($w->class ? ' '.html::escapeHTML($w->class) : '').'">'.
 		($w->title ? '<h2>'.html::escapeHTML($w->title).'</h2>' : '').
 		$w->text.
 		'</div>';
@@ -294,7 +314,8 @@ class defaultWidgets
 	{
 		global $core;
 		
-		if ($w->homeonly && $core->url->type != 'default') {
+		if (($w->homeonly == 1 && $core->url->type != 'default') ||
+			($w->homeonly == 2 && $core->url->type == 'default')) {
 			return;
 		}
 		
@@ -328,7 +349,7 @@ class defaultWidgets
 		}
 		
 		$res =
-		'<div class="lastposts">'.
+		'<div class="lastposts'.($w->class ? ' '.html::escapeHTML($w->class) : '').'">'.
 		($w->title ? '<h2>'.html::escapeHTML($w->title).'</h2>' : '').
 		'<ul>';
 		
@@ -346,7 +367,8 @@ class defaultWidgets
 	{
 		global $core;
 		
-		if ($w->homeonly && $core->url->type != 'default') {
+		if (($w->homeonly == 1 && $core->url->type != 'default') ||
+			($w->homeonly == 2 && $core->url->type == 'default')) {
 			return;
 		}
 		
@@ -358,7 +380,7 @@ class defaultWidgets
 			return;
 		}
 		
-		$res = '<div class="lastcomments">'.
+		$res = '<div class="lastcomments'.($w->class ? ' '.html::escapeHTML($w->class) : '').'">'.
 		($w->title ? '<h2>'.html::escapeHTML($w->title).'</h2>' : '').
 		'<ul>';
 		

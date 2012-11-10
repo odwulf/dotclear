@@ -158,7 +158,7 @@ class dcPage
 		
 		if ($core->error->flag()) {
 			echo
-			'<div class="error"><strong>'.__('Errors:').'</strong>'.
+			'<div class="error"><p><strong>'.(count($core->error->getErrors()) > 1 ? __('Errors:') : __('Error:')).'</p></strong>'.
 			$core->error->toHTML().
 			'</div>';
 		}
@@ -166,6 +166,8 @@ class dcPage
 	
 	public static function close()
 	{
+		global $core;
+
 		$menu =& $GLOBALS['_menu'];
 		
 		echo
@@ -178,11 +180,14 @@ class dcPage
 			echo $menu[$k]->draw();
 		}
 		
+		$text = sprintf(__('Thank you for using %s.'),'<a href="http://dotclear.org/">Dotclear '.DC_VERSION.'</a>');
+
+		# --BEHAVIOR-- adminPageFooter
+		$textAlt = $core->callBehavior('adminPageFooter',$core,$text);
+
 		echo
 		'</div>'."\n".		// End of #main-menu
-		'<div id="footer"><p>'.
-		sprintf(__('Thank you for using %s.'),'<a href="http://dotclear.org/">Dotclear '.DC_VERSION.'</a>').
-		'</p></div>'."\n".
+		'<div id="footer"><p>'.($textAlt != '' ? $textAlt : $text).'</p></div>'."\n".
 		"</div>\n";		// End of #wrapper
 		
 		if (defined('DC_DEV') && DC_DEV === true) {
@@ -253,6 +258,22 @@ class dcPage
 		'<div id="footer"><p>&nbsp;</p></div>'."\n".
 		"</div>\n".		// End of #wrapper
 		'</body></html>';
+	}
+
+	public static function message($msg,$timestamp=true,$div=false,$echo=true)
+	{
+		global $core;
+		
+		$res = '';
+		if ($msg != '') {
+			$res = ($div ? '<div class="message">' : '').'<p'.($div ? '' : ' class="message"').'>'.
+				($timestamp ? dt::str(__('%H:%M:%S:'),null,$core->auth->getInfo('user_tz')).' ' : '').$msg.
+				'</p>'.($div ? '</div>' : '');
+			if ($echo) {
+				echo $res;
+			}
+		}
+		return $res;
 	}
 	
 	private static function debugInfo()
@@ -369,6 +390,7 @@ class dcPage
 		self::jsLoad('js/jquery/jquery.js').
 		self::jsLoad('js/jquery/jquery.biscuit.js').
 		self::jsLoad('js/jquery/jquery.bgFade.js').
+		self::jsLoad('js/jquery/jquery.constantfooter.js').
 		self::jsLoad('js/common.js').
 		self::jsLoad('js/prelude.js').
 		

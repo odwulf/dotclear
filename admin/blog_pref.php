@@ -81,14 +81,24 @@ $post_url_combo = array(
 	__('year/month/day/title') => '{y}/{m}/{d}/{t}',
 	__('year/month/title') => '{y}/{m}/{t}',
 	__('year/title') => '{y}/{t}',
-	__('title') => '{t}'
+	__('title') => '{t}',
+	__('post id/title') => '{id}/{t}',
+	__('post id') => '{id}'
 );
 if (!in_array($blog_settings->system->post_url_format,$post_url_combo)) {
 	$post_url_combo[html::escapeHTML($blog_settings->system->post_url_format)] = html::escapeHTML($blog_settings->system->post_url_format);
 }
 
+# Note title tag combo
+$note_title_tag_combo = array(
+	__('H4') => 0,
+	__('H3') => 1,
+	__('P') => 2
+);
+
 # Image title combo
 $img_title_combo = array(
+	__('(none)') => '',
 	__('Title') => 'Title ;; separator(, )',
 	__('Title, Date') => 'Title ;; Date(%b %Y) ;; separator(, )',
 	__('Title, Country, Date') => 'Title ;; Country ;; Date(%b %Y) ;; separator(, )',
@@ -97,6 +107,22 @@ $img_title_combo = array(
 if (!in_array($blog_settings->system->media_img_title_pattern,$img_title_combo)) {
 	$img_title_combo[html::escapeHTML($blog_settings->system->media_img_title_pattern)] = html::escapeHTML($blog_settings->system->media_img_title_pattern);
 }
+
+# Image default size combo
+$img_default_size_combo = array();
+$media = new dcMedia($core);
+$img_default_size_combo[__('original')] = 'o';
+foreach ($media->thumb_sizes as $code => $size) {
+	$img_default_size_combo[__($size[2])] = $code;
+}
+
+# Image default alignment combo
+$img_default_alignment_combo = array(
+	__('None') => 'none',
+	__('Left') => 'left',
+	__('Right') => 'right',
+	__('Center') => 'center'
+);
 
 # Robots policy options
 $robots_policy_options = array(
@@ -190,6 +216,7 @@ if ($blog_id && !empty($_POST) && $core->auth->check('admin',$blog_id))
 		$blog_settings->system->put('comments_nofollow',!empty($_POST['comments_nofollow']));
 		$blog_settings->system->put('wiki_comments',!empty($_POST['wiki_comments']));
 		$blog_settings->system->put('enable_xmlrpc',!empty($_POST['enable_xmlrpc']));
+		$blog_settings->system->put('note_title_tag',$_POST['note_title_tag']);
 		
 		$blog_settings->system->put('nb_post_per_page',$nb_post_per_page);
 		$blog_settings->system->put('use_smilies',!empty($_POST['use_smilies']));
@@ -197,6 +224,9 @@ if ($blog_id && !empty($_POST) && $core->auth->check('admin',$blog_id))
 		$blog_settings->system->put('media_img_s_size',$media_img_s_size);
 		$blog_settings->system->put('media_img_m_size',$media_img_m_size);
 		$blog_settings->system->put('media_img_title_pattern',$_POST['media_img_title_pattern']);
+		$blog_settings->system->put('media_img_default_size',$_POST['media_img_default_size']);
+		$blog_settings->system->put('media_img_default_alignment',$_POST['media_img_default_alignment']);
+		$blog_settings->system->put('media_img_default_link',!empty($_POST['media_img_default_link']));
 		$blog_settings->system->put('nb_post_per_feed',$nb_post_per_feed);
 		$blog_settings->system->put('nb_comment_per_feed',$nb_comment_per_feed);
 		$blog_settings->system->put('short_feed_items',!empty($_POST['short_feed_items']));
@@ -246,11 +276,11 @@ if ($blog_id)
 	__('Blog settings').'</span></h2>';
 	
 	if (!empty($_GET['add'])) {
-		echo '<p class="message">'.__('Blog has been successfully created.').'</p>';
+		dcPage::message(__('Blog has been successfully created.'));
 	}
 	
 	if (!empty($_GET['upd'])) {
-		echo '<p class="message">'.__('Blog has been successfully updated.').'</p>';
+		dcPage::message(__('Blog has been successfully updated.'));
 	}
 	
 	echo
@@ -309,21 +339,43 @@ if ($blog_id)
 	'<p><label for="blog_timezone">'.__('Blog timezone:').
 	form::combo('blog_timezone',dt::getZones(true,true),html::escapeHTML($blog_settings->system->blog_timezone)).
 	'</label></p>'.
-	'</div>'.
-	
-	'<div class="col">'.
+
 	'<p><label for="copyright_notice">'.__('Copyright notice:').
 	form::field('copyright_notice',30,255,html::escapeHTML($blog_settings->system->copyright_notice)).
 	'</label></p>'.
+	'</div>'.
 	
+	'<div class="col">'.
 	'<p><label for="post_url_format">'.__('New post URL format:').
 	form::combo('post_url_format',$post_url_combo,html::escapeHTML($blog_settings->system->post_url_format)).
 	'</label></p>'.
-	
+
+	'<p><label for="note_title_tag">'.__('Note title HTML tag:').
+	form::combo('note_title_tag',$note_title_tag_combo,$blog_settings->system->note_title_tag).
+	'</label></p>'.
+		
 	'<p><label for="enable_xmlrpc" class="classic">'.
 	form::checkbox('enable_xmlrpc','1',$blog_settings->system->enable_xmlrpc).
-	__('Enable XML/RPC interface').'</label>'.
-	' - <a href="#xmlrpc">'.__('more information').'</a></p>'.
+	__('Enable XML/RPC interface').'</label></p>';
+
+	echo
+		'<p class="form-note">'.__('XML/RPC interface allows you to edit your blog with an external client.').'</p>';	
+
+	if ($blog_settings->system->enable_xmlrpc) {
+		echo
+		'<p>'.__('XML/RPC interface is active. You should set the following parameters on your XML/RPC client:').'</p>'.
+		'<ul>'.
+		'<li>'.__('Server URL:').' <strong><code>'.
+		sprintf(DC_XMLRPC_URL,$core->blog->url,$core->blog->id).
+		'</code></strong></li>'.
+		'<li>'.__('Blogging system:').' <strong><code>Movable Type</code></strong></li>'.
+		'<li>'.__('User name:').' <strong><code>'.$core->auth->userID().'</code></strong></li>'.
+		'<li>'.__('Password:').' <strong><code>&lt;'.__('your password').'&gt;</code></strong></li>'.
+		'<li>'.__('Blog ID:').' <strong><code>1</code></strong></li>'.
+		'</ul>';
+	}
+
+	echo
 	'</div>'.
 	'</div>'.
 	'<br class="clear" />'. //Opera sucks
@@ -430,7 +482,22 @@ if ($blog_id)
 	'<p>'.__('This defines image tag title when you insert it in a post from the media manager. It is retrieved from the picture\'s metadata.').'</p>'.
 	'<p>'.form::combo('media_img_title_pattern',$img_title_combo,html::escapeHTML($blog_settings->system->media_img_title_pattern)).'</p>'.
 	'</div>'.
+
+	'<div class="col">'.
+	'<h4>'.__('Default image insertion attributes').'</h4>'.
+	'<p><label for="media_img_default_size">'.__('Image size:').
+	form::combo('media_img_default_size',$img_default_size_combo,
+		(html::escapeHTML($blog_settings->system->media_img_default_size) != '' ? html::escapeHTML($blog_settings->system->media_img_default_size) : 'm')).
+	'</label></p>'.
+	'<p><label for="media_img_default_alignment">'.__('Image alignment').
+	form::combo('media_img_default_alignment',$img_default_alignment_combo,html::escapeHTML($blog_settings->system->media_img_default_alignment)).
+	'</label></p>'.
+	'<p><label for="media_img_default_link" class="classic">'.
+	form::checkbox('media_img_default_link','1',$blog_settings->system->media_img_default_link).
+	__('As a link to original image').'</label></p>'.
 	'</div>'.
+	'</div>'.
+
 	'</fieldset>';
 	
 	echo
@@ -464,30 +531,12 @@ if ($blog_id)
 		form::hidden(array('blog_id'),$blog_id).
 		$core->formNonce().'</p>'.
 		'</form>';
-	}
-	
-	# XML/RPC information
-	echo '<h3 id="xmlrpc">'.__('XML/RPC interface').'</h3>';
-	
-	echo '<p>'.__('XML/RPC interface allows you to edit your blog with an external client.').'</p>';
-	
-	if (!$blog_settings->system->enable_xmlrpc)
-	{
-		echo '<p>'.__('XML/RPC interface is not active. Change settings to enable it.').'</p>';
-	}
-	else
-	{
-		echo
-		'<p>'.__('XML/RPC interface is active. You should set the following parameters on your XML/RPC client:').'</p>'.
-		'<ul>'.
-		'<li>'.__('Server URL:').' <strong>'.
-		sprintf(DC_XMLRPC_URL,$core->blog->url,$core->blog->id).
-		'</strong></li>'.
-		'<li>'.__('Blogging system:').' <strong>Movable Type</strong></li>'.
-		'<li>'.__('User name:').' <strong>'.$core->auth->userID().'</strong></li>'.
-		'<li>'.__('Password:').' <strong>'.__('your password').'</strong></li>'.
-		'<li>'.__('Blog ID:').' <strong>1</strong></li>'.
-		'</ul>';
+	} else {
+		if ($blog_id == $core->blog->id) {
+			echo '<p class="message">'.__('The current blog cannot be deleted').'</p>';
+		} else {
+			echo '<p class="message">'.__('Only superadmin can delete a blog').'</p>';
+		}
 	}
 	
 	echo '</div>';
