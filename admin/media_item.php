@@ -14,6 +14,8 @@ require dirname(__FILE__).'/../inc/admin/prepend.php';
 
 dcPage::check('media,media_admin');
 
+$tab = empty($_REQUEST['tab']) ? '' : $_REQUEST['tab'];
+
 $post_id = !empty($_GET['post_id']) ? (integer) $_GET['post_id'] : null;
 if ($post_id) {
 	$post = $core->blog->getPosts(array('post_id'=>$post_id));
@@ -102,7 +104,7 @@ if ($file && !empty($_POST['media_file']) && $file->editable && $core_media_writ
 	
 	try {
 		$core->media->updateFile($file,$newFile);
-		http::redirect($page_url.'&id='.$id.'&fupd=1');
+		http::redirect($page_url.'&id='.$id.'&fupd=1&tab=media-details-tab');
 	} catch (Exception $e) {
 		$core->error->add($e->getMessage());
 	}
@@ -114,7 +116,7 @@ if (!empty($_POST['thumbs']) && $file->media_type == 'image' && $file->editable 
 	try {
 		$foo = null;
 		$core->media->mediaFireRecreateEvent($file);
-		http::redirect($page_url.'&id='.$id.'&thumbupd=1');
+		http::redirect($page_url.'&id='.$id.'&thumbupd=1&tab=media-details-tab');
 	} catch (Exception $e) {
 		$core->error->add($e->getMessage());
 	}
@@ -156,7 +158,13 @@ function dcGetImageTitle($file,$pattern)
 
 /* DISPLAY Main page
 -------------------------------------------------------- */
-$starting_scripts = dcPage::jsLoad('js/_media_item.js');
+$starting_scripts = 
+	'<script type="text/javascript">'."\n".
+	"//<![CDATA["."\n".
+	dcPage::jsVar('dotclear.msg.confirm_delete_media',__('Are you sure to delete this media?'))."\n".
+	"//]]>".
+	"</script>".
+	dcPage::jsLoad('js/_media_item.js');
 if ($popup) {
 	$starting_scripts .=
 	dcPage::jsLoad('js/jsToolBar/popup_media.js');
@@ -164,7 +172,7 @@ if ($popup) {
 call_user_func($open_f,__('Media manager'),
 	$starting_scripts.
 	dcPage::jsDatePicker().
-	dcPage::jsPageTabs()
+	dcPage::jsPageTabs($tab)
 );
 
 if ($file === null) {
@@ -173,10 +181,10 @@ if ($file === null) {
 }
 
 if (!empty($_GET['fupd']) || !empty($_GET['fupl'])) {
-	echo '<p class="message">'.__('File has been successfully updated.').'</p>';
+	dcPage::message(__('File has been successfully updated.'));
 }
 if (!empty($_GET['thumbupd'])) {
-	echo '<p class="message">'.__('Thumbnails have been successfully updated.').'</p>';
+	dcPage::message(__('Thumbnails have been successfully updated.'));
 }
 
 echo '<h2><a href="'.html::escapeURL($media_page_url).'">'.__('Media manager').'</a>'.
@@ -192,6 +200,16 @@ if ($popup)
 	'<div id="media-insert" class="multi-part" title="'.__('Insert media item').'">'.
 	'<form id="media-insert-form" action="" method="get">';
 	
+	$media_img_default_size = $core->blog->settings->system->media_img_default_size;
+	if ($media_img_default_size == '') {
+		$media_img_default_size = 'm';
+	}
+	$media_img_default_alignment = $core->blog->settings->system->media_img_default_alignment;
+	if ($media_img_default_alignment == '') {
+		$media_img_default_alignment = 'none';
+	}
+	$media_img_default_link = (boolean)$core->blog->settings->system->media_img_default_link;
+
 	if ($file->media_type == 'image')
 	{
 		$media_type = 'image';
@@ -199,19 +217,19 @@ if ($popup)
 		if ($media_desc == $file->basename) {
 			$media_desc = '';
 		}
-		
+
 		echo
 		'<h3>'.__('Image size:').'</h3> ';
 		
 		$s_checked = false;
 		echo '<p>';
 		foreach (array_reverse($file->media_thumb) as $s => $v) {
-			$s_checked = ($s == 'm');
+			$s_checked = ($s == $media_img_default_size);
 			echo '<label class="classic">'.
 			form::radio(array('src'),html::escapeHTML($v),$s_checked).' '.
 			$core->media->thumb_sizes[$s][2].'</label><br /> ';
 		}
-		$s_checked = (!isset($file->media_thumb['m']));
+		$s_checked = (!isset($file->media_thumb[$media_img_default_size]));
 		echo '<label class="classic">'.
 		form::radio(array('src'),$file->file_url,$s_checked).' '.__('original').'</label><br /> ';
 		echo '</p>';
@@ -219,10 +237,10 @@ if ($popup)
 		
 		echo '<h3>'.__('Image alignment').'</h3>';
 		$i_align = array(
-			'none' => array(__('None'),1),
-			'left' => array(__('Left'),0),
-			'right' => array(__('Right'),0),
-			'center' => array(__('Center'),0)
+			'none' => array(__('None'),($media_img_default_alignment == 'none' ? 1 : 0)),
+			'left' => array(__('Left'),($media_img_default_alignment == 'left' ? 1 : 0)),
+			'right' => array(__('Right'),($media_img_default_alignment == 'right' ? 1 : 0)),
+			'center' => array(__('Center'),($media_img_default_alignment == 'center' ? 1 : 0))
 		);
 		
 		echo '<p>';
@@ -235,9 +253,9 @@ if ($popup)
 		echo
 		'<h3>'.__('Image insertion').'</h3>'.
 		'<p>'.
-		'<label for="insert1" class="classic">'.form::radio(array('insertion','insert1'),'simple',true).
+		'<label for="insert1" class="classic">'.form::radio(array('insertion','insert1'),'simple',!$media_img_default_link).
 		__('As a single image').'</label><br />'.
-		'<label for="insert2" class="classic">'.form::radio(array('insertion','insert2'),'link',false).
+		'<label for="insert2" class="classic">'.form::radio(array('insertion','insert2'),'link',$media_img_default_link).
 		__('As a link to original image').'</label>'.
 		'</p>';
 	}
@@ -245,14 +263,14 @@ if ($popup)
 	{
 		$media_type = 'mp3';
 		
-		echo '<h3>'.__('MP3 disposition').'</h3>'.
-		'<p class="message">'.__("Please note that you cannot insert mp3 files with visual editor.").'</p>';
+		echo '<h3>'.__('MP3 disposition').'</h3>';
+		dcPage::message(__("Please note that you cannot insert mp3 files with visual editor."),false);
 		
 		$i_align = array(
-			'none' => array(__('None'),0),
-			'left' => array(__('Left'),0),
-			'right' => array(__('Right'),0),
-			'center' => array(__('Center'),1)
+			'none' => array(__('None'),($media_img_default_alignment == 'none' ? 1 : 0)),
+			'left' => array(__('Left'),($media_img_default_alignment == 'left' ? 1 : 0)),
+			'right' => array(__('Right'),($media_img_default_alignment == 'right' ? 1 : 0)),
+			'center' => array(__('Center'),($media_img_default_alignment == 'center' ? 1 : 0))
 		);
 		
 		echo '<p>';
@@ -270,8 +288,7 @@ if ($popup)
 	{
 		$media_type = 'flv';
 		
-		echo
-		'<p class="message">'.__("Please note that you cannot insert video files with visual editor.").'</p>';
+		dcPage::message(__("Please note that you cannot insert video files with visual editor."),false);
 		
 		echo
 		'<h3>'.__('Video size').'</h3>'.
@@ -284,10 +301,10 @@ if ($popup)
 		echo '<h3>'.__('Video disposition').'</h3>';
 		
 		$i_align = array(
-			'none' => array(__('None'),0),
-			'left' => array(__('Left'),0),
-			'right' => array(__('Right'),0),
-			'center' => array(__('Center'),1)
+			'none' => array(__('None'),($media_img_default_alignment == 'none' ? 1 : 0)),
+			'left' => array(__('Left'),($media_img_default_alignment == 'left' ? 1 : 0)),
+			'right' => array(__('Right'),($media_img_default_alignment == 'right' ? 1 : 0)),
+			'center' => array(__('Center'),($media_img_default_alignment == 'center' ? 1 : 0))
 		);
 		
 		echo '<p>';
@@ -339,9 +356,9 @@ if ($file->media_image)
 	{
 		$strong_link = ($s == $thumb_size) ? '<strong>%s</strong>' : '%s';
 		printf($strong_link,'<a href="'.html::escapeURL($page_url).
-		'&amp;id='.$id.'&amp;size='.$s.'">'.$core->media->thumb_sizes[$s][2].'</a> | ');
+		'&amp;id='.$id.'&amp;size='.$s.'&amp;tab=media-details-tab">'.$core->media->thumb_sizes[$s][2].'</a> | ');
 	}
-	echo '<a href="'.html::escapeURL($page_url).'&amp;id='.$id.'&amp;size=o">'.__('original').'</a>';
+	echo '<a href="'.html::escapeURL($page_url).'&amp;id='.$id.'&amp;size=o&amp;tab=media-details-tab">'.__('original').'</a>';
 	echo '</p>';
 	
 	if (isset($file->media_thumb[$thumb_size])) {
@@ -376,7 +393,7 @@ echo
 if (empty($_GET['find_posts']))
 {
 	echo
-	'<p><strong><a href="'.html::escapeHTML($page_url).'&amp;id='.$id.'&amp;find_posts=1">'.
+	'<p><strong><a href="'.html::escapeHTML($page_url).'&amp;id='.$id.'&amp;find_posts=1&amp;tab=media-details-tab">'.
 	__('Show entries containing this media').'</a></strong></p>';
 }
 else
@@ -417,10 +434,25 @@ else
 	{
 		echo '<ul>';
 		while ($rs->fetch()) {
-			echo '<li><a href="'.$core->getPostAdminURL($rs->post_type,$rs->post_id).'">'.
-			$rs->post_title.'</a>'.
-			($rs->post_type != 'post' ? ' ('.html::escapeHTML($rs->post_type).')' : '').
-			' - '.dt::dt2str(__('%Y-%m-%d %H:%M'),$rs->post_dt).'</li>';
+			$img = '<img alt="%1$s" title="%1$s" src="images/%2$s" />';
+			switch ($rs->post_status) {
+				case 1:
+					$img_status = sprintf($img,__('published'),'check-on.png');
+					break;
+				case 0:
+					$img_status = sprintf($img,__('unpublished'),'check-off.png');
+					break;
+				case -1:
+					$img_status = sprintf($img,__('scheduled'),'scheduled.png');
+					break;
+				case -2:
+					$img_status = sprintf($img,__('pending'),'check-wrn.png');
+					break;
+			}
+			echo '<li>'.$img_status.' '.'<a href="'.$core->getPostAdminURL($rs->post_type,$rs->post_id).'">'.
+				$rs->post_title.'</a>'.
+				($rs->post_type != 'post' ? ' ('.html::escapeHTML($rs->post_type).')' : '').
+				' - '.dt::dt2str(__('%Y-%m-%d %H:%M'),$rs->post_dt).'</li>';
 		}
 		echo '</ul>';
 	}
@@ -515,6 +547,19 @@ if ($file->editable && $core_media_writable)
 	form::hidden(array('id'),$id).
 	$core->formNonce().'</p>'.
 	'</fieldset></form>';
+
+	if ($file->del) {
+		echo
+		'<form id="delete-form" method="post" action="'.html::escapeURL($media_page_url).
+		'&amp;d='.rawurlencode(dirname($file->relname)).
+		'&amp;remove='.rawurlencode($file->basename).'">'.
+		'<p><input name="delete" type="submit" class="delete" value="'.__('Delete this media').'" />'.
+		form::hidden('remove',rawurlencode($file->basename)).
+		form::hidden('rmyes',1).
+		$core->formNonce().'</p>'.
+		'</form>';
+	}
+
 
 	# --BEHAVIOR-- adminMediaItemForm
 	$core->callBehavior('adminMediaItemForm',$file);

@@ -84,6 +84,7 @@ class dcTemplate extends template
 		$this->addValue('CategoryShortURL',array($this,'CategoryShortURL'));
 		$this->addValue('CategoryDescription',array($this,'CategoryDescription'));
 		$this->addValue('CategoryTitle',array($this,'CategoryTitle'));
+		$this->addValue('CategoryEntriesCount',array($this,'CategoryEntriesCount'));
 		
 		# Comments
 		$this->addBlock('Comments',array($this,'Comments'));
@@ -204,6 +205,9 @@ class dcTemplate extends template
 		$this->addValue('SysPoweredBy',array($this,'SysPoweredBy'));
 		$this->addValue('SysSearchString',array($this,'SysSearchString'));
 		$this->addValue('SysSelfURI',array($this,'SysSelfURI'));
+
+		# Generic
+		$this->addValue('else',array($this,'GenericElse'));
 	}
 	
 	public function getData($________)
@@ -387,7 +391,7 @@ class dcTemplate extends template
 		$p[1] = '0';	# remove_html
 		$p[2] = '0';	# cut_string
 		$p[3] = '0';	# lower_case
-		$p[4] = '0';	# upper_case
+		$p[4] = '0';	# upper_case or capitalize
 		
 		$p[0] = (integer) (!empty($attr['encode_xml']) || !empty($attr['encode_html']));
 		$p[1] = (integer) !empty($attr['remove_html']);
@@ -398,6 +402,7 @@ class dcTemplate extends template
 		
 		$p[3] = (integer) !empty($attr['lower_case']);
 		$p[4] = (integer) !empty($attr['upper_case']);
+		$p[4] = (!empty($attr['capitalize']) ? 2 : $p[4]);
 		
 		return "context::global_filter(%s,".implode(",",$p).",'".addslashes($this->current_tag)."')";
 	}
@@ -486,7 +491,7 @@ class dcTemplate extends template
 		return implode(', ',$res);
 	}
 	
-	public function getAge($attr)
+	public static function getAge($attr)
 	{
 		if (isset($attr['age']) && preg_match('/^(\-[0-9]+|last).*$/i',$attr['age'])) {
 			if (($ts = strtotime($attr['age'])) !== false) {
@@ -1096,6 +1101,15 @@ class dcTemplate extends template
 		$f = $this->getFilters($attr);
 		return '<?php echo '.sprintf($f,'$_ctx->categories->cat_title').'; ?>';
 	}
+
+	/*dtd
+	<!ELEMENT tpl:CategoryEntriesCount - O -- Category number of entries -->
+	*/
+	public function CategoryEntriesCount($attr)
+	{
+		$f = $this->getFilters($attr);
+		return '<?php echo '.sprintf($f,'$_ctx->categories->nb_post').'; ?>';
+	}
 	
 	/* Entries -------------------------------------------- */
 	/*dtd
@@ -1268,6 +1282,7 @@ class dcTemplate extends template
 	pings_active	(0|1)	#IMPLIED	-- trackbacks are active for this post (value : 1) or not (value : 0)
 	show_comments	(0|1)	#IMPLIED	-- there are comments for this post (value : 1) or not (value : 0)
 	show_pings	(0|1)	#IMPLIED	-- there are trackbacks for this post (value : 1) or not (value : 0)
+	republished	(0|1)	#IMPLIED	-- post has been updated since publication (value : 1) or not (value : 0)
 	operator	(and|or)	#IMPLIED	-- combination of conditions, if more than 1 specifiec (default: and)
 	url		CDATA	#IMPLIED	-- post has given url
 	>
@@ -1365,6 +1380,11 @@ class dcTemplate extends template
 			} else {
 				$if[] = '(!$_ctx->posts->hasTrackbacks() && !$_ctx->posts->trackbacksActive())';
 			}
+		}
+		
+		if (isset($attr['republished'])) {
+			$sign = (boolean) $attr['republished'] ? '' : '!';
+			$if[] = $sign.'(boolean)$_ctx->posts->isRepublished()';
 		}
 		
 		$this->core->callBehavior('tplIfConditions','EntryIf',$attr,$content,$if);
@@ -1600,15 +1620,22 @@ class dcTemplate extends template
 	size			(sq|t|s|m|o)	#IMPLIED	-- Image size to extract
 	class		CDATA		#IMPLIED	-- Class to add on image tag
 	with_category	(1|0)		#IMPLIED	-- Search in entry category description if present (default 0)
+	no_tag	(1|0)	#IMPLIED	-- Return image URL without HTML tag (default 0)
+	content_only	(1|0)		#IMPLIED	-- Search in content entry only, not in excerpt (default 0)
+	cat_only	(1|0)		#IMPLIED	-- Search in category description only (default 0)
 	>
 	*/
 	public function EntryFirstImage($attr)
 	{
 		$size = !empty($attr['size']) ? $attr['size'] : '';
 		$class = !empty($attr['class']) ? $attr['class'] : '';
-		$with_category = !empty($attr['with_category']) ? 'true' : 'false';
+		$with_category = !empty($attr['with_category']) ? 1 : 0;
+		$no_tag = !empty($attr['no_tag']) ? 1 : 0;
+		$content_only = !empty($attr['content_only']) ? 1 : 0;
+		$cat_only = !empty($attr['cat_only']) ? 1 : 0;
 		
-		return "<?php echo context::EntryFirstImageHelper('".addslashes($size)."',".$with_category.",'".addslashes($class)."'); ?>";
+		return "<?php echo context::EntryFirstImageHelper('".addslashes($size)."',".$with_category.",'".addslashes($class)."',".
+			$no_tag.",".$content_only.",".$cat_only."); ?>";
 	}
 	
 	/*dtd
@@ -2801,7 +2828,7 @@ class dcTemplate extends template
 	current_tpl		CDATA	#IMPLIED	-- tests if current template is the one given in paramater
 	current_mode		CDATA	#IMPLIED	-- tests if current URL mode is the one given in parameter
 	has_tpl			CDATA     #IMPLIED  -- tests if a named template exists
-	has_tag			CDATA     #IMPLIED  -- tests if a named template tag exists (see Tag plugin for code)
+	has_tag			CDATA     #IMPLIED  -- tests if a named template block or value exists
 	blog_id			CDATA     #IMPLIED  -- tests if current blog ID is the one given in parameter
 	comments_active	(0|1)	#IMPLIED	-- test if comments are enabled blog-wide 
 	pings_active		(0|1)	#IMPLIED	-- test if trackbacks are enabled blog-wide 
@@ -2855,6 +2882,15 @@ class dcTemplate extends template
 				$attr['has_tpl'] = substr($attr['has_tpl'],1);
 			}
 			$if[] = $sign."\$core->tpl->getFilePath('".addslashes($attr['has_tpl'])."') !== false";
+		}
+		
+		if (isset($attr['has_tag'])) {
+			$sign = 'true';
+			if (substr($attr['has_tag'],0,1) == '!') {
+				$sign = 'false';
+				$attr['has_tag'] = substr($attr['has_tag'],1);
+			}
+			$if[] =  "\$core->tpl->tagExists('".addslashes($attr['has_tag'])."') === ".$sign;
 		}
 		
 		if (isset($attr['blog_id'])) {
@@ -2938,7 +2974,7 @@ class dcTemplate extends template
 	}
 	
 	/*dtd
-	<!ELEMENT tpl:SysIfFormError - O -- Form error -->
+	<!ELEMENT tpl:SysFormError - O -- Form error -->
 	*/
 	public function SysFormError($attr)
 	{
@@ -2964,6 +3000,14 @@ class dcTemplate extends template
 	{
 		$f = $this->getFilters($attr);
 		return '<?php echo '.sprintf($f,'http::getSelfURI()').'; ?>';
+	}
+
+	/*dtd
+	<!ELEMENT tpl:else - O -- else: statement -->
+	*/
+	public function GenericElse($attr)
+	{
+		return '<?php else: ?>';
 	}
 }
 
