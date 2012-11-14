@@ -220,13 +220,15 @@ class tplPages
 	{
 		global $core, $_ctx;
 		
-		if ($w->homeonly && $core->url->type != 'default') {
+		if (($w->homeonly == 1 && $core->url->type != 'default') ||
+			($w->homeonly == 2 && $core->url->type == 'default')) {
 			return;
 		}
 		
 		$params['post_type'] = 'page';
 		$params['limit'] = abs((integer) $w->limit);
 		$params['no_content'] = true;
+		$params['post_selected'] = false;
 		
 		$sort = $w->sortby;
 		if (!in_array($sort,array('post_title','post_position','post_dt'))) {
@@ -246,7 +248,7 @@ class tplPages
 		}
 		
 		$res =
-		'<div class="pages">'.
+		'<div class="pages'.($w->class ? ' '.html::escapeHTML($w->class) : '').'">'.
 		($w->title ? '<h2>'.html::escapeHTML($w->title).'</h2>' : '').
 		'<ul>';
 		

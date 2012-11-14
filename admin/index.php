@@ -80,13 +80,15 @@ foreach ($ws->dumpPrefs() as $k => $v) {
 	if (!$v['global']) {
 		$fav = unserialize($v['value']);
 		if (($fav['permissions'] == '*') || $core->auth->check($fav['permissions'],$core->blog->id)) {
-			$count++;
-			$title = ($fav['name'] == 'posts' ? sprintf($str_entries,$post_count) : 
-				($fav['name'] == 'comments' ? sprintf($str_comments,$comment_count) : $fav['title']));
-			$__dashboard_icons[$fav['name']] = new ArrayObject(array(__($title),$fav['url'],$fav['large-icon']));
+			if (dc_valid_fav($fav['url'])) {
+				$count++;
+				$title = ($fav['name'] == 'posts' ? sprintf($str_entries,$post_count) : 
+					($fav['name'] == 'comments' ? sprintf($str_comments,$comment_count) : $fav['title']));
+				$__dashboard_icons[$fav['name']] = new ArrayObject(array(__($title),$fav['url'],$fav['large-icon']));
 
-			# Let plugins set their own title for favorite on dashboard
-			$core->callBehavior('adminDashboardFavsIcon',$core,$fav['name'],$__dashboard_icons[$fav['name']]);
+				# Let plugins set their own title for favorite on dashboard
+				$core->callBehavior('adminDashboardFavsIcon',$core,$fav['name'],$__dashboard_icons[$fav['name']]);
+			}
 		}
 	}
 }	
@@ -95,13 +97,15 @@ if (!$count) {
 	foreach ($ws->dumpPrefs() as $k => $v) {
 		$fav = unserialize($v['value']);
 		if (($fav['permissions'] == '*') || $core->auth->check($fav['permissions'],$core->blog->id)) {
-			$count++;
-			$title = ($fav['name'] == 'posts' ? sprintf($str_entries,$post_count) : 
-				($fav['name'] == 'comments' ? sprintf($str_comments,$comment_count) : $fav['title']));
-			$__dashboard_icons[$fav['name']] = new ArrayObject(array(__($title),$fav['url'],$fav['large-icon']));
+			if (dc_valid_fav($fav['url'])) {
+				$count++;
+				$title = ($fav['name'] == 'posts' ? sprintf($str_entries,$post_count) : 
+					($fav['name'] == 'comments' ? sprintf($str_comments,$comment_count) : $fav['title']));
+				$__dashboard_icons[$fav['name']] = new ArrayObject(array(__($title),$fav['url'],$fav['large-icon']));
 
-			# Let plugins set their own title for favorite on dashboard
-			$core->callBehavior('adminDashboardFavsIcon',$core,$fav['name'],$__dashboard_icons[$fav['name']]);
+				# Let plugins set their own title for favorite on dashboard
+				$core->callBehavior('adminDashboardFavsIcon',$core,$fav['name'],$__dashboard_icons[$fav['name']]);
+			}
 		}
 	}
 }
@@ -124,7 +128,7 @@ if ($core->auth->user_prefs->dashboard->doclinks) {
 		$doc_links = '<h3>'.__('Documentation and support').'</h3><ul>';
 	
 		foreach ($__resources['doc'] as $k => $v) {
-			$doc_links .= '<li><a href="'.$v.'">'.$k.'</a></li>';
+			$doc_links .= '<li><a href="'.$v.'" title="'.$k.' '.__('(external link)').'">'.$k.'</a></li>';
 		}
 	
 		$doc_links .= '</ul>';
@@ -151,17 +155,18 @@ if ($core->auth->user_prefs->dashboard->dcnews) {
 			$i = 1;
 			foreach ($feed->items as $item)
 			{
-				$dt = isset($item->link) ? '<a href="'.$item->link.'">'.$item->title.'</a>' : $item->title;
+				$dt = isset($item->link) ? '<a href="'.$item->link.'" title="'.$item->title.' '.__('(external link)').'">'.
+					$item->title.'</a>' : $item->title;
 			
 				if ($i < 3) {
 					$latest_news .=
 					'<dt>'.$dt.'</dt>'.
-					'<dd><p><strong>'.dt::dt2str('%d %B %Y',$item->pubdate,'Europe/Paris').'</strong>: '.
+					'<dd><p><strong>'.dt::dt2str(__('%d %B %Y:'),$item->pubdate,'Europe/Paris').'</strong> '.
 					'<em>'.text::cutString(html::clean($item->content),120).'...</em></p></dd>';
 				} else {
 					$latest_news .=
 					'<dt>'.$dt.'</dt>'.
-					'<dd>'.dt::dt2str('%d %B %Y',$item->pubdate,'Europe/Paris').'</dd>';
+					'<dd>'.dt::dt2str(__('%d %B %Y:'),$item->pubdate,'Europe/Paris').'</dd>';
 				}
 				$i++;
 				if ($i > 3) { break; }

@@ -18,6 +18,7 @@ body.install #content {
 body.install #main {
 	padding:1em 2em;
 	border:1px #ccc solid;
+	-o-border-radius:8px;
 	-moz-border-radius:8px;
 	-webkit-border-radius:8px;
 	border-radius: 8px;
@@ -47,6 +48,7 @@ body.install label {
 body.install .msg {
 	padding:10px 10px 10px 60px;
 	border-radius:8px;
+	-o-border-radius:8px;
 	-moz-border-radius:8px;
 	-webkit-border-radius:8px;
 }
@@ -69,6 +71,7 @@ div.error, p.error, div.message, p.message, div.static-msg, p.static-msg {
 	padding: 0.5em 0.5em 0.5em 60px;
 	margin-bottom: 1em;
 	border-radius: 8px;
+	-o-border-radius: 8px;
 	-moz-border-radius: 8px;
 	-webkit-border-radius: 8px;
 }
@@ -131,6 +134,7 @@ a#obfus {
 	background-color: #666;
 	padding: 0 10px;
 	border-radius: 2px;
+	-o-border-radius: 2px;
 	-moz-border-radius: 2px;
 	-webkit-border-radius: 2px;
 }
@@ -146,6 +150,7 @@ input[type=submit]{
 	text-shadow: 0 1px 1px rgba(0,0,0,.3);
 	-webkit-border-radius: .2em;
 	-moz-border-radius: .2em;
+	-o-border-radius: .2em;
 	border-radius: .2em;
 	margin-bottom: .1em;
 	color: #fff;

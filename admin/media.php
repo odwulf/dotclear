@@ -217,7 +217,7 @@ if ($dir && $core->auth->isSuperAdmin() && !empty($_POST['rebuild']))
 
 
 # DISPLAY confirm page for rmdir & rmfile
-if ($dir && !empty($_GET['remove']))
+if ($dir && !empty($_GET['remove']) && empty($_GET['noconfirm']))
 {
 	call_user_func($open_f,__('Media manager'));
 	
@@ -254,27 +254,27 @@ call_user_func($open_f,__('Media manager'),
 	);
 
 if (!empty($_GET['mkdok'])) {
-	echo '<p class="message">'.__('Directory has been successfully created.').'</p>';
+	dcPage::message(__('Directory has been successfully created.'));
 }
 
 if (!empty($_GET['upok'])) {
-	echo '<p class="message">'.__('Files have been successfully uploaded.').'</p>';
+	dcPage::message(__('Files have been successfully uploaded.'));
 }
 
 if (!empty($_GET['rmfok'])) {
-	echo '<p class="message">'.__('File has been successfully removed.').'</p>';
+	dcPage::message(__('File has been successfully removed.'));
 }
 
 if (!empty($_GET['rmdok'])) {
-	echo '<p class="message">'.__('Directory has been successfully removed.').'</p>';
+	dcPage::message(__('Directory has been successfully removed.'));
 }
 
 if (!empty($_GET['rebuildok'])) {
-	echo '<p class="message">'.__('Directory has been successfully rebuilt.').'</p>';
+	dcPage::message(__('Directory has been successfully rebuilt.'));
 }
 
 if (!empty($_GET['unzipok'])) {
-	echo '<p class="message">'.__('Zip file has been successfully extracted.').'</p>';
+	dcPage::message(__('Zip file has been successfully extracted.'));
 }
 
 echo '<h2>'.html::escapeHTML($core->blog->name).' &rsaquo; ';
@@ -357,7 +357,7 @@ if ($core_media_writable)
 	'<p><label for="upfilepriv" class="classic">'.form::checkbox(array('upfilepriv','upfilepriv'),1).' '.
 	__('Private').'</label></p>'.
 	'<p class="form-help info">'.__('To send several files at the same time, you can activate the enhanced uploader in').
-	'<a href="preferences.php?tab=user-options"> '.__('My preferences').'</a></p>'.
+	' <a href="preferences.php?tab=user-options">'.__('My preferences').'</a></p>'.
 	'<p><input type="submit" value="'.__('Send').'" />'.
 	form::hidden(array('d'),$d).'</p>'.
 	'</fieldset>'.
