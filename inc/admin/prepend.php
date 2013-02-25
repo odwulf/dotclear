@@ -374,4 +374,13 @@ if ($core->auth->userID() && $core->blog !== null)
 		}
 	}
 }
+
+# Add admin default templates path
+$core->tpl->getLoader()->addPath(dirname(__FILE__).'/default-templates');
+# Set admin context
+$_ctx = new dcAdminContext($core);
+$core->tpl->addExtension($_ctx);
+
+# --BEHAVIOR-- adminPrepend
+$core->callBehavior('adminPrepend',$core,$_ctx);
 ?>
