@@ -28,17 +28,13 @@ require CLEARBRICKS_PATH.'/_common.php';
 $__autoload['dcCore']				= dirname(__FILE__).'/core/class.dc.core.php';
 $__autoload['dcAuth']				= dirname(__FILE__).'/core/class.dc.auth.php';
 $__autoload['dcBlog']				= dirname(__FILE__).'/core/class.dc.blog.php';
-$__autoload['dcCategories']			= dirname(__FILE__).'/core/class.dc.categories.php';
 $__autoload['dcError']				= dirname(__FILE__).'/core/class.dc.error.php';
 $__autoload['dcMeta']				= dirname(__FILE__).'/core/class.dc.meta.php';
-$__autoload['dcMedia']				= dirname(__FILE__).'/core/class.dc.media.php';
-$__autoload['dcPostMedia']				= dirname(__FILE__).'/core/class.dc.postmedia.php';
 $__autoload['dcModules']				= dirname(__FILE__).'/core/class.dc.modules.php';
 $__autoload['dcThemes']				= dirname(__FILE__).'/core/class.dc.themes.php';
 $__autoload['dcRestServer']			= dirname(__FILE__).'/core/class.dc.rest.php';
 $__autoload['dcNamespace']			= dirname(__FILE__).'/core/class.dc.namespace.php';
 $__autoload['dcSettings']			= dirname(__FILE__).'/core/class.dc.settings.php';
-$__autoload['dcTrackback']			= dirname(__FILE__).'/core/class.dc.trackback.php';
 $__autoload['dcUpdate']				= dirname(__FILE__).'/core/class.dc.update.php';
 $__autoload['dcUtils']				= dirname(__FILE__).'/core/class.dc.utils.php';
 $__autoload['dcXmlRpc']				= dirname(__FILE__).'/core/class.dc.xmlrpc.php';
@@ -47,7 +43,6 @@ $__autoload['dcWorkspace']			= dirname(__FILE__).'/core/class.dc.workspace.php';
 $__autoload['dcPrefs']				= dirname(__FILE__).'/core/class.dc.prefs.php';
 
 $__autoload['rsExtPost']				= dirname(__FILE__).'/core/class.dc.rs.extensions.php';
-$__autoload['rsExtComment']			= dirname(__FILE__).'/core/class.dc.rs.extensions.php';
 $__autoload['rsExtDates']			= dirname(__FILE__).'/core/class.dc.rs.extensions.php';
 $__autoload['rsExtUser']				= dirname(__FILE__).'/core/class.dc.rs.extensions.php';
 
@@ -56,7 +51,6 @@ $__autoload['dcPage']				= dirname(__FILE__).'/admin/lib.dc.page.php';
 $__autoload['adminGenericList']		= dirname(__FILE__).'/admin/lib.pager.php';
 $__autoload['adminPostList']			= dirname(__FILE__).'/admin/lib.pager.php';
 $__autoload['adminPostMiniList']		= dirname(__FILE__).'/admin/lib.pager.php';
-$__autoload['adminCommentList']		= dirname(__FILE__).'/admin/lib.pager.php';
 $__autoload['adminUserList']			= dirname(__FILE__).'/admin/lib.pager.php';
 
 $__autoload['dcTemplate']			= dirname(__FILE__).'/public/class.dc.template.php';
@@ -211,13 +205,12 @@ $core->url->registerError(array('dcUrlHandlers','default404'));
 $core->url->register('lang','','^([a-zA-Z]{2}(?:-[a-z]{2})?(?:/page/[0-9]+)?)$',array('dcUrlHandlers','lang'));
 $core->url->register('post','post','^post/(.+)$',array('dcUrlHandlers','post'));
 $core->url->register('preview','preview','^preview/(.+)$',array('dcUrlHandlers','preview'));
-$core->url->register('category','category','^category/(.+)$',array('dcUrlHandlers','category'));
 $core->url->register('archive','archive','^archive(/.+)?$',array('dcUrlHandlers','archive'));
 
 $core->url->register('feed','feed','^feed/(.+)$',array('dcUrlHandlers','feed'));
-$core->url->register('trackback','trackback','^trackback/(.+)$',array('dcUrlHandlers','trackback'));
 $core->url->register('rsd','rsd','^rsd$',array('dcUrlHandlers','rsd'));
 $core->url->register('xmlrpc','xmlrpc','^xmlrpc/(.+)$',array('dcUrlHandlers','xmlrpc'));
+$core->url->register('plugin','plugin','^plugin/(.+)$',array('dcUrlHandlers','pluginInclude'));
 
 $core->setPostType('post','post.php?id=%d',$core->url->getURLFor('post','%s'));
 

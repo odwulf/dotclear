@@ -74,30 +74,10 @@ class dcXmlRpc extends xmlrpcIntrospectionServer
 			array('array','string','string','string','integer'),
 			'List of most recent posts in the system');
 		
-		$this->addCallback('metaWeblog.getCategories',array($this,'mw_getCategories'),
-			array('array','string','string','string'),
-			'List of all categories defined in the weblog');
-		
-		$this->addCallback('metaWeblog.newMediaObject',array($this,'mw_newMediaObject'),
-			array('struct','string','string','string','struct'),
-			'Upload a file on the web server');
-		
 		# MovableType methods
 		$this->addCallback('mt.getRecentPostTitles',array($this,'mt_getRecentPostTitles'),
 			array('array','string','string','string','integer'),
 			'List of most recent posts in the system');
-		
-		$this->addCallback('mt.getCategoryList',array($this,'mt_getCategoryList'),
-			array('array','string','string','string'),
-			'List of all categories defined in the weblog');
-		
-		$this->addCallback('mt.getPostCategories',array($this,'mt_getPostCategories'),
-			array('array','string','string','string'),
-			'List of all categories to which the post is assigned');
-		
-		$this->addCallback('mt.setPostCategories',array($this,'mt_setPostCategories'),
-			array('boolean','string','string','string','array'),
-			'Sets the categories for a post');
 		
 		$this->addCallback('mt.publishPost',array($this,'mt_publishPost'),
 			array('boolean','string','string','string'),
@@ -142,25 +122,9 @@ class dcXmlRpc extends xmlrpcIntrospectionServer
 			array('array','integer','string','string'),
 			'Get an array of users for the blog.');
 		
-		$this->addCallback('wp.getCategories',array($this,'wp_getCategories'),
-			array('array','integer','string','string'),
-			'Get an array of available categories on a blog.');
-		
 		$this->addCallback('wp.getTags',array($this,'wp_getTags'),
 			array('array','integer','string','string'),
 			'Get list of all tags for the blog.');
-		
-		$this->addCallback('wp.newCategory',array($this,'wp_newCategory'),
-			array('integer','integer','string','string','struct'),
-			'Create a new category.');
-		
-		$this->addCallback('wp.deleteCategory',array($this,'wp_deleteCategory'),
-			array('boolean','integer','string','string','integer'),
-			'Delete a category with a given ID.');
-		
-		$this->addCallback('wp.suggestCategories',array($this,'wp_suggestCategories'),
-			array('array','integer','string','string','string','integer'),
-			'Get an array of categories that start with a given string.');
 		
 		$this->addCallback('wp.uploadFile',array($this,'wp_uploadFile'),
 			array('struct','integer','string','string','struct'),
@@ -186,33 +150,6 @@ class dcXmlRpc extends xmlrpcIntrospectionServer
 			array('struct','integer','string','string','struct'),
 			'Update blog options');
 		
-		$this->addCallback('wp.getComment',array($this,'wp_getComment'),
-			array('struct','integer','string','string','integer'),
-			"Gets a comment, given it's comment ID.");
-		
-		$this->addCallback('wp.getCommentCount',array($this,'wp_getCommentCount'),
-			array('array','integer','string','string','integer'),
-			'Retrieve comment count.');
-		
-		$this->addCallback('wp.getComments',array($this,'wp_getComments'),
-			array('array','integer','string','string','struct'),
-			'Gets a set of comments for a given post.');
-		
-		$this->addCallback('wp.deleteComment',array($this,'wp_deleteComment'),
-			array('boolean','integer','string','string','integer'),
-			'Delete a comment with given ID.');
-		
-		$this->addCallback('wp.editComment',array($this,'wp_editComment'),
-			array('boolean','integer','string','string','integer','struct'),
-			'Edit a comment with given ID.');
-		
-		$this->addCallback('wp.newComment',array($this,'wp_newComment'),
-			array('integer','integer','string','string','integer','struct'),
-			'Create a new comment for a given post ID.');
-		
-		$this->addCallback('wp.getCommentStatusList',array($this,'wp_getCommentStatusList'),
-			array('array','integer','string','string'),
-			'Retrieve all of the comment statuses.');
 	}
 	
 	public function serve($data=false,$encoding='UTF-8')
@@ -304,23 +241,16 @@ class dcXmlRpc extends xmlrpcIntrospectionServer
 	{
 		$this->setUser($user,$pwd);
 		$this->setBlog();
-		$rs = $this->core->blog->getPosts(array(
+		$posts = $this->core->blog->getPosts(array(
 			'post_id' => (integer) $post_id,
 			'post_type' => $post_type
 		));
 		
-		if ($rs->isEmpty()) {
+		if (count($posts) == 0) {
 			throw new Exception('This entry does not exist');
 		}
 		
-		return $rs;
-	}
-	
-	private function getCatID($cat_url)
-	{
-		$rs = $this->core->blog->getCategories(array('cat_url' => $cat_url));
-		
-		return $rs->isEmpty() ? null : $rs->cat_id;
+		return $posts;
 	}
 	
 	/* Generic methods
@@ -334,8 +264,6 @@ class dcXmlRpc extends xmlrpcIntrospectionServer
 		$excerpt = !empty($struct['mt_excerpt']) ? $struct['mt_excerpt'] : '';
 		$description = !empty($struct['description']) ? $struct['description'] : null;
 		$dateCreated = !empty($struct['dateCreated']) ? $struct['dateCreated'] : null;
-		$open_comment = isset($struct['mt_allow_comments']) ? $struct['mt_allow_comments'] : 1;
-		$open_tb = isset($struct['mt_allow_pings']) ? $struct['mt_allow_pings'] : 1;
 		
 		if ($description !== null) {
 			$content = $description;
@@ -361,8 +289,6 @@ class dcXmlRpc extends xmlrpcIntrospectionServer
 		$cur->post_excerpt = $excerpt;
 		$cur->post_content_xhtml = $content_xhtml;
 		$cur->post_excerpt_xhtml = $excerpt_xhtml;
-		$cur->post_open_comment = (integer) ($open_comment == 1);
-		$cur->post_open_tb = (integer) ($open_tb == 1);
 		$cur->post_status = (integer) $publish;
 		$cur->post_format = 'xhtml';
 		
@@ -374,21 +300,8 @@ class dcXmlRpc extends xmlrpcIntrospectionServer
 			}
 		}
 		
-		# Categories in an array
-		if (isset($struct['categories']) && is_array($struct['categories']))
-		{
-			$categories = $struct['categories'];
-			$cat_id = !empty($categories[0]) ? $categories[0] : null;
-			
-			$cur->cat_id = $this->getCatID($cat_id);
-		}
-		
 		if (isset($struct['wp_slug'])) {
 			$cur->post_url = $struct['wp_slug'];
-		}
-		
-		if (isset($struct['wp_password'])) {
-			$cur->post_password = $struct['wp_password'];
 		}
 		
 		$cur->post_type = 'post';
@@ -439,8 +352,6 @@ class dcXmlRpc extends xmlrpcIntrospectionServer
 		$excerpt = (!empty($struct['mt_excerpt'])) ? $struct['mt_excerpt'] : '';
 		$description = (!empty($struct['description'])) ? $struct['description'] : null;
 		$dateCreated = !empty($struct['dateCreated']) ? $struct['dateCreated'] : null;
-		$open_comment = (isset($struct['mt_allow_comments'])) ? $struct['mt_allow_comments'] : 1;
-		$open_tb = (isset($struct['mt_allow_pings'])) ? $struct['mt_allow_pings'] : 1;
 		
 		if ($description !== null) {
 			$content = $description;
@@ -465,8 +376,6 @@ class dcXmlRpc extends xmlrpcIntrospectionServer
 		$cur->post_excerpt = $excerpt;
 		$cur->post_content_xhtml = $content_xhtml;
 		$cur->post_excerpt_xhtml = $excerpt_xhtml;
-		$cur->post_open_comment = (integer) ($open_comment == 1);
-		$cur->post_open_tb = (integer) ($open_tb == 1);
 		$cur->post_status = (integer) $publish;
 		$cur->post_format = 'xhtml';
 		$cur->post_url = $post->post_url;
@@ -482,21 +391,8 @@ class dcXmlRpc extends xmlrpcIntrospectionServer
 			$cur->post_dt = $post->post_dt;
 		}
 		
-		# Categories in an array
-		if (isset($struct['categories']) && is_array($struct['categories']))
-		{
-			$categories = $struct['categories'];
-			$cat_id = !empty($categories[0]) ? $categories[0] : null;
-			
-			$cur->cat_id = $this->getCatID($cat_id);
-		}
-		
 		if (isset($struct['wp_slug'])) {
 			$cur->post_url = $struct['wp_slug'];
-		}
-		
-		if (isset($struct['wp_password'])) {
-			$cur->post_password = $struct['wp_password'];
 		}
 		
 		if ($cur->post_type == 'post')
@@ -539,10 +435,6 @@ class dcXmlRpc extends xmlrpcIntrospectionServer
 		$res['userid'] = $post->user_id;
 		$res['postid'] = $post->post_id;
 		
-		if ($post->cat_id) {
-			$res['categories'] = array($post->cat_url);
-		}
-		
 		if ($type == 'blogger') {
 			$res['content'] = $post->post_content_xhtml;
 		}
@@ -556,8 +448,6 @@ class dcXmlRpc extends xmlrpcIntrospectionServer
 			$res['link'] = $res['permaLink'] = $post->getURL();
 			$res['mt_excerpt'] = $post->post_excerpt_xhtml;
 			$res['mt_text_more'] = '';
-			$res['mt_allow_comments'] = (integer) $post->post_open_comment;
-			$res['mt_allow_pings'] = (integer) $post->post_open_tb;
 			$res['mt_convert_breaks'] = '';
 			$res['mt_keywords'] = '';
 		}
@@ -595,33 +485,27 @@ class dcXmlRpc extends xmlrpcIntrospectionServer
 		$posts = $this->core->blog->getPosts($params);
 		
 		$res = array();
-		while ($posts->fetch())
+		foreach ($posts as $p)
 		{
 			$tres = array();
 			
 			$tres['dateCreated'] = new xmlrpcDate($posts->getTS());
-			$tres['userid'] = $posts->user_id;
-			$tres['postid'] = $posts->post_id;
-			
-			if ($posts->cat_id) {
-				$tres['categories'] = array($posts->cat_url);
-			}
+			$tres['userid'] = $p->user_id;
+			$tres['postid'] = $p->post_id;
 			
 			if ($type == 'blogger') {
-				$tres['content'] = $posts->post_content_xhtml;
+				$tres['content'] = $p->post_content_xhtml;
 			}
 			
 			if ($type == 'mt' || $type == 'mw') {
-				$tres['title'] = $posts->post_title;
+				$tres['title'] = $p->post_title;
 			}
 			
 			if ($type == 'mw') {
-				$tres['description'] = $posts->post_content_xhtml;
-				$tres['link'] = $tres['permaLink'] = $posts->getURL();
-				$tres['mt_excerpt'] = $posts->post_excerpt_xhtml;
+				$tres['description'] = $p->post_content_xhtml;
+				$tres['link'] = $tres['permaLink'] = $p->getURL();
+				$tres['mt_excerpt'] = $p->post_excerpt_xhtml;
 				$tres['mt_text_more'] = '';
-				$tres['mt_allow_comments'] = (integer) $posts->post_open_comment;
-				$tres['mt_allow_pings'] = (integer) $posts->post_open_tb;
 				$tres['mt_convert_breaks'] = '';
 				$tres['mt_keywords'] = '';
 			}
@@ -661,96 +545,6 @@ class dcXmlRpc extends xmlrpcIntrospectionServer
 		);
 	}
 	
-	private function getCategories($blog_id,$user,$pwd)
-	{
-		$this->setUser($user,$pwd);
-		$this->setBlog();
-		$rs = $this->core->blog->getCategories();
-		
-		$res = array();
-		
-		$l = $rs->level;
-		$stack = array('',$rs->cat_url);
-		
-		while ($rs->fetch())
-		{
-			$d = $rs->level - $l;
-			if ($d == 0) {
-				array_pop($stack);
-				$parent = end($stack);
-			} elseif ($d > 0) {
-				$parent = end($stack);
-			} elseif ($d < 0) {
-				$D = abs($d);
-				for ($i=0; $i<=$D; $i++) {
-					array_pop($stack);
-				}
-				$parent = end($stack);
-			}
-			
-			$res[] = array(
-				'categoryId' => $rs->cat_url,
-				'parentId' => $parent,
-				'description' => $rs->cat_title,
-				'categoryName' => $rs->cat_url,
-				'htmlUrl' => $this->core->blog->url.
-					$this->core->url->getURLFor('category',$rs->cat_url),
-				'rssUrl' => $this->core->blog->url.
-					$this->core->url->getURLFor('feed','category/'.$rs->cat_url.'/rss2')
-			);
-			
-			$stack[] = $rs->cat_url;
-			$l = $rs->level;
-		}
-		
-		return $res;
-	}
-	
-	private function getPostCategories($post_id,$user,$pwd)
-	{
-		$post_id = (integer) $post_id;
-		
-		$post = $this->getPostRS($post_id,$user,$pwd);
-		
-		return array(
-			array(
-			'categoryName' => $post->cat_url,
-			'categoryId' => (string) $post->cat_url,
-			'isPrimary' => true
-			)
-		);
-	}
-	
-	private function setPostCategories($post_id,$user,$pwd,$categories)
-	{
-		$post_id = (integer) $post_id;
-		
-		$post = $this->getPostRS($post_id,$user,$pwd);
-		
-		$cat_id = (!empty($categories[0]['categoryId'])) ? $categories[0]['categoryId'] : null;
-		
-		foreach($categories as $v)
-		{
-			if (isset($v['isPrimary']) && $v['isPrimary']) {
-				$cat_id = $v['categoryId'];
-				break;
-			}
-		}
-		
-		# w.bloggar sends -1 for no category.
-		if ($cat_id == -1) {
-			$cat_id = null;
-		}
-		
-		if ($cat_id) {
-			$cat_id = $this->getCatID($cat_id);
-		}
-		
-		$this->core->blog->updPostCategory($post_id,(integer) $cat_id);
-		
-		return true;
-	}
-	
 	private function publishPost($post_id,$user,$pwd)
 	{
 		$post_id = (integer) $post_id;
@@ -766,51 +560,6 @@ class dcXmlRpc extends xmlrpcIntrospectionServer
 		$this->core->callBehavior('xmlrpcAfterPublishPost',$this,$post_id);
 		
 		return true;
-	}
-	
-	private function newMediaObject($blog_id,$user,$pwd,$file)
-	{
-		if (empty($file['name'])) {
-			throw new Exception('No file name');
-		}
-		
-		if (empty($file['bits'])) {
-			throw new Exception('No file content');
-		}
-		
-		$file_name = $file['name'];
-		$file_bits = $file['bits'];
-		
-		$this->setUser($user,$pwd);
-		$this->setBlog();
-		
-		$media = new dcMedia($this->core);
-		
-		$dir_name = path::clean(dirname($file_name));
-		$file_name = basename($file_name);
-		
-		$dir_name = preg_replace('!^/!','',$dir_name);
-		if ($dir_name != '')
-		{
-			$dir = explode('/',$dir_name);
-			$cwd = './';
-			foreach ($dir as $v)
-			{
-				$v = files::tidyFileName($v);
-				$cwd .= $v.'/';
-				$media->makeDir($v);
-				$media->chdir($cwd);
-			}
-		}
-		
-		$media_id = $media->uploadBits($file_name,$file_bits);
-		
-		$f = $media->getFile($media_id);
-		return array(
-			'file' => $file_name,
-			'url' => $f->file_url,
-			'type' => files::getMimeType($file_name)
-		);
 	}
 	
 	private function translateWpStatus($s)
@@ -831,21 +580,6 @@ class dcXmlRpc extends xmlrpcIntrospectionServer
 		}
 	}
 	
-	private function translateWpCommentstatus($s)
-	{
-		$status = array(
-			'hold' => -1,
-			'approve' => 0,
-			'spam' => -2
-		);
-		
-		if (is_int($s)) {
-			$status = array_flip($status);
-			return isset($status[$s]) ? $status[$s] : $status[0];
-		} else {
-			return isset($status[$s]) ? $status[$s] : $status['approve'];
-		}
-	}
 	
 	private function translateWpOptions($options=array())
 	{
@@ -971,31 +705,27 @@ class dcXmlRpc extends xmlrpcIntrospectionServer
 		$posts = $this->core->blog->getPosts($params);
 		
 		$res = array();
-		while ($posts->fetch())
+		foreach ($posts as $post)
 		{
 			$tres = array(
-				"dateCreated"			=> new xmlrpcDate($posts->getTS()),
-				"userid"				=> $posts->user_id,
-				"page_id"				=> $posts->post_id,
-				"page_status"			=> $this->translateWpStatus((integer) $posts->post_status),
-				"description"			=> $posts->post_content_xhtml,
-				"title"				=> $posts->post_title,
-				"link"				=> $posts->getURL(),
-				"permaLink"			=> $posts->getURL(),
-				"categories"			=> array(),
-				"excerpt"				=> $posts->post_excerpt_xhtml,
+				"dateCreated"			=> new xmlrpcDate($post->getTS()),
+				"userid"				=> $post->user_id,
+				"page_id"				=> $post->post_id,
+				"page_status"			=> $this->translateWpStatus((integer) $post->post_status),
+				"description"			=> $post->post_content_xhtml,
+				"title"				=> $post->post_title,
+				"link"				=> $post->getURL(),
+				"permaLink"			=> $post->getURL(),
+				"excerpt"				=> $post->post_excerpt_xhtml,
 				"text_more"			=> '',
-				"mt_allow_comments"		=> (integer) $posts->post_open_comment,
-				"mt_allow_pings"		=> (integer) $posts->post_open_tb,
-				"wp_slug"				=> $posts->post_url,
-				"wp_password"			=> $posts->post_password,
-				"wp_author"			=> $posts->getAuthorCN(),
+				"wp_slug"				=> $post->post_url,
+				"wp_author"			=> $post->getAuthorCN(),
 				"wp_page_parent_id"		=> 0,
 				"wp_page_parent_title"	=> '',
-				"wp_page_order"		=> $posts->post_position,
-				"wp_author_id"			=> $posts->user_id,
-				"wp_author_display_name"	=> $posts->getAuthorCN(),
-				"date_created_gmt"		=> new xmlrpcDate(dt::iso8601($posts->getTS(),$posts->post_tz)),
+				"wp_page_order"		=> $post->post_position,
+				"wp_author_id"			=> $post->user_id,
+				"wp_author_display_name"	=> $post->getAuthorCN(),
+				"date_created_gmt"		=> new xmlrpcDate(dt::iso8601($post->getTS(),$post->post_tz)),
 				"custom_fields"		=> array(),
 				"wp_page_template"		=> 'default'
 			);
@@ -1050,10 +780,10 @@ class dcXmlRpc extends xmlrpcIntrospectionServer
 		$this->setUser($user,$pwd);
 		$this->setBlog();
 		
-		$rs = $this->core->getBlogPermissions($this->core->blog->id);
+		$perms = $this->core->getBlogPermissions($this->core->blog->id);
 		$res = array();
 		
-		foreach($rs as $k => $v)
+		foreach($perms as $k => $v)
 		{
 			$res[] = array(
 				'user_id' => $k,
@@ -1077,240 +807,18 @@ class dcXmlRpc extends xmlrpcIntrospectionServer
 			$this->core->url->getURLFor('tag','%s');
 		$f_url = $this->core->blog->url.
 			$this->core->url->getURLFor('tag_feed','%s');
-		while ($tags->fetch())
+		foreach ($tags as $tag)
 		{
 			$res[] = array(
-				'tag_id'		=> $tags->meta_id,
-				'name'		=> $tags->meta_id,
-				'count'		=> $tags->count,
-				'slug'		=> $tags->meta_id,
-				'html_url'	=> sprintf($url,$tags->meta_id),
-				'rss_url'		=> sprintf($f_url,$tags->meta_id)
+				'tag_id'		=> $tag->meta_id,
+				'name'		=> $tag->meta_id,
+				'count'		=> $tag->count,
+				'slug'		=> $tag->meta_id,
+				'html_url'	=> sprintf($url,$tag->meta_id),
+				'rss_url'		=> sprintf($f_url,$tag->meta_id)
 			);
 		}
 		return $res;
-	}
-	
-	private function newCategory($user,$pwd,$struct)
-	{
-		$this->setUser($user,$pwd);
-		$this->setBlog();
-		
-		if (empty($struct['name'])) {
-			throw new Exception('You mus give a category name.');
-		}
-		
-		$cur = $this->core->con->openCursor($this->core->prefix.'category');
-		$cur->cat_title = $struct['name'];
-		
-		if (!empty($struct['slug'])) {
-			$cur->cat_url = $struct['slug'];
-		}
-		if (!empty($struct['category_description'])) {
-			$cur->cat_desc = $struct['category_description'];
-			if (html::clean($cur->cat_desc) == $cur->cat_desc) {
-				$cur->cat_desc = '<p>'.$cur->cat_desc.'</p>';
-			}
-		}
-		
-		$parent = !empty($struct['category_parent']) ? (integer) $struct['category_parent'] : 0;
-		
-		$id = $this->core->blog->addCategory($cur,$parent);
-		$rs = $this->core->blog->getCategory($id);
-		return $rs->cat_url;
-	}
-	
-	private function deleteCategory($user,$pwd,$cat_id)
-	{
-		$this->setUser($user,$pwd);
-		$this->setBlog();
-		
-		$c = $this->core->blog->getCategories(array('cat_url' => $cat_id));
-		if ($c->isEmpty()) {
-			throw new Exception(__('This category does not exist.'));
-		}
-		$cat_id = $c->cat_id;
-		unset($c);
-		
-		$this->core->blog->delCategory((integer) $cat_id);
-		return true;
-	}
-	
-	private function searchCategories($user,$pwd,$category,$limit)
-	{
-		$this->setUser($user,$pwd);
-		$this->setBlog();
-		
-		$strReq = 'SELECT cat_id, cat_title, cat_url '.
-				'FROM '.$this->core->prefix.'category '.
-				"WHERE blog_id = '".$this->core->con->escape($this->core->blog->id)."' ".
-				"AND LOWER(cat_title) LIKE LOWER('%".$this->core->con->escape($category)."%') ".
-				($limit > 0 ? $this->core->con->limit($limit) : '');
-		
-		$rs = $this->core->con->select($strReq);
-		
-		$res = array();
-		while ($rs->fetch())
-		{
-			$res[] = array(
-				'category_id' => $rs->cat_url,
-				'category_name' => $rs->cat_url
-			);
-		}
-		return $res;
-	}
-	
-	private function countComments($user,$pwd,$post_id)
-	{
-		$this->setUser($user,$pwd);
-		$this->setBlog();
-		
-		$res = array(
-			'approved' => 0,
-			'awaiting_moderation' => 0,
-			'spam' => 0,
-			'total' => 0
-		);
-		$rs = $this->core->blog->getComments(array('post_id' => $post_id));
-		
-		while ($rs->fetch()) {
-			$res['total']++;
-			if ($rs->comment_status == 1) {
-				$res['approved']++;
-			} elseif ($rs->comment_status == -2) {
-				$res['spam']++;
-			} else {
-				$res['awaiting_moderation']++;
-			}
-		}
-		return $res;
-	}
-	
-	private function getComments($user,$pwd,$struct,$id=null)
-	{
-		$this->setUser($user,$pwd);
-		$this->setBlog();
-		
-		$params = array();
-		
-		if (!empty($struct['status'])) {
-			$params['comment_status'] = $this->translateWpCommentstatus($struct['status']);
-		}
-		
-		if (!empty($struct['post_id'])) {
-			$params['post_id'] = (integer) $struct['post_id'];
-		}
-		
-		if (isset($id)) {
-			$params['comment_id'] = $id;
-		}
-		
-		$offset = !empty($struct['offset']) ? (integer) $struct['offset'] : 0;
-		$limit = !empty($struct['number']) ? (integer) $struct['number'] : 10;
-		$params['limit'] = array($offset,$limit);
-		
-		$rs = $this->core->blog->getComments($params);
-		$res = array();
-		while ($rs->fetch())
-		{
-			$res[] = array(
-				'date_created_gmt'		=> new xmlrpcDate($rs->getTS()),
-				'user_id'				=> $rs->user_id,
-				'comment_id'			=> $rs->comment_id,
-				'parent'				=> 0,
-				'status'				=> $this->translateWpCommentstatus((integer) $rs->comment_status),
-				'content'				=> $rs->comment_content,
-				'link'				=> $rs->getPostURL().'#c'.$rs->comment_id,
-				'post_id'				=> $rs->post_id,
-				'post_title'			=> $rs->post_title,
-				'author'				=> $rs->comment_author,
-				'author_url'			=> $rs->comment_site,
-				'author_email'			=> $rs->comment_email,
-				'author_ip'			=> $rs->comment_ip
-			);
-		}
-		return $res;
-	}
-	
-	private function addComment($user,$pwd,$post_id,$struct)
-	{
-		$this->setUser($user,$pwd);
-		$this->setBlog();
-		
-		if (empty($struct['content'])) {
-			throw new Exception('Sorry, you cannot post an empty comment',401);
-		}
-		
-		if (is_numeric($post_id)) {
-			$p['post_id'] = $post_id;
-		} else {
-			$p['post_url'] = $post_id;
-		}
-		$rs = $this->core->blog->getPosts($p);
-		if ($rs->isEmpty()) {
-			throw new Exception('Sorry, no such post.',404);
-		}
-		
-		$cur = $this->core->con->openCursor($this->core->prefix.'comment');
-		
-		$cur->comment_author = $this->core->auth->getInfo('user_cn');
-		$cur->comment_email = $this->core->auth->getInfo('user_email');
-		$cur->comment_site = $this->core->auth->getInfo('user_url');
-		
-		$cur->comment_content = $struct['content'];
-		$cur->post_id = (integer) $post_id;
-		
-		$id = $this->core->blog->addComment($cur);
-		return $id;
-	}
-	
-	private function updComment($user,$pwd,$comment_id,$struct)
-	{
-		$this->setUser($user,$pwd);
-		$this->setBlog();
-		
-		$cur = $this->core->con->openCursor($this->core->prefix.'comment');
-		
-		if (isset($struct['status'])) {
-			$cur->comment_status = $this->translateWpCommentstatus($struct['status']);
-		}
-		
-		if (isset($struct['date_created_gmt'])) {
-			if ($struct['date_created_gmt'] instanceof xmlrpcDate) {
-				$cur->comment_dt = date('Y-m-d H:i:00',$struct['date_created_gmt']->getTimestamp());
-			} elseif (is_string($struct['date_created_gmt']) && @strtotime($struct['date_created_gmt'])) {
-				$cur->comment_dt = date('Y-m-d H:i:00',strtotime($struct['date_created_gmt']));
-			}
-			$cur->comment_dt = $struct['date_created_gmt'];
-		}
-		
-		if (isset($struct['content'])) {
-			$cur->comment_content = $struct['content'];
-		}
-		
-		if (isset($struct['author'])) {
-			$cur->comment_author = $struct['author'];
-		}
-		
-		if (isset($struct['author_url'])) {
-			$cur->comment_site = $struct['author_url'];
-		}
-		
-		if (isset($struct['author_email'])) {
-			$cur->comment_email = $struct['author_email'];
-		}
-		
-		$this->core->blog->updComment($comment_id,$cur);
-		return true;
-	}
-	
-	private function delComment($user,$pwd,$comment_id)
-	{
-		$this->setUser($user,$pwd);
-		$this->setBlog();
-		
-		$this->core->blog->delComment($comment_id);
-		return true;
 	}
 	
 	/* Blogger methods
@@ -1373,36 +881,11 @@ class dcXmlRpc extends xmlrpcIntrospectionServer
 		return $this->getRecentPosts($blogid,$username,$password,$numberOfPosts,'mw');
 	}
 	
-	public function mw_getCategories($blogid,$username,$password)
-	{
-		return $this->getCategories($blogid,$username,$password);
-	}
-	
-	public function mw_newMediaObject($blogid,$username,$password,$file)
-	{
-		return $this->newMediaObject($blogid,$username,$password,$file);
-	}
-	
 	/* MovableType methods
 	--------------------------------------------------- */
 	public function mt_getRecentPostTitles($blogid,$username,$password,$numberOfPosts)
 	{
 		return $this->getRecentPosts($blogid,$username,$password,$numberOfPosts,'mt');
-	}
-	
-	public function mt_getCategoryList($blogid,$username,$password)
-	{
-		return $this->getCategories($blogid,$username,$password);
-	}
-	
-	public function mt_getPostCategories($postid,$username,$password)
-	{
-		return $this->getPostCategories($postid,$username,$password);
-	}
-	
-	public function mt_setPostCategories($postid,$username,$password,$categories)
-	{
-		return $this->setPostCategories($postid,$username,$password,$categories);
 	}
 	
 	public function mt_publishPost($postid,$username,$password)
@@ -1474,34 +957,9 @@ class dcXmlRpc extends xmlrpcIntrospectionServer
 		return $this->getAuthors($username,$password);
 	}
 	
-	public function wp_getCategories($blogid,$username,$password)
-	{
-		return $this->getCategories($blogid,$username,$password);
-	}
-	
 	public function wp_getTags($blogid,$username,$password)
 	{
 		return $this->getTags($username,$password);
-	}
-	
-	public function wp_newCategory($blogid,$username,$password,$content)
-	{
-		return $this->newCategory($username,$password,$content);
-	}
-	
-	public function wp_deleteCategory($blogid,$username,$password,$categoryid)
-	{
-		return $this->deleteCategory($username,$password,$categoryid);
-	}
-	
-	public function wp_suggestCategories($blogid,$username,$password,$category,$max_results=0)
-	{
-		return $this->searchCategories($username,$password,$category,$max_results);
-	}
-	
-	public function wp_uploadFile($blogid,$username,$password,$file)
-	{
-		return $this->newMediaObject($blogid,$username,$password,$file);
 	}
 	
 	public function wp_getPostStatusList($blogid,$username,$password)
@@ -1581,52 +1039,5 @@ class dcXmlRpc extends xmlrpcIntrospectionServer
 		return $this->translateWpOptions($done);
 	}
 	
-	public function wp_getComment($blogid,$username,$password,$commentid)
-	{
-		$res = $this->getComments($username,$password,array(),$commentid);
-		
-		if (empty($res)) {
-			throw new Exception('Sorry, no such comment',404);
-		}
-		
-		return $res[0];
-	}
-	
-	public function wp_getCommentCount($blogid,$username,$password,$postid)
-	{
-		return $this->countComments($username,$password,$postid);
-	}
-	
-	public function wp_getComments($blogid,$username,$password,$struct)
-	{
-		return $this->getComments($username,$password,$struct);
-	}
-	
-	public function wp_deleteComment($blogid,$username,$password,$commentid)
-	{
-		return $this->delComment($username,$password,$commentid);
-	}
-	
-	public function wp_editComment($blogid,$username,$password,$commentid,$content)
-	{
-		return $this->updComment($username,$password,$commentid,$content);
-	}
-	
-	public function wp_newComment($blogid,$username,$password,$postid,$content)
-	{
-		return $this->addComment($username,$password,$postid,$content);
-	}
-	
-	public function wp_getCommentStatusList($blogid,$username,$password)
-	{
-		$this->setUser($username,$password);
-		$this->setBlog();
-		
-		return array(
-			'hold' => 'Unapproved',
-			'approve' => 'Approved',
-			'spam' => 'Spam'
-		);
-	}
 }
 ?>

@@ -31,11 +31,6 @@ class dcTemplate extends template
 		
 		$this->core =& $core;
 		
-		# Transitional tags
-		$this->addValue('EntryTrackbackCount',array($this,'EntryPingCount'));
-		$this->addValue('EntryTrackbackData',array($this,'EntryPingData'));
-		$this->addValue('EntryTrackbackLink',array($this,'EntryPingLink'));
-		
 		# l10n
 		$this->addValue('lang',array($this,'l10n'));
 		
@@ -72,54 +67,7 @@ class dcTemplate extends template
 		$this->addValue('BlogQmarkURL',array($this,'BlogQmarkURL'));
 		$this->addValue('BlogMetaRobots',array($this,'BlogMetaRobots'));
 		
-		# Categories
-		$this->addBlock('Categories',array($this,'Categories'));
-		$this->addBlock('CategoriesHeader',array($this,'CategoriesHeader'));
-		$this->addBlock('CategoriesFooter',array($this,'CategoriesFooter'));
-		$this->addBlock('CategoryIf',array($this,'CategoryIf'));
-		$this->addBlock('CategoryFirstChildren',array($this,'CategoryFirstChildren'));
-		$this->addBlock('CategoryParents',array($this,'CategoryParents'));
-		$this->addValue('CategoryFeedURL',array($this,'CategoryFeedURL'));
-		$this->addValue('CategoryURL',array($this,'CategoryURL'));
-		$this->addValue('CategoryShortURL',array($this,'CategoryShortURL'));
-		$this->addValue('CategoryDescription',array($this,'CategoryDescription'));
-		$this->addValue('CategoryTitle',array($this,'CategoryTitle'));
-		$this->addValue('CategoryEntriesCount',array($this,'CategoryEntriesCount'));
-		
-		# Comments
-		$this->addBlock('Comments',array($this,'Comments'));
-		$this->addValue('CommentAuthor',array($this,'CommentAuthor'));
-		$this->addValue('CommentAuthorDomain',array($this,'CommentAuthorDomain'));
-		$this->addValue('CommentAuthorLink',array($this,'CommentAuthorLink'));
-		$this->addValue('CommentAuthorMailMD5',array($this,'CommentAuthorMailMD5'));
-		$this->addValue('CommentAuthorURL',array($this,'CommentAuthorURL'));
-		$this->addValue('CommentContent',array($this,'CommentContent'));
-		$this->addValue('CommentDate',array($this,'CommentDate'));
-		$this->addValue('CommentTime',array($this,'CommentTime'));
-		$this->addValue('CommentEmail',array($this,'CommentEmail'));
-		$this->addValue('CommentEntryTitle',array($this,'CommentEntryTitle'));
-		$this->addValue('CommentFeedID',array($this,'CommentFeedID'));
-		$this->addValue('CommentID',array($this,'CommentID'));
-		$this->addBlock('CommentIf',array($this,'CommentIf'));
-		$this->addValue('CommentIfFirst',array($this,'CommentIfFirst'));
-		$this->addValue('CommentIfMe',array($this,'CommentIfMe'));
-		$this->addValue('CommentIfOdd',array($this,'CommentIfOdd'));
-		$this->addValue('CommentIP',array($this,'CommentIP'));
-		$this->addValue('CommentOrderNumber',array($this,'CommentOrderNumber'));
-		$this->addBlock('CommentsFooter',array($this,'CommentsFooter'));
-		$this->addBlock('CommentsHeader',array($this,'CommentsHeader'));
-		$this->addValue('CommentPostURL',array($this,'CommentPostURL'));
-		$this->addBlock('IfCommentAuthorEmail',array($this,'IfCommentAuthorEmail'));
-		$this->addValue('CommentHelp',array($this,'CommentHelp'));
-		
-		# Comment preview
-		$this->addBlock('IfCommentPreview',array($this,'IfCommentPreview'));
-		$this->addValue('CommentPreviewName',array($this,'CommentPreviewName'));
-		$this->addValue('CommentPreviewEmail',array($this,'CommentPreviewEmail'));
-		$this->addValue('CommentPreviewSite',array($this,'CommentPreviewSite'));
-		$this->addValue('CommentPreviewContent',array($this,'CommentPreviewContent'));
-		$this->addValue('CommentPreviewCheckRemember',array($this,'CommentPreviewCheckRemember'));
-		
+
 		# Entries
 		$this->addBlock('DateFooter',array($this,'DateFooter'));
 		$this->addBlock('DateHeader',array($this,'DateHeader'));
@@ -134,12 +82,6 @@ class dcTemplate extends template
 		$this->addValue('EntryAuthorLink',array($this,'EntryAuthorLink'));
 		$this->addValue('EntryAuthorURL',array($this,'EntryAuthorURL'));
 		$this->addValue('EntryBasename',array($this,'EntryBasename'));
-		$this->addValue('EntryCategory',array($this,'EntryCategory'));
-		$this->addBlock('EntryCategoriesBreadcrumb',array($this,'EntryCategoriesBreadcrumb'));
-		$this->addValue('EntryCategoryID',array($this,'EntryCategoryID'));
-		$this->addValue('EntryCategoryURL',array($this,'EntryCategoryURL'));
-		$this->addValue('EntryCategoryShortURL',array($this,'EntryCategoryShortURL'));
-		$this->addValue('EntryCommentCount',array($this,'EntryCommentCount'));
 		$this->addValue('EntryContent',array($this,'EntryContent'));
 		$this->addValue('EntryDate',array($this,'EntryDate'));
 		$this->addValue('EntryFeedID',array($this,'EntryFeedID'));
@@ -151,9 +93,6 @@ class dcTemplate extends template
 		$this->addValue('EntryIfSelected',array($this,'EntryIfSelected'));
 		$this->addValue('EntryLang',array($this,'EntryLang'));
 		$this->addBlock('EntryNext',array($this,'EntryNext'));
-		$this->addValue('EntryPingCount',array($this,'EntryPingCount'));
-		$this->addValue('EntryPingData',array($this,'EntryPingData'));
-		$this->addValue('EntryPingLink',array($this,'EntryPingLink'));
 		$this->addBlock('EntryPrevious',array($this,'EntryPrevious'));
 		$this->addValue('EntryTitle',array($this,'EntryTitle'));
 		$this->addValue('EntryTime',array($this,'EntryTime'));
@@ -174,31 +113,9 @@ class dcTemplate extends template
 		$this->addBlock('PaginationIf',array($this,'PaginationIf'));
 		$this->addValue('PaginationURL',array($this,'PaginationURL'));
 		
-		# Trackbacks
-		$this->addValue('PingBlogName',array($this,'PingBlogName'));
-		$this->addValue('PingContent',array($this,'PingContent'));
-		$this->addValue('PingDate',array($this,'PingDate'));
-		$this->addValue('PingEntryTitle',array($this,'PingEntryTitle'));
-		$this->addValue('PingFeedID',array($this,'PingFeedID'));
-		$this->addValue('PingID',array($this,'PingID'));
-		$this->addValue('PingIfFirst',array($this,'PingIfFirst'));
-		$this->addValue('PingIfOdd',array($this,'PingIfOdd'));
-		$this->addValue('PingIP',array($this,'PingIP'));
-		$this->addValue('PingNoFollow',array($this,'PingNoFollow'));
-		$this->addValue('PingOrderNumber',array($this,'PingOrderNumber'));
-		$this->addValue('PingPostURL',array($this,'PingPostURL'));
-		$this->addBlock('Pings',array($this,'Pings'));
-		$this->addBlock('PingsFooter',array($this,'PingsFooter'));
-		$this->addBlock('PingsHeader',array($this,'PingsHeader'));
-		$this->addValue('PingTime',array($this,'PingTime'));
-		$this->addValue('PingTitle',array($this,'PingTitle'));
-		$this->addValue('PingAuthorURL',array($this,'PingAuthorURL'));
-		
 		# System
 		$this->addValue('SysBehavior',array($this,'SysBehavior'));
 		$this->addBlock('SysIf',array($this,'SysIf'));
-		$this->addBlock('SysIfCommentPublished',array($this,'SysIfCommentPublished'));
-		$this->addBlock('SysIfCommentPending',array($this,'SysIfCommentPending'));
 		$this->addBlock('SysIfFormError',array($this,'SysIfFormError'));
 		$this->addValue('SysFeedSubtitle',array($this,'SysFeedSubtitle'));
 		$this->addValue('SysFormError',array($this,'SysFormError'));
@@ -434,13 +351,6 @@ class dcTemplate extends template
 				'author' => 'user_id',
 				'date' => 'post_dt',
 				'id' => 'post_id',
-				'comment' => 'nb_comment',
-				'trackback' => 'nb_trackback'
-			),
-			'comment' => array(
-				'author' => 'comment_author',
-				'date' => 'comment_dt',
-				'id' => 'comment_id'
 			)
 		);
 		
@@ -534,7 +444,6 @@ class dcTemplate extends template
 	<!ELEMENT tpl:Archives - - -- Archives dates loop -->
 	<!ATTLIST tpl:Archives
 	type		(day|month|year)	#IMPLIED	-- Get days, months or years, default to month --
-	category	CDATA			#IMPLIED  -- Get dates of given category --
 	no_context (1|0)			#IMPLIED  -- Override context information
 	order	(asc|desc)		#IMPLIED  -- Sort asc or desc --
 	post_type	CDATA			#IMPLIED  -- Get dates of given type of entries, default to post --
@@ -549,24 +458,12 @@ class dcTemplate extends template
 			$p .= "\$params['type'] = '".addslashes($attr['type'])."';\n";
 		}
 		
-		if (isset($attr['category'])) {
-			$p .= "\$params['cat_url'] = '".addslashes($attr['category'])."';\n";
-		}
-        
 		if (isset($attr['post_type'])) {
 			$p .= "\$params['post_type'] = '".addslashes($attr['post_type'])."';\n";
 		}
         
 		if (isset($attr['post_lang'])) {
 			$p .= "\$params['post_lang'] = '".addslashes($attr['post_lang'])."';\n";
-		}
-		
-		if (empty($attr['no_context']) && !isset($attr['category']))
-		{
-			$p .=
-			'if ($_ctx->exists("categories")) { '.
-				"\$params['cat_id'] = \$_ctx->categories->cat_id; ".
-			"}\n";
 		}
 		
 		$order = 'desc';
@@ -927,189 +824,7 @@ class dcTemplate extends template
 		return "<?php echo context::robotsPolicy(\$core->blog->settings->system->robots_policy,'".$robots."'); ?>";
 	}
 	
-	/* Categories ----------------------------------------- */
-	
-	/*dtd
-	<!ELEMENT tpl:Categories - - -- Categories loop -->
-	*/
-	public function Categories($attr,$content)
-	{
-		$p = "if (!isset(\$params)) \$params = array();\n";
-		
-		if (isset($attr['url'])) {
-			$p .= "\$params['cat_url'] = '".addslashes($attr['url'])."';\n";
-		}
-		
-		if (!empty($attr['post_type'])) {
-			$p .= "\$params['post_type'] = '".addslashes($attr['post_type'])."';\n";
-		}
-		
-		if (!empty($attr['level'])) {
-			$p .= "\$params['level'] = ".(integer) $attr['level'].";\n";
-		}
-		
-		$res = "<?php\n";
-		$res .= $p;
-		$res .= $this->core->callBehavior("templatePrepareParams", 
-			array("tag" => "Categories","method" => "blog::getCategories"), 
-			$attr,$content);
-		$res .= '$_ctx->categories = $core->blog->getCategories($params);'."\n";
-		$res .= "?>\n";
-		$res .= '<?php while ($_ctx->categories->fetch()) : ?>'.$content.'<?php endwhile; $_ctx->categories = null; unset($params); ?>';
-		
-		return $res;
-	}
-	
-	/*dtd
-	<!ELEMENT tpl:CategoriesHeader - - -- First Categories result container -->
-	*/
-	public function CategoriesHeader($attr,$content)
-	{
-		return
-		"<?php if (\$_ctx->categories->isStart()) : ?>".
-		$content.
-		"<?php endif; ?>";
-	}
-	
-	/*dtd
-	<!ELEMENT tpl:CategoriesFooter - - -- Last Categories result container -->
-	*/
-	public function CategoriesFooter($attr,$content)
-	{
-		return
-		"<?php if (\$_ctx->categories->isEnd()) : ?>".
-		$content.
-		"<?php endif; ?>";
-	}
-	
-	/*dtd
-	<!ELEMENT tpl:CategoryIf - - -- tests on current entry -->
-	<!ATTLIST tpl:CategoryIf
-	url		CDATA	#IMPLIED	-- category has given url
-	has_entries	(0|1)	#IMPLIED	-- post is the first post from list (value : 1) or not (value : 0)
-	has_description     (0|1)     #IMPLIED  -- category has description (value : 1) or not (value : 0) 
-	>
-	*/
-	public function CategoryIf($attr,$content)
-	{
-		$if = new ArrayObject();
-		$operator = isset($attr['operator']) ? $this->getOperator($attr['operator']) : '&&';
-		
-		if (isset($attr['url'])) {
-			$url = addslashes(trim($attr['url']));
-			if (substr($url,0,1) == '!') {
-				$url = substr($url,1);
-				$if[] = '($_ctx->categories->cat_url != "'.$url.'")';
-			} else {
-				$if[] = '($_ctx->categories->cat_url == "'.$url.'")';
-			}
-		}
-		
-		if (isset($attr['has_entries'])) {
-			$sign = (boolean) $attr['has_entries'] ? '>' : '==';
-			$if[] = '$_ctx->categories->nb_post '.$sign.' 0';
-		}
-		
-		if (isset($attr['has_description'])) { 
-			$sign = (boolean) $attr['has_description'] ? '!=' : '=='; 
-			$if[] = '$_ctx->categories->cat_desc '.$sign.' ""'; 
-		} 
-		
-		$this->core->callBehavior('tplIfConditions','CategoryIf',$attr,$content,$if);
-		
-		if (count($if) != 0) {
-			return '<?php if('.implode(' '.$operator.' ', (array) $if).') : ?>'.$content.'<?php endif; ?>';
-		} else {
-			return $content;
-		}
-	}
-	
-	/*dtd
-	<!ELEMENT tpl:CategoryFirstChildren - - -- Current category first children loop -->
-	*/
-	public function CategoryFirstChildren($attr,$content)
-	{
-		return
-		"<?php\n".
-		'$_ctx->categories = $core->blog->getCategoryFirstChildren($_ctx->categories->cat_id);'."\n".
-		'while ($_ctx->categories->fetch()) : ?>'.$content.'<?php endwhile; $_ctx->categories = null; ?>';
-	}
-	
-	/*dtd
-	<!ELEMENT tpl:CategoryParents - - -- Current category parents loop -->
-	*/
-	public function CategoryParents($attr,$content)
-	{
-		return
-		"<?php\n".
-		'$_ctx->categories = $core->blog->getCategoryParents($_ctx->categories->cat_id);'."\n".
-		'while ($_ctx->categories->fetch()) : ?>'.$content.'<?php endwhile; $_ctx->categories = null; ?>';
-	}
-	
-	/*dtd
-	<!ELEMENT tpl:CategoryFeedURL - O -- Category feed URL -->
-	<!ATTLIST tpl:CategoryFeedURL
-	type	(rss2|atom)	#IMPLIED	-- feed type (default : rss2)
-	>
-	*/
-	public function CategoryFeedURL($attr)
-	{
-		$type = !empty($attr['type']) ? $attr['type'] : 'atom';
-		
-		if (!preg_match('#^(rss2|atom)$#',$type)) {
-			$type = 'atom';
-		}
-		
-		$f = $this->getFilters($attr);
-		return '<?php echo '.sprintf($f,'$core->blog->url.$core->url->getURLFor("feed","category/".'.
-		'$_ctx->categories->cat_url."/'.$type.'")').'; ?>';
-	}
-	
-	/*dtd
-	<!ELEMENT tpl:CategoryURL - O -- Category URL (complete iabsolute URL, including blog URL) -->
-	*/
-	public function CategoryURL($attr)
-	{
-		$f = $this->getFilters($attr);
-		return '<?php echo '.sprintf($f,'$core->blog->url.$core->url->getURLFor("category",'.
-			'$_ctx->categories->cat_url)').'; ?>';
-	}
-	
-	/*dtd
-	<!ELEMENT tpl:CategoryShortURL - O -- Category short URL (relative URL, from /category/) -->
-	*/
-	public function CategoryShortURL($attr)
-	{
-		$f = $this->getFilters($attr);
-		return '<?php echo '.sprintf($f,'$_ctx->categories->cat_url').'; ?>';
-	}
-	
-	/*dtd
-	<!ELEMENT tpl:CategoryDescription - O -- Category description -->
-	*/
-	public function CategoryDescription($attr)
-	{
-		$f = $this->getFilters($attr);
-		return '<?php echo '.sprintf($f,'$_ctx->categories->cat_desc').'; ?>';
-	}
-	
-	/*dtd
-	<!ELEMENT tpl:CategoryTitle - O -- Category title -->
-	*/
-	public function CategoryTitle($attr)
-	{
-		$f = $this->getFilters($attr);
-		return '<?php echo '.sprintf($f,'$_ctx->categories->cat_title').'; ?>';
-	}
 
-	/*dtd
-	<!ELEMENT tpl:CategoryEntriesCount - O -- Category number of entries -->
-	*/
-	public function CategoryEntriesCount($attr)
-	{
-		$f = $this->getFilters($attr);
-		return '<?php echo '.sprintf($f,'$_ctx->categories->nb_post').'; ?>';
-	}
 	
 	/* Entries -------------------------------------------- */
 	/*dtd
@@ -1117,8 +832,6 @@ class dcTemplate extends template
 	<!ATTLIST tpl:Entries
 	lastn	CDATA	#IMPLIED	-- limit number of results to specified value
 	author	CDATA	#IMPLIED	-- get entries for a given user id
-	category	CDATA	#IMPLIED	-- get entries for specific categories only (multiple comma-separated categories can be specified. Use "!" as prefix to exclude a category)
-	no_category	CDATA	#IMPLIED	-- get entries without category
 	no_context (1|0)	#IMPLIED  -- Override context information
 	sortby	(title|selected|author|date|id)	#IMPLIED	-- specify entries sort criteria (default : date) (multiple comma-separated sortby can be specified. Use "?asc" or "?desc" as suffix to provide an order for each sorby)
 	order	(desc|asc)	#IMPLIED	-- specify entries order (default : desc)
@@ -1157,16 +870,6 @@ class dcTemplate extends template
 			$p .= "\$params['user_id'] = '".addslashes($attr['author'])."';\n";
 		}
 		
-		if (isset($attr['category'])) {
-			$p .= "\$params['cat_url'] = '".addslashes($attr['category'])."';\n";
-			$p .= "context::categoryPostParam(\$params);\n";
-		}
-		
-		if (isset($attr['no_category']) && $attr['no_category']) {
-			$p .= "@\$params['sql'] .= ' AND P.cat_id IS NULL ';\n";
-			$p .= "unset(\$params['cat_url']);\n";
-		}
-		
 		if (!empty($attr['type'])) {
 			$p .= "\$params['post_type'] = preg_split('/\s*,\s*/','".addslashes($attr['type'])."',-1,PREG_SPLIT_NO_EMPTY);\n";
 		}
@@ -1182,14 +885,6 @@ class dcTemplate extends template
 				$p .=
 				'if ($_ctx->exists("users")) { '.
 					"\$params['user_id'] = \$_ctx->users->user_id; ".
-				"}\n";
-			}
-			
-			if (!isset($attr['category']) && (!isset($attr['no_category']) || !$attr['no_category']))
-			{
-				$p .=
-				'if ($_ctx->exists("categories")) { '.
-					"\$params['cat_id'] = \$_ctx->categories->cat_id; ".
 				"}\n";
 			}
 			
@@ -1270,18 +965,12 @@ class dcTemplate extends template
 	<!ELEMENT tpl:EntryIf - - -- tests on current entry -->
 	<!ATTLIST tpl:EntryIf
 	type	CDATA	#IMPLIED	-- post has a given type (default: "post")
-	category	CDATA	#IMPLIED	-- post has a given category
 	first	(0|1)	#IMPLIED	-- post is the first post from list (value : 1) or not (value : 0)
 	odd	(0|1)	#IMPLIED	-- post is in an odd position (value : 1) or not (value : 0)
 	even	(0|1)	#IMPLIED	-- post is in an even position (value : 1) or not (value : 0)
 	extended	(0|1)	#IMPLIED	-- post has an excerpt (value : 1) or not (value : 0)
 	selected	(0|1)	#IMPLIED	-- post is selected (value : 1) or not (value : 0)
-	has_category	(0|1)	#IMPLIED	-- post has a category (value : 1) or not (value : 0)
 	has_attachment	(0|1)	#IMPLIED	-- post has attachments (value : 1) or not (value : 0) (see Attachment plugin for code)
-	comments_active	(0|1)	#IMPLIED	-- comments are active for this post (value : 1) or not (value : 0)
-	pings_active	(0|1)	#IMPLIED	-- trackbacks are active for this post (value : 1) or not (value : 0)
-	show_comments	(0|1)	#IMPLIED	-- there are comments for this post (value : 1) or not (value : 0)
-	show_pings	(0|1)	#IMPLIED	-- there are trackbacks for this post (value : 1) or not (value : 0)
 	republished	(0|1)	#IMPLIED	-- post has been updated since publication (value : 1) or not (value : 0)
 	operator	(and|or)	#IMPLIED	-- combination of conditions, if more than 1 specifiec (default: and)
 	url		CDATA	#IMPLIED	-- post has given url
@@ -1291,7 +980,6 @@ class dcTemplate extends template
 	{
 		$if = new ArrayObject();
 		$extended = null;
-		$hascategory = null;
 		
 		$operator = isset($attr['operator']) ? $this->getOperator($attr['operator']) : '&&';
         
@@ -1308,16 +996,6 @@ class dcTemplate extends template
 				$if[] = '$_ctx->posts->post_url != "'.addslashes($url).'"';
 			} else {
 				$if[] = '$_ctx->posts->post_url == "'.addslashes($url).'"';
-			}
-		}
-		
-		if (isset($attr['category'])) {
-			$category = addslashes(trim($attr['category']));
-			if (substr($category,0,1) == '!') {
-				$category = substr($category,1);
-				$if[] = '($_ctx->posts->cat_url != "'.$category.'")';
-			} else {
-				$if[] = '($_ctx->posts->cat_url == "'.$category.'")';
 			}
 		}
 		
@@ -1341,47 +1019,6 @@ class dcTemplate extends template
 			$if[] = $sign.'(boolean)$_ctx->posts->post_selected';
 		}
 		
-		if (isset($attr['has_category'])) {
-			$sign = (boolean) $attr['has_category'] ? '' : '!';
-			$if[] = $sign.'$_ctx->posts->cat_id';
-		}
-		
-		if (isset($attr['comments_active'])) {
-			$sign = (boolean) $attr['comments_active'] ? '' : '!';
-			$if[] = $sign.'$_ctx->posts->commentsActive()';
-		}
-		
-		if (isset($attr['pings_active'])) {
-			$sign = (boolean) $attr['pings_active'] ? '' : '!';
-			$if[] = $sign.'$_ctx->posts->trackbacksActive()';
-		}
-		
-		if (isset($attr['has_comment'])) {
-			$sign = (boolean) $attr['has_comment'] ? '' : '!';
-			$if[] = $sign.'$_ctx->posts->hasComments()';
-		}
-		
-		if (isset($attr['has_ping'])) {
-			$sign = (boolean) $attr['has_ping'] ? '' : '!';
-			$if[] = $sign.'$_ctx->posts->hasTrackbacks()';
-		}
-		
-		if (isset($attr['show_comments'])) {
-			if ((boolean) $attr['show_comments']) {
-				$if[] = '($_ctx->posts->hasComments() || $_ctx->posts->commentsActive())';
-			} else {
-				$if[] = '(!$_ctx->posts->hasComments() && !$_ctx->posts->commentsActive())';
-			}
-		}
-		
-		if (isset($attr['show_pings'])) {
-			if ((boolean) $attr['show_pings']) {
-				$if[] = '($_ctx->posts->hasTrackbacks() || $_ctx->posts->trackbacksActive())';
-			} else {
-				$if[] = '(!$_ctx->posts->hasTrackbacks() && !$_ctx->posts->trackbacksActive())';
-			}
-		}
-		
 		if (isset($attr['republished'])) {
 			$sign = (boolean) $attr['republished'] ? '' : '!';
 			$if[] = $sign.'(boolean)$_ctx->posts->isRepublished()';
@@ -1391,9 +1028,12 @@ class dcTemplate extends template
 		
 		if (count($if) != 0) {
 			return '<?php if('.implode(' '.$operator.' ', (array) $if).') : ?>'.$content.'<?php endif; ?>';
-		} else {
+		} /*
+		else {
+			// Nothing in if statement => do not display content...
 			return $content;
 		}
+		*/
 	}
 	
 	/*dtd
@@ -1558,54 +1198,6 @@ class dcTemplate extends template
 	}
 	
 	/*dtd
-	<!ELEMENT tpl:EntryCategory - O -- Entry category (full name) -->
-	*/
-	public function EntryCategory($attr)
-	{
-		$f = $this->getFilters($attr);
-		return '<?php echo '.sprintf($f,'$_ctx->posts->cat_title').'; ?>';
-	}
-	
-	/*dtd
-	<!ELEMENT tpl:EntryCategoriesBreadcrumb - - -- Current entry parents loop (without last one) -->
-	*/
-	public function EntryCategoriesBreadcrumb($attr,$content)
-	{
-		return
-		"<?php\n".
-		'$_ctx->categories = $core->blog->getCategoryParents($_ctx->posts->cat_id);'."\n".
-		'while ($_ctx->categories->fetch()) : ?>'.$content.'<?php endwhile; $_ctx->categories = null; ?>';
-	}
-	
-	/*dtd
-	<!ELEMENT tpl:EntryCategoryID - O -- Entry category ID -->
-	*/
-	public function EntryCategoryID($attr)
-	{
-		$f = $this->getFilters($attr);
-		return '<?php echo '.sprintf($f,'$_ctx->posts->cat_id').'; ?>';
-	}
-	
-	/*dtd
-	<!ELEMENT tpl:EntryCategoryURL - O -- Entry category URL -->
-	*/
-	public function EntryCategoryURL($attr)
-	{
-		$f = $this->getFilters($attr);
-		return '<?php echo '.sprintf($f,'$_ctx->posts->getCategoryURL()').'; ?>';
-	}
-	
-	/*dtd
-	<!ELEMENT tpl:EntryCategoryShortURL - O -- Entry category short URL (relative URL, from /category/) -->
-	*/
-	public function EntryCategoryShortURL($attr)
-	{
-		$f = $this->getFilters($attr);
-		return '<?php echo '.sprintf($f,'$_ctx->posts->cat_url').'; ?>';
-	}
-	
-	
-	/*dtd
 	<!ELEMENT tpl:EntryFeedID - O -- Entry feed ID -->
 	*/
 	public function EntryFeedID($attr)
@@ -1619,23 +1211,15 @@ class dcTemplate extends template
 	<!ATTLIST tpl:EntryAuthorEmail
 	size			(sq|t|s|m|o)	#IMPLIED	-- Image size to extract
 	class		CDATA		#IMPLIED	-- Class to add on image tag
-	with_category	(1|0)		#IMPLIED	-- Search in entry category description if present (default 0)
-	no_tag	(1|0)	#IMPLIED	-- Return image URL without HTML tag (default 0)
-	content_only	(1|0)		#IMPLIED	-- Search in content entry only, not in excerpt (default 0)
-	cat_only	(1|0)		#IMPLIED	-- Search in category description only (default 0)
+
 	>
 	*/
 	public function EntryFirstImage($attr)
 	{
 		$size = !empty($attr['size']) ? $attr['size'] : '';
 		$class = !empty($attr['class']) ? $attr['class'] : '';
-		$with_category = !empty($attr['with_category']) ? 1 : 0;
-		$no_tag = !empty($attr['no_tag']) ? 1 : 0;
-		$content_only = !empty($attr['content_only']) ? 1 : 0;
-		$cat_only = !empty($attr['cat_only']) ? 1 : 0;
 		
-		return "<?php echo context::EntryFirstImageHelper('".addslashes($size)."',".$with_category.",'".addslashes($class)."',".
-			$no_tag.",".$content_only.",".$cat_only."); ?>";
+		return "<?php echo context::EntryFirstImageHelper('".addslashes($size)."','".addslashes($class)."'); ?>";
 	}
 	
 	/*dtd
@@ -1664,7 +1248,6 @@ class dcTemplate extends template
 	/*dtd
 	<!ELEMENT tpl:EntryNext - - -- Next entry block -->
 	<!ATTLIST tpl:EntryNext
-	restrict_to_category	(0|1)	#IMPLIED	-- find next post in the same category (default: 0)
 	restrict_to_lang		(0|1)	#IMPLIED	-- find next post in the same language (default: 0)
 	>
 	*/
@@ -1800,97 +1383,6 @@ class dcTemplate extends template
 		"<?php if (\$_ctx->posts->isEnd()) : ?>".
 		$content.
 		"<?php endif; ?>";
-	}
-	
-	/*dtd
-	<!ELEMENT tpl:EntryCommentCount - O -- Number of comments for entry -->
-	<!ATTLIST tpl:EntryCommentCount
-	none		CDATA	#IMPLIED	-- text to display for "no comment" (default: no comment)
-	one		CDATA	#IMPLIED	-- text to display for "one comment" (default: one comment)
-	more		CDATA	#IMPLIED	-- text to display for "more comments" (default: %s comments, %s is replaced by the number of comment)
-	count_all	CDATA	#IMPLIED	-- count comments and trackbacks
-	>
-	*/
-	public function EntryCommentCount($attr)
-	{
-		$none = 'no comment';
-		$one = 'one comment';
-		$more = '%d comments';
-		
-		if (isset($attr['none'])) {
-			$none = addslashes($attr['none']);
-		}
-		if (isset($attr['one'])) {
-			$one = addslashes($attr['one']);
-		}
-		if (isset($attr['more'])) {
-			$more = addslashes($attr['more']);
-		}
-		
-		if (empty($attr['count_all'])) {
-			$operation = '$_ctx->posts->nb_comment';
-		} else {
-			$operation = '($_ctx->posts->nb_comment + $_ctx->posts->nb_trackback)';
-		}
-		
-		return
-		"<?php if (".$operation." == 0) {\n".
-		"  printf(__('".$none."'),".$operation.");\n".
-		"} elseif (".$operation." == 1) {\n".
-		"  printf(__('".$one."'),".$operation.");\n".
-		"} else {\n".
-		"  printf(__('".$more."'),".$operation.");\n".
-		"} ?>";
-	}
-	
-	/*dtd
-	<!ELEMENT tpl:EntryPingCount - O -- Number of trackbacks for entry -->
-	<!ATTLIST tpl:EntryPingCount
-	none	CDATA	#IMPLIED	-- text to display for "no ping" (default: no ping)
-	one	CDATA	#IMPLIED	-- text to display for "one ping" (default: one ping)
-	more	CDATA	#IMPLIED	-- text to display for "more pings" (default: %s trackbacks, %s is replaced by the number of pings)
-	>
-	*/
-	public function EntryPingCount($attr)
-	{
-		$none = 'no trackback';
-		$one = 'one trackback';
-		$more = '%d trackbacks';
-		
-		if (isset($attr['none'])) {
-			$none = addslashes($attr['none']);
-		}
-		if (isset($attr['one'])) {
-			$one = addslashes($attr['one']);
-		}
-		if (isset($attr['more'])) {
-			$more = addslashes($attr['more']);
-		}
-		
-		return
-		"<?php if (\$_ctx->posts->nb_trackback == 0) {\n".
-		"  printf(__('".$none."'),(integer) \$_ctx->posts->nb_trackback);\n".
-		"} elseif (\$_ctx->posts->nb_trackback == 1) {\n".
-		"  printf(__('".$one."'),(integer) \$_ctx->posts->nb_trackback);\n".
-		"} else {\n".
-		"  printf(__('".$more."'),(integer) \$_ctx->posts->nb_trackback);\n".
-		"} ?>";
-	}
-	
-	/*dtd
-	<!ELEMENT tpl:EntryPingData - O -- Display trackback RDF information -->
-	*/
-	public function EntryPingData($attr)
-	{
-		return "<?php if (\$_ctx->posts->trackbacksActive()) { echo \$_ctx->posts->getTrackbackData(); } ?>\n";
-	}
-	
-	/*dtd
-	<!ELEMENT tpl:EntryPingLink - O -- Entry trackback link -->
-	*/
-	public function EntryPingLink($attr)
-	{
-		return "<?php if (\$_ctx->posts->trackbacksActive()) { echo \$_ctx->posts->getTrackbackLink(); } ?>\n";
 	}
 	
 	/* Languages -------------------------------------- */
@@ -2080,725 +1572,6 @@ class dcTemplate extends template
 		return '<?php echo '.sprintf($f,"context::PaginationURL(".$offset.")").'; ?>';
 	}
 	
-	/* Comments --------------------------------------- */
-	/*dtd
-	<!ELEMENT tpl:Comments - - -- Comments container -->
-	<!ATTLIST tpl:Comments
-	with_pings	(0|1)	#IMPLIED	-- include trackbacks in request
-	lastn	CDATA	#IMPLIED	-- restrict the number of entries 
-	no_context (1|0)		#IMPLIED  -- Override context information
-	sortby	(title|selected|author|date|id)	#IMPLIED	-- specify comments sort criteria (default : date) (multiple comma-separated sortby can be specified. Use "?asc" or "?desc" as suffix to provide an order for each sorby)
-	order	(desc|asc)	#IMPLIED	-- result ordering (default: asc)
-	age		CDATA	#IMPLIED	-- retrieve comments by maximum age (ex: -2 days, last month, last week)
-	>
-	*/
-	public function Comments($attr,$content)
-	{
-		$p = "";
-		if (empty($attr['with_pings'])) {
-			$p .= "\$params['comment_trackback'] = false;\n";
-		}
-		
-		$lastn = 0;
-		if (isset($attr['lastn'])) {
-			$lastn = abs((integer) $attr['lastn'])+0;
-		}
-		
-		if ($lastn > 0) {
-			$p .= "\$params['limit'] = ".$lastn.";\n";
-		} else {
-			$p .= "if (\$_ctx->nb_comment_per_page !== null) { \$params['limit'] = \$_ctx->nb_comment_per_page; }\n";
-		}
-		
-		if (empty($attr['no_context']))
-		{
-			$p .=
-			"if (\$_ctx->posts !== null) { ".
-				"\$params['post_id'] = \$_ctx->posts->post_id; ".
-				"\$core->blog->withoutPassword(false);\n".
-			"}\n";
-			$p .=
-			'if ($_ctx->exists("categories")) { '.
-				"\$params['cat_id'] = \$_ctx->categories->cat_id; ".
-			"}\n";
-			
-			$p .=
-			'if ($_ctx->exists("langs")) { '.
-				"\$params['sql'] = \"AND P.post_lang = '\".\$core->blog->con->escape(\$_ctx->langs->post_lang).\"' \"; ".
-			"}\n";
-		}
-		
-		if (!isset($attr['order'])) {
-			$attr['order'] = 'asc';
-		}
-		
-		$p .= "\$params['order'] = '".$this->getSortByStr($attr,'comment')."';\n";
-		
-		if (isset($attr['no_content']) && $attr['no_content']) {
-			$p .= "\$params['no_content'] = true;\n";
-		}
-		
-		if (isset($attr['age'])) {
-			$age = $this->getAge($attr);
-			$p .= !empty($age) ? "@\$params['sql'] .= ' AND P.post_dt > \'".$age."\'';\n" : '';
-		}
-		
-		$res = "<?php\n";
-		$res .= $this->core->callBehavior("templatePrepareParams", 
-			array("tag" => "Comments","method" => "blog::getComments"), 
-			$attr,$content);
-		$res .= $p;
-		$res .= '$_ctx->comments = $core->blog->getComments($params); unset($params);'."\n";
-		$res .= "if (\$_ctx->posts !== null) { \$core->blog->withoutPassword(true);}\n";
-		
-		if (!empty($attr['with_pings'])) {
-			$res .= '$_ctx->pings = $_ctx->comments;'."\n";
-		}
-		
-		$res .= "?>\n";
-		
-		$res .=
-		'<?php while ($_ctx->comments->fetch()) : ?>'.$content.'<?php endwhile; $_ctx->comments = null; ?>';
-		
-		return $res;
-	}
-	
-	/*dtd
-	<!ELEMENT tpl:CommentAuthor - O -- Comment author -->
-	*/
-	public function CommentAuthor($attr)
-	{
-		$f = $this->getFilters($attr);
-		return '<?php echo '.sprintf($f,"\$_ctx->comments->comment_author").'; ?>';
-	}
-	
-	/*dtd
-	<!ELEMENT tpl:CommentAuthorDomain - O -- Comment author website domain -->
-	*/
-	public function CommentAuthorDomain($attr)
-	{
-		return '<?php echo preg_replace("#^http(?:s?)://(.+?)/.*$#msu",\'$1\',$_ctx->comments->comment_site); ?>';
-	}
-	
-	/*dtd
-	<!ELEMENT tpl:CommentAuthorLink - O -- Comment author link -->
-	*/
-	public function CommentAuthorLink($attr)
-	{
-		$f = $this->getFilters($attr);
-		return '<?php echo '.sprintf($f,'$_ctx->comments->getAuthorLink()').'; ?>';
-	}
-	
-	/*dtd
-	<!ELEMENT tpl:CommentAuthorMailMD5 - O -- Comment author email MD5 sum -->
-	*/
-	public function CommentAuthorMailMD5($attr)
-	{
-		return '<?php echo md5($_ctx->comments->comment_email) ; ?>';
-	}
-	
-	/*dtd
-	<!ELEMENT tpl:CommentAuthorURL - O -- Comment author URL -->
-	*/
-	public function CommentAuthorURL($attr)
-	{
-		$f = $this->getFilters($attr);
-		return '<?php echo '.sprintf($f,'$_ctx->comments->getAuthorURL()').'; ?>';
-	}
-	
-	/*dtd
-	<!ELEMENT tpl:CommentContent - O --  Comment content -->
-	<!ATTLIST tpl:CommentContent
-	absolute_urls	(0|1)	#IMPLIED	-- convert URLS to absolute urls
-	>
-	*/
-	public function CommentContent($attr)
-	{
-		$urls = '0';
-		if (!empty($attr['absolute_urls'])) {
-			$urls = '1';
-		}
-		
-		$f = $this->getFilters($attr);
-		return '<?php echo '.sprintf($f,'$_ctx->comments->getContent('.$urls.')').'; ?>';
-	}
-	
-	/*dtd
-	<!ELEMENT tpl:CommentDate - O -- Comment date -->
-	<!ATTLIST tpl:CommentDate
-	format	CDATA	#IMPLIED	-- date format (encoded in dc:str by default if iso8601 or rfc822 not specified)
-	iso8601	CDATA	#IMPLIED	-- if set, tells that date format is ISO 8601
-	rfc822	CDATA	#IMPLIED	-- if set, tells that date format is RFC 822
-	upddt	CDATA	#IMPLIED	-- if set, uses the comment update time
-	>
-	*/
-	public function CommentDate($attr)
-	{
-		$format = '';
-		if (!empty($attr['format'])) {
-			$format = addslashes($attr['format']);
-		}
-		
-		$iso8601 = !empty($attr['iso8601']);
-		$rfc822 = !empty($attr['rfc822']);
-		$type = (!empty($attr['upddt']) ? 'upddt' : '');
-		
-		$f = $this->getFilters($attr);
-		
-		if ($rfc822) {
-			return '<?php echo '.sprintf($f,"\$_ctx->comments->getRFC822Date('".$type."')").'; ?>';
-		} elseif ($iso8601) {
-			return '<?php echo '.sprintf($f,"\$_ctx->comments->getISO8601Date('".$type."')").'; ?>';
-		} else {
-			return '<?php echo '.sprintf($f,"\$_ctx->comments->getDate('".$format."','".$type."')").'; ?>';
-		}
-	}
-	
-	/*dtd
-	<!ELEMENT tpl:CommentTime - O -- Comment date -->
-	<!ATTLIST tpl:CommentTime
-	format	CDATA	#IMPLIED	-- time format 
-	upddt	CDATA	#IMPLIED	-- if set, uses the comment update time
-	>
-	*/
-	public function CommentTime($attr)
-	{
-		$format = '';
-		if (!empty($attr['format'])) {
-			$format = addslashes($attr['format']);
-		}
-		$type = (!empty($attr['upddt']) ? 'upddt' : '');
-        
-		$f = $this->getFilters($attr);
-		return '<?php echo '.sprintf($f,"\$_ctx->comments->getTime('".$format."','".$type."')").'; ?>';
-	}
-	
-	/*dtd
-	<!ELEMENT tpl:CommentEmail - O -- Comment author email -->
-	<!ATTLIST tpl:CommentEmail
-	spam_protected	(0|1)	#IMPLIED	-- protect email from spam (default: 1)
-	>
-	*/
-	public function CommentEmail($attr)
-	{
-		$p = 'true';
-		if (isset($attr['spam_protected']) && !$attr['spam_protected']) {
-			$p = 'false';
-		}
-		
-		$f = $this->getFilters($attr);
-		return '<?php echo '.sprintf($f,"\$_ctx->comments->getEmail(".$p.")").'; ?>';
-	}
-	
-	/*dtd
-	<!ELEMENT tpl:CommentEntryTitle - O -- Title of the comment entry -->
-	*/
-	public function CommentEntryTitle($attr)
-	{
-		$f = $this->getFilters($attr);
-		return '<?php echo '.sprintf($f,'$_ctx->comments->post_title').'; ?>';
-	}
-	
-	/*dtd
-	<!ELEMENT tpl:CommentFeedID - O -- Comment feed ID -->
-	*/
-	public function CommentFeedID($attr)
-	{
-		$f = $this->getFilters($attr);
-		return '<?php echo '.sprintf($f,'$_ctx->comments->getFeedID()').'; ?>';
-	}
-	
-	/*dtd
-	<!ELEMENT tpl:CommentID - O -- Comment ID -->
-	*/
-	public function CommentID($attr)
-	{
-		return '<?php echo $_ctx->comments->comment_id; ?>';
-	}
-    
-	/*dtd
-	<!ELEMENT tpl:CommentIf - - -- test container for comments -->
-	<!ATTLIST tpl:CommentIf
-	is_ping	(0|1)	#IMPLIED	-- test if comment is a trackback (value : 1) or not (value : 0)
-	>
-	*/
-	public function CommentIf($attr,$content)
-	{
-		$if = array();
-		$is_ping = null;
-		
-		if (isset($attr['is_ping'])) {
-			$sign = (boolean) $attr['is_ping'] ? '' : '!';
-			$if[] = $sign.'$_ctx->comments->comment_trackback';
-		}
-		
-		$this->core->callBehavior('tplIfConditions','CommentIf',$attr,$content,$if);
-		
-		if (count($if) != 0) {
-			return '<?php if('.implode(' && ', (array) $if).') : ?>'.$content.'<?php endif; ?>';
-		} else {
-			return $content;
-		}
-	}
-	
-	/*dtd
-	<!ELEMENT tpl:CommentIfFirst - O -- displays value if comment is the first one -->
-	<!ATTLIST tpl:CommentIfFirst
-	return	CDATA	#IMPLIED	-- value to display in case of success (default: first)
-	>
-	*/
-	public function CommentIfFirst($attr)
-	{
-		$ret = isset($attr['return']) ? $attr['return'] : 'first';
-		$ret = html::escapeHTML($ret);
-		
-		return
-		'<?php if ($_ctx->comments->index() == 0) { '.
-		"echo '".addslashes($ret)."'; } ?>";
-	}
-	
-	/*dtd
-	<!ELEMENT tpl:CommentIfMe - O -- displays value if comment is the from the entry author -->
-	<!ATTLIST tpl:CommentIfMe
-	return	CDATA	#IMPLIED	-- value to display in case of success (default: me)
-	>
-	*/
-	public function CommentIfMe($attr)
-	{
-		$ret = isset($attr['return']) ? $attr['return'] : 'me';
-		$ret = html::escapeHTML($ret);
-		
-		return
-		'<?php if ($_ctx->comments->isMe()) { '.
-		"echo '".addslashes($ret)."'; } ?>";
-	}
-	
-	/*dtd
-	<!ELEMENT tpl:CommentIfOdd - O -- displays value if comment is  at an odd position -->
-	<!ATTLIST tpl:CommentIfOdd
-	return	CDATA	#IMPLIED	-- value to display in case of success (default: odd)
-	>
-	*/
-	public function CommentIfOdd($attr)
-	{
-		$ret = isset($attr['return']) ? $attr['return'] : 'odd';
-		$ret = html::escapeHTML($ret);
-		
-		return
-		'<?php if (($_ctx->comments->index()+1)%2) { '.
-		"echo '".addslashes($ret)."'; } ?>";
-	}
-	
-	/*dtd
-	<!ELEMENT tpl:CommentIP - O -- Comment author IP -->
-	*/
-	public function CommentIP($attr)
-	{
-		return '<?php echo $_ctx->comments->comment_ip; ?>';
-	}
-	
-	/*dtd
-	<!ELEMENT tpl:CommentOrderNumber - O -- Comment order in page -->
-	*/
-	public function CommentOrderNumber($attr)
-	{
-		return '<?php echo $_ctx->comments->index()+1; ?>';
-	}
-	
-	/*dtd
-	<!ELEMENT tpl:CommentsFooter - - -- Last comments result container -->
-	*/
-	public function CommentsFooter($attr,$content)
-	{
-		return
-		"<?php if (\$_ctx->comments->isEnd()) : ?>".
-		$content.
-		"<?php endif; ?>";
-	}
-	
-	/*dtd
-	<!ELEMENT tpl:CommentsHeader - - -- First comments result container -->
-	*/
-	public function CommentsHeader($attr,$content)
-	{
-		return
-		"<?php if (\$_ctx->comments->isStart()) : ?>".
-		$content.
-		"<?php endif; ?>";
-	}
-	
-	/*dtd
-	<!ELEMENT tpl:CommentPostURL - O -- Comment Entry URL -->
-	*/
-	public function CommentPostURL($attr)
-	{
-		$f = $this->getFilters($attr);
-		return '<?php echo '.sprintf($f,'$_ctx->comments->getPostURL()').'; ?>';
-	}
-	
-	/*dtd
-	<!ELEMENT tpl:IfCommentAuthorEmail - - -- Container displayed if comment author email is set -->
-	*/
-	public function IfCommentAuthorEmail($attr,$content)
-	{
-		return
-		"<?php if (\$_ctx->comments->comment_email) : ?>".
-		$content.
-		"<?php endif; ?>";
-	}
-	
-	/*dtd
-	<!ELEMENT tpl:CommentHelp - 0 -- Comment syntax mini help -->
-	*/
-	public function CommentHelp($attr,$content)
-	{
-		return
-		"<?php if (\$core->blog->settings->system->wiki_comments) {\n".
-		"  echo __('Comments can be formatted using a simple wiki syntax.');\n".
-		"} else {\n".
-		"  echo __('HTML code is displayed as text and web addresses are automatically converted.');\n".
-		"} ?>";
-	}
-	
-	/* Comment preview -------------------------------- */
-	/*dtd
-	<!ELEMENT tpl:IfCommentPreview - - -- Container displayed if comment is being previewed -->
-	*/
-	public function IfCommentPreview($attr,$content)
-	{
-		return
-		'<?php if ($_ctx->comment_preview !== null && $_ctx->comment_preview["preview"]) : ?>'.
-		$content.
-		'<?php endif; ?>';
-	}
-	
-	/*dtd
-	<!ELEMENT tpl:CommentPreviewName - O -- Author name for the previewed comment -->
-	*/
-	public function CommentPreviewName($attr)
-	{
-		$f = $this->getFilters($attr);
-		return '<?php echo '.sprintf($f,'$_ctx->comment_preview["name"]').'; ?>';
-	}
-	
-	/*dtd
-	<!ELEMENT tpl:CommentPreviewEmail - O -- Author email for the previewed comment -->
-	*/
-	public function CommentPreviewEmail($attr)
-	{
-		$f = $this->getFilters($attr);
-		return '<?php echo '.sprintf($f,'$_ctx->comment_preview["mail"]').'; ?>';
-	}
-	
-	/*dtd
-	<!ELEMENT tpl:CommentPreviewSite - O -- Author site for the previewed comment -->
-	*/
-	public function CommentPreviewSite($attr)
-	{
-		$f = $this->getFilters($attr);
-		return '<?php echo '.sprintf($f,'$_ctx->comment_preview["site"]').'; ?>';
-	}
-	
-	/*dtd
-	<!ELEMENT tpl:CommentPreviewContent - O -- Content of the previewed comment -->
-	<!ATTLIST tpl:CommentPreviewContent
-	raw	(0|1)	#IMPLIED	-- display comment in raw content
-	>
-	*/
-	public function CommentPreviewContent($attr)
-	{
-		$f = $this->getFilters($attr);
-		
-		if (!empty($attr['raw'])) {
-			$co = '$_ctx->comment_preview["rawcontent"]';
-		} else {
-			$co = '$_ctx->comment_preview["content"]';
-		}
-		
-		return '<?php echo '.sprintf($f,$co).'; ?>';
-	}
-	
-	/*dtd
-	<!ELEMENT tpl:CommentPreviewCheckRemember - O -- checkbox attribute for "remember me" (same value as before preview) -->
-	*/
-	public function CommentPreviewCheckRemember($attr)
-	{
-		return
-		"<?php if (\$_ctx->comment_preview['remember']) { echo ' checked=\"checked\"'; } ?>";
-	}
-	
-	/* Trackbacks ------------------------------------- */
-	/*dtd
-	<!ELEMENT tpl:PingBlogName - O -- Trackback blog name -->
-	*/
-	public function PingBlogName($attr)
-	{
-		$f = $this->getFilters($attr);
-		return '<?php echo '.sprintf($f,'$_ctx->pings->comment_author').'; ?>';
-	}
-	
-	/*dtd
-	<!ELEMENT tpl:PingContent - O -- Trackback content -->
-	*/
-	public function PingContent($attr)
-	{
-		$f = $this->getFilters($attr);
-		return '<?php echo '.sprintf($f,'$_ctx->pings->getTrackbackContent()').'; ?>';
-	}
-	
-	/*dtd
-	<!ELEMENT tpl:PingDate - O -- Trackback date -->
-	<!ATTLIST tpl:PingDate
-	format	CDATA	#IMPLIED	-- date format (encoded in dc:str by default if iso8601 or rfc822 not specified)
-	iso8601	CDATA	#IMPLIED	-- if set, tells that date format is ISO 8601
-	rfc822	CDATA	#IMPLIED	-- if set, tells that date format is RFC 822
-	upddt	CDATA	#IMPLIED	-- if set, uses the comment update time
-	>
-	*/
-	public function PingDate($attr,$type='')
-	{
-		$format = '';
-		if (!empty($attr['format'])) {
-			$format = addslashes($attr['format']);
-		}
-		
-		$iso8601 = !empty($attr['iso8601']);
-		$rfc822 = !empty($attr['rfc822']);
-		$type = (!empty($attr['upddt']) ? 'upddt' : '');
-		
-		$f = $this->getFilters($attr);
-		
-		if ($rfc822) {
-			return '<?php echo '.sprintf($f,"\$_ctx->pings->getRFC822Date('".$type."')").'; ?>';
-		} elseif ($iso8601) {
-			return '<?php echo '.sprintf($f,"\$_ctx->pings->getISO8601Date('".$type."')").'; ?>';
-		} else {
-			return '<?php echo '.sprintf($f,"\$_ctx->pings->getDate('".$format."','".$type."')").'; ?>';
-		}
-	}
-	
-	/*dtd
-	<!ELEMENT tpl:PingTime - O -- Trackback date -->
-	<!ATTLIST tpl:PingTime
-	format	CDATA	#IMPLIED	-- time format 
-	upddt	CDATA	#IMPLIED	-- if set, uses the comment update time
-	>
-	*/
-	public function PingTime($attr)
-	{
-		$format = '';
-		if (!empty($attr['format'])) {
-			$format = addslashes($attr['format']);
-		}
-		$type = (!empty($attr['upddt']) ? 'upddt' : '');
-		
-		$f = $this->getFilters($attr);
-		return '<?php echo '.sprintf($f,"\$_ctx->pings->getTime('".$format."','".$type."')").'; ?>';
-	}
-	
-	/*dtd
-	<!ELEMENT tpl:PingEntryTitle - O -- Trackback entry title -->
-	*/
-	public function PingEntryTitle($attr)
-	{
-		$f = $this->getFilters($attr);
-		return '<?php echo '.sprintf($f,'$_ctx->pings->post_title').'; ?>';
-	}
-	
-	/*dtd
-	<!ELEMENT tpl:PingFeedID - O -- Trackback feed ID -->
-	*/
-	public function PingFeedID($attr)
-	{
-		$f = $this->getFilters($attr);
-		return '<?php echo '.sprintf($f,'$_ctx->pings->getFeedID()').'; ?>';
-	}
-	
-	/*dtd
-	<!ELEMENT tpl:PingID - O -- Trackback ID -->
-	*/
-	public function PingID($attr)
-	{
-		return '<?php echo $_ctx->pings->comment_id; ?>';
-	}
-	
-	/*dtd
-	<!ELEMENT tpl:PingIfFirst - O -- displays value if trackback is the first one -->
-	<!ATTLIST tpl:PingIfFirst
-	return	CDATA	#IMPLIED	-- value to display in case of success (default: first)
-	>
-	*/
-	public function PingIfFirst($attr)
-	{
-		$ret = isset($attr['return']) ? $attr['return'] : 'first';
-		$ret = html::escapeHTML($ret);
-		
-		return
-		'<?php if ($_ctx->pings->index() == 0) { '.
-		"echo '".addslashes($ret)."'; } ?>";
-	}
-	
-	/*dtd
-	<!ELEMENT tpl:PingIfOdd - O -- displays value if trackback is  at an odd position -->
-	<!ATTLIST tpl:PingIfOdd
-	return	CDATA	#IMPLIED	-- value to display in case of success (default: odd)
-	>
-	*/
-	public function PingIfOdd($attr)
-	{
-		$ret = isset($attr['return']) ? $attr['return'] : 'odd';
-		$ret = html::escapeHTML($ret);
-		
-		return
-		'<?php if (($_ctx->pings->index()+1)%2) { '.
-		"echo '".addslashes($ret)."'; } ?>";
-	}
-	
-	/*dtd
-	<!ELEMENT tpl:PingIP - O -- Trackback author IP -->
-	*/
-	public function PingIP($attr)
-	{
-		return '<?php echo $_ctx->pings->comment_ip; ?>';
-	}
-	
-	/*dtd
-	<!ELEMENT tpl:PingNoFollow - O -- displays 'rel="nofollow"' if set in blog -->
-	*/
-	public function PingNoFollow($attr)
-	{
-		return
-		'<?php if($core->blog->settings->system->comments_nofollow) { '.
-		'echo \' rel="nofollow"\';'.
-		'} ?>';
-	}
-	
-	/*dtd
-	<!ELEMENT tpl:PingOrderNumber - O -- Trackback order in page -->
-	*/
-	public function PingOrderNumber($attr)
-	{
-		return '<?php echo $_ctx->pings->index()+1; ?>';
-	}
-	
-	/*dtd
-	<!ELEMENT tpl:PingPostURL - O -- Trackback Entry URL -->
-	*/
-	public function PingPostURL($attr)
-	{
-		$f = $this->getFilters($attr);
-		return '<?php echo '.sprintf($f,'$_ctx->pings->getPostURL()').'; ?>';
-	}
-	
-	/*dtd
-	<!ELEMENT tpl:Pings - - -- Trackbacks container -->
-	<!ATTLIST tpl:Pings
-	with_pings	(0|1)	#IMPLIED	-- include trackbacks in request
-	lastn	CDATA		#IMPLIED	-- restrict the number of entries 
-	no_context (1|0)		#IMPLIED  -- Override context information
-	order	(desc|asc)	#IMPLIED	-- result ordering (default: asc)
-	>
-	*/
-	public function Pings($attr,$content)
-	{
-		$p =
-		"if (\$_ctx->posts !== null) { ".
-			"\$params['post_id'] = \$_ctx->posts->post_id; ".
-			"\$core->blog->withoutPassword(false);\n".
-		"}\n";
-		
-		$p .= "\$params['comment_trackback'] = true;\n";
-		
-		$lastn = 0;
-		if (isset($attr['lastn'])) {
-			$lastn = abs((integer) $attr['lastn'])+0;
-		}
-		
-		if ($lastn > 0) {
-			$p .= "\$params['limit'] = ".$lastn.";\n";
-		} else {
-			$p .= "if (\$_ctx->nb_comment_per_page !== null) { \$params['limit'] = \$_ctx->nb_comment_per_page; }\n";
-		}
-		
-		if (empty($attr['no_context']))
-		{
-			$p .=
-			'if ($_ctx->exists("categories")) { '.
-				"\$params['cat_id'] = \$_ctx->categories->cat_id; ".
-			"}\n";
-			
-			$p .=
-			'if ($_ctx->exists("langs")) { '.
-				"\$params['sql'] = \"AND P.post_lang = '\".\$core->blog->con->escape(\$_ctx->langs->post_lang).\"' \"; ".
-			"}\n";
-		}
-		
-		$order = 'asc';
-		if (isset($attr['order']) && preg_match('/^(desc|asc)$/i',$attr['order'])) {
-			$order = $attr['order'];
-		}
-		
-		$p .= "\$params['order'] = 'comment_dt ".$order."';\n";
-		
-		if (isset($attr['no_content']) && $attr['no_content']) {
-			$p .= "\$params['no_content'] = true;\n";
-		}
-		
-		$res = "<?php\n";
-		$res .= $p;
-		$res .= $this->core->callBehavior("templatePrepareParams", 
-			array("tag" => "Pings","method" => "blog::getComments"), 
-			$attr,$content);
-		$res .= '$_ctx->pings = $core->blog->getComments($params); unset($params);'."\n";
-		$res .= "if (\$_ctx->posts !== null) { \$core->blog->withoutPassword(true);}\n";
-		$res .= "?>\n";
-		
-		$res .=
-		'<?php while ($_ctx->pings->fetch()) : ?>'.$content.'<?php endwhile; $_ctx->pings = null; ?>';
-		
-		return $res;
-	}
-	
-	/*dtd
-	<!ELEMENT tpl:PingsFooter - - -- Last trackbacks result container -->
-	*/
-	public function PingsFooter($attr,$content)
-	{
-		return
-		"<?php if (\$_ctx->pings->isEnd()) : ?>".
-		$content.
-		"<?php endif; ?>";
-	}
-	
-	/*dtd
-	<!ELEMENT tpl:PingsHeader - - -- First trackbacks result container -->
-	*/
-	public function PingsHeader($attr,$content)
-	{
-		return
-		"<?php if (\$_ctx->pings->isStart()) : ?>".
-		$content.
-		"<?php endif; ?>";
-	}
-	
-	/*dtd
-	<!ELEMENT tpl:PingTitle - O -- Trackback title -->
-	*/
-	public function PingTitle($attr)
-	{
-		$f = $this->getFilters($attr);
-		return '<?php echo '.sprintf($f,'$_ctx->pings->getTrackbackTitle()').'; ?>';
-	}
-	
-	/*dtd
-	<!ELEMENT tpl:PingAuthorURL - O -- Trackback author URL -->
-	*/
-	public function PingAuthorURL($attr)
-	{
-		$f = $this->getFilters($attr);
-		return '<?php echo '.sprintf($f,'$_ctx->pings->getAuthorURL()').'; ?>';
-	}
-	
 	# System
 	/*dtd
 	<!ELEMENT tpl:SysBehavior - O -- Call a given behavior -->
@@ -2822,7 +1595,6 @@ class dcTemplate extends template
 	/*dtd
 	<!ELEMENT tpl:SysIf - - -- System settings tester container -->
 	<!ATTLIST tpl:SysIf
-	categories		(0|1)	#IMPLIED	-- test if categories are set in current context (value : 1) or not (value : 0)
 	posts			(0|1)	#IMPLIED	-- test if posts are set in current context (value : 1) or not (value : 0)
 	blog_lang			CDATA	#IMPLIED	-- tests if blog language is the one given in parameter
 	current_tpl		CDATA	#IMPLIED	-- tests if current template is the one given in paramater
@@ -2830,9 +1602,6 @@ class dcTemplate extends template
 	has_tpl			CDATA     #IMPLIED  -- tests if a named template exists
 	has_tag			CDATA     #IMPLIED  -- tests if a named template block or value exists
 	blog_id			CDATA     #IMPLIED  -- tests if current blog ID is the one given in parameter
-	comments_active	(0|1)	#IMPLIED	-- test if comments are enabled blog-wide 
-	pings_active		(0|1)	#IMPLIED	-- test if trackbacks are enabled blog-wide 
-	wiki_comments		(0|1)	#IMPLIED	-- test if wiki syntax is enabled for comments
 	operator			(and|or)	#IMPLIED	-- combination of conditions, if more than 1 specifiec (default: and)
 	>
 	*/
@@ -2842,11 +1611,6 @@ class dcTemplate extends template
 		$is_ping = null;
 		
 		$operator = isset($attr['operator']) ? $this->getOperator($attr['operator']) : '&&';
-		
-		if (isset($attr['categories'])) {
-			$sign = (boolean) $attr['categories'] ? '!' : '=';
-			$if[] = '$_ctx->categories '.$sign.'== null';
-		}
 		
 		if (isset($attr['posts'])) {
 			$sign = (boolean) $attr['posts'] ? '!' : '=';
@@ -2902,21 +1666,6 @@ class dcTemplate extends template
 			$if[] = $sign."(\$core->blog->id == '".addslashes($attr['blog_id'])."')";
 		}
 		
-		if (isset($attr['comments_active'])) {
-			$sign = (boolean) $attr['comments_active'] ? '' : '!';
-			$if[] = $sign.'$core->blog->settings->system->allow_comments';
-		}
-		
-		if (isset($attr['pings_active'])) {
-			$sign = (boolean) $attr['pings_active'] ? '' : '!';
-			$if[] = $sign.'$core->blog->settings->system->allow_trackbacks';
-		}
-        
-		if (isset($attr['wiki_comments'])) {
-			$sign = (boolean) $attr['wiki_comments'] ? '' : '!';
-			$if[] = $sign.'$core->blog->settings->system->wiki_comments';
-		}
-		
 		if (isset($attr['search_count']) &&
 			preg_match('/^((=|!|&gt;|&lt;)=|(&gt;|&lt;))\s*[0-9]+$/',trim($attr['search_count']))) {
 			$if[] = '(isset($_search_count) && $_search_count '.html::decodeEntities($attr['search_count']).')';
@@ -2929,28 +1678,6 @@ class dcTemplate extends template
 		} else {
 			return $content;
 		}
-	}
-	
-	/*dtd
-	<!ELEMENT tpl:SysIfCommentPublished - - -- Container displayed if comment has been published -->
-	*/
-	public function SysIfCommentPublished($attr,$content)
-	{
-		return
-		'<?php if (!empty($_GET[\'pub\'])) : ?>'.
-		$content.
-		'<?php endif; ?>';
-	}
-	
-	/*dtd
-	<!ELEMENT tpl:SysIfCommentPending - - -- Container displayed if comment is pending after submission -->
-	*/
-	public function SysIfCommentPending($attr,$content)
-	{
-		return
-		'<?php if (isset($_GET[\'pub\']) && $_GET[\'pub\'] == 0) : ?>'.
-		$content.
-		'<?php endif; ?>';
 	}
 	
 	/*dtd

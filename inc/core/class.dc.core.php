@@ -34,8 +34,6 @@ class dcCore
 	public $url;		///< <b>urlHandler</b>		urlHandler object
 	public $wiki2xhtml;	///< <b>wiki2xhtml</b>		wiki2xhtml object
 	public $plugins;	///< <b>dcModules</b>		dcModules object
-	public $media;		///< <b>dcMedia</b>			dcMedia object
-	public $postmedia;	///< <b>dcPostMedia</b>		dcPostMedia object
 	public $rest;		///< <b>dcRestServer</b>	dcRestServer object
 	public $log;		///< <b>dcLog</b>			dcLog object
 	
@@ -372,10 +370,10 @@ class dcCore
 		if (!is_array($this->versions))
 		{
 			$strReq = 'SELECT module, version FROM '.$this->prefix.'version';
-			$rs = $this->con->select($strReq);
+			$modules = $this->con->select($strReq);
 			
-			while ($rs->fetch()) {
-				$this->versions[$rs->module] = $rs->version;
+			foreach ($modules as $m) {
+				$this->versions[$m->module] = $m->version;
 			}
 		}
 		
@@ -507,9 +505,9 @@ class dcCore
 			$strReq .= $this->con->limit($params['limit']);
 		}
 		
-		$rs = $this->con->select($strReq);
-		$rs->extend('rsExtUser');
-		return $rs;
+		$users = $this->con->select($strReq);
+		$users->extend('rsExtUser');
+		return $users;
 	}
 	
 	/**
@@ -570,13 +568,13 @@ class dcCore
 		}
 		
 		# Updating all user's blogs
-		$rs = $this->con->select(
+		$blogs = $this->con->select(
 			'SELECT DISTINCT(blog_id) FROM '.$this->prefix.'post '.
 			"WHERE user_id = '".$this->con->escape($id)."' "
 			);
 		
-		while ($rs->fetch()) {
-			$b = new dcBlog($this,$rs->blog_id);
+		foreach ($blogs as $blog) {
+			$b = new dcBlog($this,$blog->blog_id);
 			$b->triggerBlog();
 			unset($b);
 		}
@@ -599,9 +597,9 @@ class dcCore
 			return;
 		}
 		
-		$rs = $this->getUser($id);
+		$user = $this->getUser($id);
 		
-		if ($rs->nb_post > 0) {
+		if ($user->nb_post > 0) {
 			return;
 		}
 		
@@ -625,9 +623,9 @@ class dcCore
 				'FROM '.$this->prefix.'user '.
 				"WHERE user_id = '".$this->con->escape($id)."' ";
 		
-		$rs = $this->con->select($strReq);
+		$users = $this->con->select($strReq);
 		
-		return !$rs->isEmpty();
+		return (count($users) > 0);
 	}
 	
 	/**
@@ -650,16 +648,16 @@ class dcCore
 				'INNER JOIN '.$this->prefix.'blog B ON P.blog_id = B.blog_id '.
 				"WHERE user_id = '".$this->con->escape($id)."' ";
 		
-		$rs = $this->con->select($strReq);
+		$blogs = $this->con->select($strReq);
 		
 		$res = array();
 		
-		while ($rs->fetch())
+		foreach ($blogs as $blog)
 		{
-			$res[$rs->blog_id] = array(
-				'name' => $rs->blog_name,
-				'url' => $rs->blog_url,
-				'p' => $this->auth->parsePermissions($rs->permissions)
+			$res[$blog->blog_id] = array(
+				'name' => $blog->blog_name,
+				'url' => $blog->blog_url,
+				'p' => $this->auth->parsePermissions($blog->permissions)
 			);
 		}
 		
@@ -830,18 +828,18 @@ class dcCore
 			'WHERE user_super = 1 ';
 		}
 		
-		$rs = $this->con->select($strReq);
+		$users = $this->con->select($strReq);
 		
 		$res = array();
 		
-		while ($rs->fetch())
+		foreach ($users as $u)
 		{
-			$res[$rs->user_id] = array(
-				'name' => $rs->user_name,
-				'firstname' => $rs->user_firstname,
-				'displayname' => $rs->user_displayname,
-				'super' => (boolean) $rs->user_super,
-				'p' => $this->auth->parsePermissions($rs->permissions)
+			$res[$u->user_id] = array(
+				'name' => $u->user_name,
+				'firstname' => $u->user_firstname,
+				'displayname' => $u->user_displayname,
+				'super' => (boolean) $u->user_super,
+				'p' => $this->auth->parsePermissions($u->permissions)
 			);
 		}
 		
@@ -1026,9 +1024,9 @@ class dcCore
 				'FROM '.$this->prefix.'blog '.
 				"WHERE blog_id = '".$this->con->escape($id)."' ";
 		
-		$rs = $this->con->select($strReq);
+		$blogs = $this->con->select($strReq);
 		
-		return !$rs->isEmpty();
+		return (count($blogs) > 0);
 	}
 	
 	/**
@@ -1140,86 +1138,6 @@ class dcCore
 		$this->callBehavior('coreInitWikiPost',$this->wiki2xhtml);
 	}
 	
-	/**
-	Inits <var>wiki2xhtml</var> property for simple blog comment (basic syntax).
-	*/
-	public function initWikiSimpleComment()
-	{
-		$this->initWiki();
-		
-		$this->wiki2xhtml->setOpts(array(
-			'active_title' => 0,
-			'active_setext_title' => 0,
-			'active_hr' => 0,
-			'active_lists' => 0,
-			'active_quote' => 0,
-			'active_pre' => 0,
-			'active_empty' => 0,
-			'active_auto_br' => 1,
-			'active_auto_urls' => 1,
-			'active_urls' => 0,
-			'active_auto_img' => 0,
-			'active_img' => 0,
-			'active_anchor' => 0,
-			'active_em' => 0,
-			'active_strong' => 0,
-			'active_br' => 0,
-			'active_q' => 0,
-			'active_code' => 0,
-			'active_acronym' => 0,
-			'active_ins' => 0,
-			'active_del' => 0,
-			'active_footnotes' => 0,
-			'active_wikiwords' => 0,
-			'active_macros' => 0,
-			'parse_pre' => 0,
-			'active_fr_syntax' => 0
-		));
-		
-		# --BEHAVIOR-- coreInitWikiSimpleComment
-		$this->callBehavior('coreInitWikiSimpleComment',$this->wiki2xhtml);
-	}
-	
-	/**
-	Inits <var>wiki2xhtml</var> property for blog comment.
-	*/
-	public function initWikiComment()
-	{
-		$this->initWiki();
-		
-		$this->wiki2xhtml->setOpts(array(
-			'active_title' => 0,
-			'active_setext_title' => 0,
-			'active_hr' => 0,
-			'active_lists' => 1,
-			'active_quote' => 0,
-			'active_pre' => 1,
-			'active_empty' => 0,
-			'active_auto_br' => 1,
-			'active_auto_urls' => 1,
-			'active_urls' => 1,
-			'active_auto_img' => 0,
-			'active_img' => 0,
-			'active_anchor' => 0,
-			'active_em' => 1,
-			'active_strong' => 1,
-			'active_br' => 1,
-			'active_q' => 1,
-			'active_code' => 1,
-			'active_acronym' => 1,
-			'active_ins' => 1,
-			'active_del' => 1,
-			'active_footnotes' => 0,
-			'active_wikiwords' => 0,
-			'active_macros' => 0,
-			'parse_pre' => 0,
-			'active_fr_syntax' => 0
-		));
-		
-		# --BEHAVIOR-- coreInitWikiComment
-		$this->callBehavior('coreInitWikiComment',$this->wiki2xhtml);
-	}
-	
 	public function wikiPostLink($url,$content)
 	{
 		if (!($this->blog instanceof dcBlog)) { 
@@ -1268,18 +1186,8 @@ class dcCore
 		if (!is_array($defaults))
 		{
 			$defaults = array(
-				array('allow_comments','boolean',true,
-				'Allow comments on blog'),
-				array('allow_trackbacks','boolean',true,
-				'Allow trackbacks on blog'),
 				array('blog_timezone','string','Europe/London',
 				'Blog timezone'),
-				array('comments_nofollow','boolean',true,
-				'Add rel="nofollow" to comments URLs'),
-				array('comments_pub','boolean',true,
-				'Publish comments immediately'),
-				array('comments_ttl','integer',0,
-				'Number of days to keep comments open (0 means no ttl)'),
 				array('copyright_notice','string','','Copyright notice (simple text)'),
 				array('date_format','string','%A, %B %e %Y',
 				'Date format. See PHP strftime function for patterns'),
@@ -1291,22 +1199,10 @@ class dcCore
 				'Enable XML/RPC interface'),
 				array('lang','string','en',
 				'Default blog language'),
-				array('media_exclusion','string','/\.php$/i',
-				'File name exclusion pattern in media manager. (PCRE value)'),
-				array('media_img_m_size','integer',448,
-				'Image medium size in media manager'),
-				array('media_img_s_size','integer',240,
-				'Image small size in media manager'),
-				array('media_img_t_size','integer',100,
-				'Image thumbnail size in media manager'),
-				array('media_img_title_pattern','string','Title ;; Date(%b %Y) ;; separator(, )',
-				'Pattern to set image title when you insert it in a post'),
 				array('nb_post_per_page','integer',20,
 				'Number of entries on home page and category pages'),
 				array('nb_post_per_feed','integer',20,
 				'Number of entries on feeds'),
-				array('nb_comment_per_feed','integer',20,
-				'Number of comments on feeds'),
 				array('post_url_format','string','{y}/{m}/{d}/{t}',
 				'Post URL format. {y}: year, {m}: month, {d}: day, {id}: post id, {t}: entry title'),
 				array('public_path','string','public',
@@ -1329,16 +1225,10 @@ class dcCore
 				'Allow PHP code in templates'),
 				array('tpl_use_cache','boolean',true,
 				'Use template caching'),
-				array('trackbacks_pub','boolean',true,
-				'Publish trackbacks immediately'),
-				array('trackbacks_ttl','integer',0,
-				'Number of days to keep trackbacks open (0 means no ttl)'),
 				array('url_scan','string','query_string',
 				'URL handle mode (path_info or query_string)'),
 				array('use_smilies','boolean',false,
 				'Show smilies on entries and comments'),
-				array('wiki_comments','boolean',false,
-				'Allow commenters to use a subset of wiki syntax')
 			);
 		}
 		
@@ -1362,8 +1252,9 @@ class dcCore
 	{
 		$strReq = 'SELECT COUNT(post_id) '.
 				'FROM '.$this->prefix.'post';
-		$rs = $this->con->select($strReq);
-		$count = $rs->f(0);
+		$count = $this->con->select($strReq);
+		$count = $count->current();
+		$count = $count->f(0);
 		
 		$strReq = 'SELECT post_id, post_title, post_excerpt_xhtml, post_content_xhtml '.
 				'FROM '.$this->prefix.'post ';
@@ -1372,17 +1263,17 @@ class dcCore
 			$strReq .= $this->con->limit($start,$limit);
 		}
 		
-		$rs = $this->con->select($strReq,true);
+		$posts = $this->con->select($strReq,true);
 		
 		$cur = $this->con->openCursor($this->prefix.'post');
 		
-		while ($rs->fetch())
+		foreach ($posts as $post)
 		{
-			$words = $rs->post_title.' '.	$rs->post_excerpt_xhtml.' '.
-			$rs->post_content_xhtml;
+			$words = $post->post_title.' '.	$post->post_excerpt_xhtml.' '.
+			$post->post_content_xhtml;
 			
 			$cur->post_words = implode(' ',text::splitWords($words));
-			$cur->update('WHERE post_id = '.(integer) $rs->post_id);
+			$cur->update('WHERE post_id = '.(integer) $post->post_id);
 			$cur->clean();
 		}
 		
@@ -1390,67 +1281,6 @@ class dcCore
 			return null;
 		}
 		return $start+$limit;
-	}
-	
-	/**
-	Recreates comments search engine index.
-	
-	@param	start	<b>integer</b>		Start comment index
-	@param	limit	<b>integer</b>		Number of comments to index
-	
-	@return	<b>integer</b>		<var>$start</var> and <var>$limit</var> sum
-	*/
-	public function indexAllComments($start=null,$limit=null)
-	{
-		$strReq = 'SELECT COUNT(comment_id) '.
-				'FROM '.$this->prefix.'comment';
-		$rs = $this->con->select($strReq);
-		$count = $rs->f(0);
-		
-		$strReq = 'SELECT comment_id, comment_content '.
-				'FROM '.$this->prefix.'comment ';
-		
-		if ($start !== null && $limit !== null) {
-			$strReq .= $this->con->limit($start,$limit);
-		}
-		
-		$rs = $this->con->select($strReq);
-		
-		$cur = $this->con->openCursor($this->prefix.'comment');
-		
-		while ($rs->fetch())
-		{
-			$cur->comment_words = implode(' ',text::splitWords($rs->comment_content));
-			$cur->update('WHERE comment_id = '.(integer) $rs->comment_id);
-			$cur->clean();
-		}
-		
-		if ($start+$limit > $count) {
-			return null;
-		}
-		return $start+$limit;
-	}
-	
-	/**
-	Reinits nb_comment and nb_trackback in post table.
-	*/
-	public function countAllComments()
-	{
-	
-		$updCommentReq = 'UPDATE '.$this->prefix.'post P '.
-			'SET nb_comment = ('.
-				'SELECT COUNT(C.comment_id) from '.$this->prefix.'comment C '.
-				'WHERE C.post_id = P.post_id AND C.comment_trackback <> 1 '.
-				'AND C.comment_status = 1 '.
-			')';
-		$updTrackbackReq = 'UPDATE '.$this->prefix.'post P '.
-			'SET nb_trackback = ('.
-				'SELECT COUNT(C.comment_id) from '.$this->prefix.'comment C '.
-				'WHERE C.post_id = P.post_id AND C.comment_trackback = 1 '.
-				'AND C.comment_status = 1 '.
-			')';
-		$this->con->execute($updCommentReq);
-		$this->con->execute($updTrackbackReq);
 	}
 	
 	/**

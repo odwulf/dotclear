@@ -49,11 +49,6 @@ if ((boolean)!$core->blog->status) {
 		,670);
 }
 
-# Loading media
-try {
-	$core->media = new dcMedia($core);
-} catch (Exception $e) {}
-
 # Creating template context
 $_ctx = new context();
 try {

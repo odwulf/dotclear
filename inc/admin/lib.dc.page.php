@@ -68,8 +68,8 @@ class dcPage
 		{
 			$rs_blogs = $core->getBlogs(array('order'=>'LOWER(blog_name)','limit'=>20));
 			$blogs = array();
-			while ($rs_blogs->fetch()) {
-				$blogs[html::escapeHTML($rs_blogs->blog_name.' - '.$rs_blogs->blog_url)] = $rs_blogs->blog_id;
+			foreach ($rs_blogs as $rs_blog) {
+				$blogs[html::escapeHTML($rs_blog->blog_name.' - '.$rs_blog->blog_url)] = $rs_blog->blog_id;
 			}
 			$blog_box =
 			'<p><label for="switchblog" class="classic">'.
@@ -434,20 +434,10 @@ class dcPage
 			__("Are you sure you want to delete this entry?")).
 		self::jsVar('dotclear.msg.confirm_spam_delete',
 			__('Are you sure you want to delete all spams?')).
-		self::jsVar('dotclear.msg.confirm_delete_comments',
-			__('Are you sure you want to delete selected comments (%s)?')).
-		self::jsVar('dotclear.msg.confirm_delete_comment',
-			__('Are you sure you want to delete this comment?')).
 		self::jsVar('dotclear.msg.cannot_delete_users',
 			__('Users with posts cannot be deleted.')).
 		self::jsVar('dotclear.msg.confirm_delete_user',
 			__('Are you sure you want to delete selected users (%s)?')).
-		self::jsVar('dotclear.msg.confirm_delete_category',
-			__('Are you sure you want to delete category "%s"?')).
-		self::jsVar('dotclear.msg.confirm_reorder_categories',
-			__('Are you sure you want to reorder all categories?')).
-		self::jsVar('dotclear.msg.confirm_delete_media',
-			__('Are you sure you want to remove media "%s"?')).
 		self::jsVar('dotclear.msg.confirm_extract_current',
 			__('Are you sure you want to extract archive in current directory?')).
 		self::jsVar('dotclear.msg.confirm_remove_attachment',
@@ -585,133 +575,6 @@ class dcPage
 		"</script>\n";
 	}
 	
-	public static function jsToolBar()
-	{
-		$res =
-		'<link rel="stylesheet" type="text/css" href="style/jsToolBar/jsToolBar.css" />'.
-		'<script type="text/javascript" src="js/jsToolBar/jsToolBar.js"></script>';
-		
-		if (isset($GLOBALS['core']->auth) && $GLOBALS['core']->auth->getOption('enable_wysiwyg')) {
-			$res .= '<script type="text/javascript" src="js/jsToolBar/jsToolBar.wysiwyg.js"></script>';
-		}
-		
-		$res .=
-		'<script type="text/javascript" src="js/jsToolBar/jsToolBar.dotclear.js"></script>'.
-		'<script type="text/javascript">'."\n".
-		"//<![CDATA[\n".
-		"jsToolBar.prototype.dialog_url = 'popup.php'; ".
-		"jsToolBar.prototype.iframe_css = '".
-			'body{'.
-				'font: 12px "DejaVu Sans","Lucida Grande","Lucida Sans Unicode",Arial,sans-serif;'.
-				'color : #000;'.
-				'background: #f9f9f9;'.
-				'margin: 0;'.
-				'padding : 2px;'.
-				'border: none;'.
-				(l10n::getTextDirection($GLOBALS['_lang']) == 'rtl' ? 'direction:rtl;' : '').
-			'}'.
-			'pre, code, kbd, samp {'.
-				'font-family:"Courier New",Courier,monospace;'.
-				'font-size : 1.1em;'.
-			'}'.
-			'code {'.
-				'color : #666;'.
-				'font-weight : bold;'.
-			'}'.
-			'body > p:first-child {'.
-				'margin-top: 0;'.
-			'}'.
-		"'; ".
-		"jsToolBar.prototype.base_url = '".html::escapeJS($GLOBALS['core']->blog->host)."'; ".
-		"jsToolBar.prototype.switcher_visual_title = '".html::escapeJS(__('visual'))."'; ".
-		"jsToolBar.prototype.switcher_source_title = '".html::escapeJS(__('source'))."'; ".
-		"jsToolBar.prototype.legend_msg = '".
-		html::escapeJS(__('You can use the following shortcuts to format your text.'))."'; ".
-		"jsToolBar.prototype.elements.blocks.options.none = '".html::escapeJS(__('-- none --'))."'; ".
-		"jsToolBar.prototype.elements.blocks.options.nonebis = '".html::escapeJS(__('-- block format --'))."'; ".
-		"jsToolBar.prototype.elements.blocks.options.p = '".html::escapeJS(__('Paragraph'))."'; ".
-		"jsToolBar.prototype.elements.blocks.options.h1 = '".html::escapeJS(__('Level 1 header'))."'; ".
-		"jsToolBar.prototype.elements.blocks.options.h2 = '".html::escapeJS(__('Level 2 header'))."'; ".
-		"jsToolBar.prototype.elements.blocks.options.h3 = '".html::escapeJS(__('Level 3 header'))."'; ".
-		"jsToolBar.prototype.elements.blocks.options.h4 = '".html::escapeJS(__('Level 4 header'))."'; ".
-		"jsToolBar.prototype.elements.blocks.options.h5 = '".html::escapeJS(__('Level 5 header'))."'; ".
-		"jsToolBar.prototype.elements.blocks.options.h6 = '".html::escapeJS(__('Level 6 header'))."'; ".
-		"jsToolBar.prototype.elements.strong.title = '".html::escapeJS(__('Strong emphasis'))."'; ".
-		"jsToolBar.prototype.elements.em.title = '".html::escapeJS(__('Emphasis'))."'; ".
-		"jsToolBar.prototype.elements.ins.title = '".html::escapeJS(__('Inserted'))."'; ".
-		"jsToolBar.prototype.elements.del.title = '".html::escapeJS(__('Deleted'))."'; ".
-		"jsToolBar.prototype.elements.quote.title = '".html::escapeJS(__('Inline quote'))."'; ".
-		"jsToolBar.prototype.elements.code.title = '".html::escapeJS(__('Code'))."'; ".
-		"jsToolBar.prototype.elements.br.title = '".html::escapeJS(__('Line break'))."'; ".
-		"jsToolBar.prototype.elements.blockquote.title = '".html::escapeJS(__('Blockquote'))."'; ".
-		"jsToolBar.prototype.elements.pre.title = '".html::escapeJS(__('Preformated text'))."'; ".
-		"jsToolBar.prototype.elements.ul.title = '".html::escapeJS(__('Unordered list'))."'; ".
-		"jsToolBar.prototype.elements.ol.title = '".html::escapeJS(__('Ordered list'))."'; ".
-		
-		"jsToolBar.prototype.elements.link.title = '".html::escapeJS(__('Link'))."'; ".
-		"jsToolBar.prototype.elements.link.href_prompt = '".html::escapeJS(__('URL?'))."'; ".
-		"jsToolBar.prototype.elements.link.hreflang_prompt = '".html::escapeJS(__('Language?'))."'; ".
-		
-		"jsToolBar.prototype.elements.img.title = '".html::escapeJS(__('External image'))."'; ".
-		"jsToolBar.prototype.elements.img.src_prompt = '".html::escapeJS(__('URL?'))."'; ".
-		
-		"jsToolBar.prototype.elements.img_select.title = '".html::escapeJS(__('Media chooser'))."'; ".
-		"jsToolBar.prototype.elements.post_link.title = '".html::escapeJS(__('Link to an entry'))."'; ";
-		
-		if (!$GLOBALS['core']->auth->check('media,media_admin',$GLOBALS['core']->blog->id)) {
-			$res .= "jsToolBar.prototype.elements.img_select.disabled = true;\n";
-		}
-		
-		$res .=
-		"\n//]]>\n".
-		"</script>\n";
-		
-		return $res;
-	}
-	
-	public static function jsCandyUpload($params=array(),$base_url=null)
-	{
-		if (!$base_url) {
-			$base_url = path::clean(dirname(preg_replace('/(\?.*$)?/','',$_SERVER['REQUEST_URI']))).'/';
-		}
-		
-		$params = array_merge($params,array(
-			'sess_id='.session_id(),
-			'sess_uid='.$_SESSION['sess_browser_uid'],
-			'xd_check='.$GLOBALS['core']->getNonce()
-		));
-		
-		return
-		'<link rel="stylesheet" type="text/css" href="style/candyUpload/style.css" />'."\n".
-		self::jsLoad('js/jquery/jquery.candyUpload.js').
-		
-		'<script type="text/javascript">'."\n".
-		"//<![CDATA[\n".
-		"dotclear.candyUpload = {};\n".
-		self::jsVar('dotclear.msg.activate_enhanced_uploader',__('Temporarily activate enhanced uploader')).
-		self::jsVar('dotclear.msg.disable_enhanced_uploader',__('Temporarily disable enhanced uploader')).
-		self::jsVar('$._candyUpload.prototype.locales.file_uploaded',__('File successfully uploaded.')).
-		self::jsVar('$._candyUpload.prototype.locales.max_file_size',__('Maximum file size allowed:')).
-		self::jsVar('$._candyUpload.prototype.locales.limit_exceeded',__('Limit exceeded.')).
-		self::jsVar('$._candyUpload.prototype.locales.size_limit_exceeded',__('File size exceeds allowed limit.')).
-		self::jsVar('$._candyUpload.prototype.locales.canceled',__('Canceled.')).
-		self::jsVar('$._candyUpload.prototype.locales.http_error',__('HTTP Error:')).
-		self::jsVar('$._candyUpload.prototype.locales.error',__('Error:')).
-		self::jsVar('$._candyUpload.prototype.locales.choose_file',__('Choose file')).
-		self::jsVar('$._candyUpload.prototype.locales.choose_files',__('Choose files')).
-		self::jsVar('$._candyUpload.prototype.locales.cancel',__('Cancel')).
-		self::jsVar('$._candyUpload.prototype.locales.clean',__('Clean')).
-		self::jsVar('$._candyUpload.prototype.locales.upload',__('Upload')).
-		self::jsVar('$._candyUpload.prototype.locales.no_file_in_queue',__('No file in queue.')).
-		self::jsVar('$._candyUpload.prototype.locales.file_in_queue',__('1 file in queue.')).
-		self::jsVar('$._candyUpload.prototype.locales.files_in_queue',__('%d files in queue.')).
-		self::jsVar('$._candyUpload.prototype.locales.queue_error',__('Queue error:')).
-		self::jsVar('dotclear.candyUpload.base_url',$base_url).
-		self::jsVar('dotclear.candyUpload.movie_url',$base_url.'index.php?pf=swfupload.swf').
-		self::jsVar('dotclear.candyUpload.params',implode('&',$params)).
-		"\n//]]>\n".
-		"</script>\n";
-	}
 	
 	public static function jsToolMan()
 	{

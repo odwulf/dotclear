@@ -67,60 +67,7 @@ class defaultWidgets
 		return $res;
 	}
 	
-	public static function categories($w)
-	{
-		global $core, $_ctx;
-		
-		if (($w->homeonly == 1 && $core->url->type != 'default') ||
-			($w->homeonly == 2 && $core->url->type == 'default')) {
-			return;
-		}
 
-		$rs = $core->blog->getCategories(array('post_type'=>'post'));
-		if ($rs->isEmpty()) {
-			return;
-		}
-		
-		$res =
-		($w->content_only ? '' : '<div class="categories'.($w->class ? ' '.html::escapeHTML($w->class) : '').'">').
-		($w->title ? '<h2>'.html::escapeHTML($w->title).'</h2>' : '');
-		
-		$ref_level = $level = $rs->level-1;
-		while ($rs->fetch())
-		{
-			$class = '';
-			if (($core->url->type == 'category' && $_ctx->categories instanceof record && $_ctx->categories->cat_id == $rs->cat_id)
-			|| ($core->url->type == 'post' && $_ctx->posts instanceof record && $_ctx->posts->cat_id == $rs->cat_id)) {
-				$class = ' class="category-current"';
-			}
-			
-			if ($rs->level > $level) {
-				$res .= str_repeat('<ul><li'.$class.'>',$rs->level - $level);
-			} elseif ($rs->level < $level) {
-				$res .= str_repeat('</li></ul>',-($rs->level - $level));
-			}
-			
-			if ($rs->level <= $level) {
-				$res .= '</li><li'.$class.'>';
-			}
-			
-			$res .=
-			'<a href="'.$core->blog->url.$core->url->getURLFor('category', $rs->cat_url).'">'.
-			html::escapeHTML($rs->cat_title).'</a>'.
-			($w->postcount ? ' <span>('.$rs->nb_post.')</span>' : '');
-			
-			
-			$level = $rs->level;
-		}
-		
-		if ($ref_level - $level < 0) {
-			$res .= str_repeat('</li></ul>',-($ref_level - $level));
-		}
-		$res .= ($w->content_only ? '' : '</div>');
-		
-		return $res;
-	}
-	
 	public static function bestof($w)
 	{
 		global $core;
@@ -210,7 +157,6 @@ class defaultWidgets
 		$mime = $type == 'rss2' ? 'application/rss+xml' : 'application/atom+xml';
 		
 		$p_title = __('This blog\'s entries %s feed');
-		$c_title = __('This blog\'s comments %s feed');
 		
 		$res =
 		($w->content_only ? '' : '<div class="syndicate'.($w->class ? ' '.html::escapeHTML($w->class) : '').'">').
@@ -222,15 +168,6 @@ class defaultWidgets
 		'href="'.$core->blog->url.$core->url->getURLFor('feed', $type).'" '.
 		'title="'.sprintf($p_title,($type == 'atom' ? 'Atom' : 'RSS')).'" class="feed">'.
 		__('Entries feed').'</a></li>';
-		
-		if ($core->blog->settings->system->allow_comments || $core->blog->settings->system->allow_trackbacks)
-		{
-			$res .=
-			'<li><a type="'.$mime.'" '.
-			'href="'.$core->blog->url.$core->url->getURLFor('feed',$type.'/comments').'" '.
-			'title="'.sprintf($c_title,($type == 'atom' ? 'Atom' : 'RSS')).'" class="feed">'.
-			__('Comments feed').'</a></li>';
-		}
 		
 		$res .= '</ul>'.($w->content_only ? '' : '</div>');
 		
@@ -322,17 +259,6 @@ class defaultWidgets
 		$params['limit'] = abs((integer) $w->limit);
 		$params['order'] = 'post_dt desc';
 		$params['no_content'] = true;
-		
-		if ($w->category)
-		{
-			if ($w->category == 'null') {
-				$params['sql'] = ' AND P.cat_id IS NULL ';
-			} elseif (is_numeric($w->category)) {
-				$params['cat_id'] = (integer) $w->category;
-			} else {
-				$params['cat_url'] = $w->category;
-			}
-		}
 		
 		if ($w->tag)
 		{

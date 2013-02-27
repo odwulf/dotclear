@@ -70,9 +70,6 @@ $__dashboard_icons = new ArrayObject();
 $post_count = $core->blog->getPosts(array(),true)->f(0);
 $str_entries = ($post_count > 1) ? __('%d entries') : __('%d entry');
 
-$comment_count = $core->blog->getComments(array(),true)->f(0);
-$str_comments = ($comment_count > 1) ? __('%d comments') : __('%d comment');
-
 $ws = $core->auth->user_prefs->addWorkspace('favorites');
 $count = 0;
 foreach ($ws->dumpPrefs() as $k => $v) {
@@ -82,8 +79,7 @@ foreach ($ws->dumpPrefs() as $k => $v) {
 		if (($fav['permissions'] == '*') || $core->auth->check($fav['permissions'],$core->blog->id)) {
 			if (dc_valid_fav($fav['url'])) {
 				$count++;
-				$title = ($fav['name'] == 'posts' ? sprintf($str_entries,$post_count) : 
-					($fav['name'] == 'comments' ? sprintf($str_comments,$comment_count) : $fav['title']));
+				$title = ($fav['name'] == 'posts' ? sprintf($str_entries,$post_count) : $fav['title']);
 				$__dashboard_icons[$fav['name']] = new ArrayObject(array(__($title),$fav['url'],$fav['large-icon']));
 
 				# Let plugins set their own title for favorite on dashboard
@@ -99,8 +95,7 @@ if (!$count) {
 		if (($fav['permissions'] == '*') || $core->auth->check($fav['permissions'],$core->blog->id)) {
 			if (dc_valid_fav($fav['url'])) {
 				$count++;
-				$title = ($fav['name'] == 'posts' ? sprintf($str_entries,$post_count) : 
-					($fav['name'] == 'comments' ? sprintf($str_comments,$comment_count) : $fav['title']));
+				$title = ($fav['name'] == 'posts' ? sprintf($str_entries,$post_count) : $fav['title']);
 				$__dashboard_icons[$fav['name']] = new ArrayObject(array(__($title),$fav['url'],$fav['large-icon']));
 
 				# Let plugins set their own title for favorite on dashboard
@@ -189,7 +184,6 @@ $core->callBehavior('adminDashboardContents', $core, $__dashboard_contents);
 /* DISPLAY
 -------------------------------------------------------- */
 dcPage::open(__('Dashboard'),
-	dcPage::jsToolBar().
 	dcPage::jsLoad('js/_index.js').
 	# --BEHAVIOR-- adminDashboardHeaders
 	$core->callBehavior('adminDashboardHeaders')
@@ -303,18 +297,6 @@ echo '</div>';
 if ($core->auth->user_prefs->dashboard->quickentry) {
 	if ($core->auth->check('usage,contentadmin',$core->blog->id))
 	{
-		$categories_combo = array('&nbsp;' => '');
-		try {
-			$categories = $core->blog->getCategories(array('post_type'=>'post'));
-			while ($categories->fetch()) {
-				$categories_combo[] = new formSelectOption(
-					str_repeat('&nbsp;&nbsp;',$categories->level-1).
-					($categories->level-1 == 0 ? '' : '&bull; ').html::escapeHTML($categories->cat_title),
-					$categories->cat_id
-				);
-			}
-		} catch (Exception $e) { }
-	
 		echo
 		'<div id="quick">'.
 		'<h3>'.__('Quick entry').'</h3>'.
@@ -327,8 +309,6 @@ if ($core->auth->user_prefs->dashboard->quickentry) {
 		'for="post_content"><abbr title="'.__('Required field').'">*</abbr> '.__('Content:').'</label> '.
 		form::textarea('post_content',50,7).
 		'</p>'.
-		'<p><label for="cat_id" class="classic">'.__('Category:').' '.
-		form::combo('cat_id',$categories_combo).'</label></p>'.
 		'<p><input type="submit" value="'.__('Save').'" name="save" /> '.
 		($core->auth->check('publish',$core->blog->id)
 			? '<input type="hidden" value="'.__('Save and publish').'" name="save-publish" />'

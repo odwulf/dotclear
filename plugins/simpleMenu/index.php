@@ -21,20 +21,6 @@ $p_url = 'plugin.php?p=simpleMenu';
 # Url du blog
 $blog_url = html::stripHostURL($core->blog->url);
 
-# Liste des catégories
-$categories_combo = array();
-$categories_label = array();
-try {
-	$rs = $core->blog->getCategories(array('post_type'=>'post'));
-	while ($rs->fetch()) {
-		$categories_combo[] = new formSelectOption(
-			str_repeat('&nbsp;&nbsp;',$rs->level-1).($rs->level-1 == 0 ? '' : '&bull; ').html::escapeHTML($rs->cat_title),
-			$rs->cat_url
-		);
-		$categories_label[$rs->cat_url] = html::escapeHTML($rs->cat_title);
-	}
-} catch (Exception $e) { }
-
 # Liste des langues utilisées
 $langs_combo = array();
 try {
@@ -92,9 +78,6 @@ $items['home'] = new ArrayObject(array(__('Home'),false));
 
 if (count($langs_combo) > 1) {
 	$items['lang'] = new ArrayObject(array(__('Language'),true));
-}
-if (count($categories_combo)) {
-	$items['category'] = new ArrayObject(array(__('Category'),true));
 }
 if (count($months_combo) > 1) {
 	$items['archive'] = new ArrayObject(array(__('Archive'),true));
@@ -168,12 +151,6 @@ if ($step) {
 					$item_label = $item_select_label;
 					$item_descr = sprintf(__('Switch to %s language'),$item_select_label);
 					$item_url .= $core->url->getURLFor('lang',$item_select);
-					break;
-				case 'category':
-					$item_select_label = $categories_label[$item_select];
-					$item_label = $item_select_label;
-					$item_descr = __('Recent Posts from this category');
-					$item_url .= $core->url->getURLFor('category',$item_select);
 					break;
 				case 'archive':
 					$item_select_label = array_search($item_select,$months_combo);
@@ -447,10 +424,6 @@ if ($step)
 					case 'lang':
 						echo '<p class="field"><label for="item_select" class="classic">'.__('Select language:').'</label>'.
 							form::combo('item_select',$langs_combo,'');
-						break;
-					case 'category':
-						echo '<p class="field"><label for="item_select" class="classic">'.__('Select category:').'</label>'.
-							form::combo('item_select',$categories_combo,'');
 						break;
 					case 'archive':
 						echo '<p class="field"><label for="item_select" class="classic">'.__('Select month (if necessary):').'</label>'.
