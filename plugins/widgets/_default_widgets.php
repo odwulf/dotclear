@@ -46,13 +46,6 @@ $__widgets->langs->setting('homeonly',__('Display on:'),1,'combo',
 $__widgets->langs->setting('content_only',__('Content only'),0,'check');
 $__widgets->langs->setting('class',__('CSS class:'),'');
 
-$__widgets->create('categories',__('Categories list'),array('defaultWidgets','categories'),null,'List of categories');
-$__widgets->categories->setting('title',__('Title:'),__('Categories'));
-$__widgets->categories->setting('postcount',__('With entries counts'),0,'check');
-$__widgets->categories->setting('homeonly',__('Display on:'),0,'combo',
-	array(__('All pages') => 0, __('Home page only') => 1, __('Except on home page') => 2));
-$__widgets->categories->setting('content_only',__('Content only'),0,'check');
-$__widgets->categories->setting('class',__('CSS class:'),'');
 
 $__widgets->create('subscribe',__('Subscribe links'),array('defaultWidgets','subscribe'),null,'RSS or Atom feed subscription links');
 $__widgets->subscribe->setting('title',__('Title:'),__('Subscribe'));
@@ -81,13 +74,6 @@ $__widgets->text->setting('class',__('CSS class:'),'');
 
 $__widgets->create('lastposts',__('Last entries'),array('defaultWidgets','lastposts'),null,'List of last entries published');
 $__widgets->lastposts->setting('title',__('Title:'),__('Last entries'));
-$rs = $core->blog->getCategories(array('post_type'=>'post'));
-$categories = array('' => '', __('Uncategorized') => 'null');
-while ($rs->fetch()) {
-	$categories[str_repeat('&nbsp;&nbsp;',$rs->level-1).($rs->level-1 == 0 ? '' : '&bull; ').html::escapeHTML($rs->cat_title)] = $rs->cat_id;
-}
-$__widgets->lastposts->setting('category',__('Category:'),'','combo',$categories);
-unset($rs,$categories);
 if ($core->plugins->moduleExists('tags')) {
 	$__widgets->lastposts->setting('tag',__('Tag:'),'');
 }
@@ -97,13 +83,6 @@ $__widgets->lastposts->setting('homeonly',__('Display on:'),1,'combo',
 $__widgets->lastposts->setting('content_only',__('Content only'),0,'check');
 $__widgets->lastposts->setting('class',__('CSS class:'),'');
 
-$__widgets->create('lastcomments',__('Last comments'),array('defaultWidgets','lastcomments'),null,'List of last comments posted');
-$__widgets->lastcomments->setting('title',__('Title:'),__('Last comments'));
-$__widgets->lastcomments->setting('limit',__('Comments limit:'),10);
-$__widgets->lastcomments->setting('homeonly',__('Display on:'),1,'combo',
-	array(__('All pages') => 0, __('Home page only') => 1, __('Except on home page') => 2));
-$__widgets->lastcomments->setting('content_only',__('Content only'),0,'check');
-$__widgets->lastcomments->setting('class',__('CSS class:'),'');
 
 # --BEHAVIOR-- initWidgets
 $core->callBehavior('initWidgets',$__widgets);
@@ -115,7 +94,6 @@ $__default_widgets = array('nav'=> new dcWidgets(), 'extra'=> new dcWidgets(), '
 $__default_widgets['nav']->append($__widgets->search);
 $__default_widgets['nav']->append($__widgets->navigation);
 $__default_widgets['nav']->append($__widgets->bestof);
-$__default_widgets['nav']->append($__widgets->categories);
 $__default_widgets['extra']->append($__widgets->subscribe);
 
 # --BEHAVIOR-- initDefaultWidgets

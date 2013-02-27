@@ -146,13 +146,7 @@ elseif ($core->auth->sessionExists())
 	&& $core->auth->getPermissions($_REQUEST['switchblog']) !== false)
 	{
 		$_SESSION['sess_blog_id'] = $_REQUEST['switchblog'];
-		if (isset($_SESSION['media_manager_dir'])) {
-			unset($_SESSION['media_manager_dir']);
-		}
-		if (isset($_SESSION['media_manager_page'])) {
-			unset($_SESSION['media_manager_page']);
-		}
-		
+
 		# Removing switchblog from URL
 		$redir = $_SERVER['REQUEST_URI'];
 		$redir = preg_replace('/switchblog=(.*?)(&|$)/','',$redir);
@@ -235,18 +229,9 @@ if ($core->auth->userID() && $core->blog !== null)
 	$_fav['posts'] = new ArrayObject(array('posts','Entries','posts.php',
 		'images/menu/entries.png','images/menu/entries-b.png',
 		'usage,contentadmin',null,null));
-	$_fav['comments'] = new ArrayObject(array('comments','Comments','comments.php',
-		'images/menu/comments.png','images/menu/comments-b.png',
-		'usage,contentadmin',null,null));
 	$_fav['search'] = new ArrayObject(array('search','Search','search.php',
 		'images/menu/search.png','images/menu/search-b.png',
 		'usage,contentadmin',null,null));
-	$_fav['categories'] = new ArrayObject(array('categories','Categories','categories.php',
-		'images/menu/categories.png','images/menu/categories-b.png',
-		'categories',null,null));
-	$_fav['media'] = new ArrayObject(array('media','Media manager','media.php',
-		'images/menu/media.png','images/menu/media-b.png',
-		'media,media_admin',null,null));
 	$_fav['blog_pref'] = new ArrayObject(array('blog_pref','Blog settings','blog_pref.php',
 		'images/menu/blog-pref.png','images/menu/blog-pref-b.png',
 		'admin',null,null));
@@ -302,17 +287,8 @@ if ($core->auth->userID() && $core->blog !== null)
 	$_menu['Blog']->prependItem(__('Blog settings'),'blog_pref.php','images/menu/blog-pref.png',
 		preg_match('/blog_pref.php(\?.*)?$/',$_SERVER['REQUEST_URI']),
 		$core->auth->check('admin',$core->blog->id));
-	$_menu['Blog']->prependItem(__('Media manager'),'media.php','images/menu/media.png',
-		preg_match('/media(_item)?.php(\?.*)?$/',$_SERVER['REQUEST_URI']),
-		$core->auth->check('media,media_admin',$core->blog->id));
-	$_menu['Blog']->prependItem(__('Categories'),'categories.php','images/menu/categories.png',
-		preg_match('/categories.php(\?.*)?$/',$_SERVER['REQUEST_URI']),
-		$core->auth->check('categories',$core->blog->id));
 	$_menu['Blog']->prependItem(__('Search'),'search.php','images/menu/search.png',
 		preg_match('/search.php(\?.*)?$/',$_SERVER['REQUEST_URI']),
-		$core->auth->check('usage,contentadmin',$core->blog->id));
-	$_menu['Blog']->prependItem(__('Comments'),'comments.php','images/menu/comments.png',
-		preg_match('/comments.php(\?.*)?$/',$_SERVER['REQUEST_URI']),
 		$core->auth->check('usage,contentadmin',$core->blog->id));
 	$_menu['Blog']->prependItem(__('Entries'),'posts.php','images/menu/entries.png',
 		preg_match('/posts.php(\?.*)?$/',$_SERVER['REQUEST_URI']),

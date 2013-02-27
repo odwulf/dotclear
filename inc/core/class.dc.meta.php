@@ -197,11 +197,11 @@ class dcMeta
 				'FROM '.$this->table.' '.
 				'WHERE post_id = '.$post_id.' ';
 		
-		$rs = $this->con->select($strReq);
+		$rsmeta = $this->con->select($strReq);
 		
 		$meta = array();
-		while ($rs->fetch()) {
-			$meta[$rs->meta_type][] = $rs->meta_id;
+		foreach ($rsmeta as $r) {
+			$meta[$r->meta_type][] = $r->meta_id;
 		}
 		
 		$post_meta = serialize($meta);
@@ -246,35 +246,6 @@ class dcMeta
 	}
 	
 	/**
-	Retrieves comments to posts corresponding to given meta criteria.
-	<b>$params</b> is an array taking the following optional parameters:
-	- meta_id : get comments to posts having meta id 
-	- meta_type : get comments to posts having meta type
-	
-	@param	params	<b>array</b>	Parameters
-	@param	count_only	<b>boolean</b>		Only counts results
-	
-	@return	<b>record</b>	the resulting comments record
-	*/
-	public function getCommentsByMeta($params=array(),$count_only=false)
-	{
-		if (!isset($params['meta_id'])) {
-			return null;
-		}
-		
-		$params['from'] = ', '.$this->table.' META ';
-		$params['sql'] = 'AND META.post_id = P.post_id ';
-		$params['sql'] .= "AND META.meta_id = '".$this->con->escape($params['meta_id'])."' ";
-		
-		if (!empty($params['meta_type'])) {
-			$params['sql'] .= "AND META.meta_type = '".$this->con->escape($params['meta_type'])."' ";
-			unset($params['meta_type']);
-		}
-		
-		return $this->core->blog->getComments($params,$count_only);
-	}
-	
-	/**
 	@deprecated since 2.2. Use getMetadata and computeMetaStats instead.
 	Generic-purpose metadata retrieval : gets metadatas according to given
 	criteria. Metadata get enriched with stastistics columns (only relevant 
@@ -299,8 +270,8 @@ class dcMeta
 			$params['meta_id'] = $meta_id;
 		if ($meta_id != null)
 			$params['post_id'] = $post_id;
-		$rs = $this->getMetadata($params, false);
-		return $this->computeMetaStats($rs);
+		$meta = $this->getMetadata($params, false);
+		return $this->computeMetaStats($meta);
 	}
 	
 	/**
@@ -345,12 +316,7 @@ class dcMeta
 		}
 		
 		if (!$this->core->auth->check('contentadmin',$this->core->blog->id)) {
-			$strReq .= 'AND ((post_status = 1 ';
-			
-			if ($this->core->blog->without_password) {
-				$strReq .= 'AND post_password IS NULL ';
-			}
-			$strReq .= ') ';
+			$strReq .= 'AND ((post_status = 1) ';
 			
 			if ($this->core->auth->userID()) {
 				$strReq .= "OR P.user_id = '".$this->con->escape($this->core->auth->userID())."')";
@@ -373,8 +339,8 @@ class dcMeta
 			}
 		}
 		
-		$rs = $this->con->select($strReq);
-		return $rs;
+		$meta = $this->con->select($strReq);
+		return $meta;
 	}
 	
 	/**
@@ -385,34 +351,34 @@ class dcMeta
 	
 	@return	<b>record</b>	the enriched recordset
 	*/
-	public function computeMetaStats($rs) {
-		$rs_static = $rs->toStatic();
+	public function computeMetaStats($meta) {
+		$meta_static = $meta->toStatic();
 		
 		$max = array();
-		while ($rs_static->fetch())
+		foreach ($meta_static as $m)
 		{
-			$type = $rs_static->meta_type;
+			$type = $m->meta_type;
 			if (!isset($max[$type])) {
-				$max[$type] = $rs_static->count;
+				$max[$type] = $m->count;
 			} else {
-				if ($rs_static->count > $max[$type]) {
-					$max[$type] = $rs_static->count;
+				if ($m->count > $max[$type]) {
+					$max[$type] = $m->count;
 				}
 			}
 		}
 		
-		while ($rs_static->fetch())
+		foreach ($meta_static as $m)
 		{
-			$rs_static->set('meta_id_lower',mb_strtolower($rs_static->meta_id));
+			$m->set('meta_id_lower',mb_strtolower($m->meta_id));
 			
-			$count = $rs_static->count;
-			$percent = ((integer) $rs_static->count) * 100 / $max[$rs_static->meta_type];
+			$count = $m->count;
+			$percent = ((integer) $m->count) * 100 / $max[$m->meta_type];
 			
-			$rs_static->set('percent',(integer) round($percent));
-			$rs_static->set('roundpercent',round($percent/10)*10);
+			$m->set('percent',(integer) round($percent));
+			$m->set('roundpercent',round($percent/10)*10);
 		}
 		
-		return $rs_static;
+		return $meta_static;
 	}
 	
 	/**
@@ -515,22 +481,22 @@ class dcMeta
 		
 		$to_update = $to_remove = array();
 		
-		$rs = $this->con->select(sprintf($getReq,$this->con->escape($meta_id),
+		$meta = $this->con->select(sprintf($getReq,$this->con->escape($meta_id),
 							$this->con->escape($type)));
 		
-		while ($rs->fetch()) {
-			$to_update[] = $rs->post_id;
+		foreach ($meta as $m) {
+			$to_update[] = $m->post_id;
 		}
 		
 		if (empty($to_update)) {
 			return false;
 		}
 		
-		$rs = $this->con->select(sprintf($getReq,$new_meta_id,$type));
-		while ($rs->fetch()) {
-			if (in_array($rs->post_id,$to_update)) {
-				$to_remove[] = $rs->post_id;
-				unset($to_update[array_search($rs->post_id,$to_update)]);
+		$meta = $this->con->select(sprintf($getReq,$new_meta_id,$type));
+		foreach ($meta as $m) {
+			if (in_array($m->post_id,$to_update)) {
+				$to_remove[] = $m->post_id;
+				unset($to_update[array_search($m->post_id,$to_update)]);
 			}
 		}
 		
@@ -586,13 +552,13 @@ class dcMeta
 			$strReq .= " AND P.post_type = '".$this->con->escape($post_type)."' ";
 		}
 		
-		$rs = $this->con->select($strReq);
+		$posts = $this->con->select($strReq);
 		
-		if ($rs->isEmpty()) return array();
+		if (count($posts) == 0) return array();
 		
 		$ids = array();
-		while ($rs->fetch()) {
-			$ids[] = $rs->post_id;
+		foreach ($posts as $p) {
+			$ids[] = $p->post_id;
 		}
 		
 		$strReq = 'DELETE FROM '.$this->table.' '.

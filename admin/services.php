@@ -17,10 +17,8 @@
 require dirname(__FILE__).'/../inc/admin/prepend.php';
 
 $core->rest->addFunction('getPostById',array('dcRestMethods','getPostById'));
-$core->rest->addFunction('getCommentById',array('dcRestMethods','getCommentById'));
 $core->rest->addFunction('quickPost',array('dcRestMethods','quickPost'));
 $core->rest->addFunction('validatePostMarkup',array('dcRestMethods','validatePostMarkup'));
-$core->rest->addFunction('getZipMediaContent',array('dcRestMethods','getZipMediaContent'));
 $core->rest->addFunction('getMeta',array('dcRestMethods','getMeta'));
 $core->rest->addFunction('delMeta',array('dcRestMethods','delMeta'));
 $core->rest->addFunction('setPostMeta',array('dcRestMethods','setPostMeta'));
@@ -43,49 +41,46 @@ class dcRestMethods
 			$params['post_type'] = $get['post_type'];
 		}
 		
-		$rs = $core->blog->getPosts($params);
+		$posts = $core->blog->getPosts($params);
 		
-		if ($rs->isEmpty()) {
+		if (count($posts) == 0) {
 			throw new Exception('No post for this ID');
 		}
+		$post = $posts->current();
 		
 		$rsp = new xmlTag('post');
-		$rsp->id = $rs->post_id;
+		$rsp->id = $post->post_id;
 		
-		$rsp->blog_id($rs->blog_id);
-		$rsp->user_id($rs->user_id);
-		$rsp->cat_id($rs->cat_id);
-		$rsp->post_dt($rs->post_dt);
-		$rsp->post_creadt($rs->post_creadt);
-		$rsp->post_upddt($rs->post_upddt);
-		$rsp->post_format($rs->post_format);
-		$rsp->post_url($rs->post_url);
-		$rsp->post_lang($rs->post_lang);
-		$rsp->post_title($rs->post_title);
-		$rsp->post_excerpt($rs->post_excerpt);
-		$rsp->post_excerpt_xhtml($rs->post_excerpt_xhtml);
-		$rsp->post_content($rs->post_content);
-		$rsp->post_content_xhtml($rs->post_content_xhtml);
-		$rsp->post_notes($rs->post_notes);
-		$rsp->post_status($rs->post_status);
-		$rsp->post_selected($rs->post_selected);
-		$rsp->post_open_comment($rs->post_open_comment);
-		$rsp->post_open_tb($rs->post_open_tb);
-		$rsp->nb_comment($rs->nb_comment);
-		$rsp->nb_trackback($rs->nb_trackback);
-		$rsp->user_name($rs->user_name);
-		$rsp->user_firstname($rs->user_firstname);
-		$rsp->user_displayname($rs->user_displayname);
-		$rsp->user_email($rs->user_email);
-		$rsp->user_url($rs->user_url);
-		$rsp->cat_title($rs->cat_title);
-		$rsp->cat_url($rs->cat_url);
+		$rsp->blog_id($post->blog_id);
+		$rsp->user_id($post->user_id);
+		$rsp->cat_id($post->cat_id);
+		$rsp->post_dt($post->post_dt);
+		$rsp->post_creadt($post->post_creadt);
+		$rsp->post_upddt($post->post_upddt);
+		$rsp->post_format($post->post_format);
+		$rsp->post_url($post->post_url);
+		$rsp->post_lang($post->post_lang);
+		$rsp->post_title($post->post_title);
+		$rsp->post_excerpt($post->post_excerpt);
+		$rsp->post_excerpt_xhtml($post->post_excerpt_xhtml);
+		$rsp->post_content($post->post_content);
+		$rsp->post_content_xhtml($post->post_content_xhtml);
+		$rsp->post_notes($post->post_notes);
+		$rsp->post_status($post->post_status);
+		$rsp->post_selected($post->post_selected);
+		$rsp->user_name($post->user_name);
+		$rsp->user_firstname($post->user_firstname);
+		$rsp->user_displayname($post->user_displayname);
+		$rsp->user_email($post->user_email);
+		$rsp->user_url($post->user_url);
+		$rsp->cat_title($post->cat_title);
+		$rsp->cat_url($post->cat_url);
 		
-		$rsp->post_display_content($rs->getContent(true));
-		$rsp->post_display_excerpt($rs->getExcerpt(true));
+		$rsp->post_display_content($post->getContent(true));
+		$rsp->post_display_excerpt($post->getExcerpt(true));
 		
 		$metaTag = new xmlTag('meta');
-		if (($meta = @unserialize($rs->post_meta)) !== false)
+		if (($meta = @unserialize($post->post_meta)) !== false)
 		{
 			foreach ($meta as $K => $V)
 			{
@@ -99,44 +94,6 @@ class dcRestMethods
 		return $rsp;
 	}
 	
-	public static function getCommentById($core,$get)
-	{
-		if (empty($get['id'])) {
-			throw new Exception('No comment ID');
-		}
-		
-		$rs = $core->blog->getComments(array('comment_id' => (integer) $get['id']));
-		
-		if ($rs->isEmpty()) {
-			throw new Exception('No comment for this ID');
-		}
-		
-		$rsp = new xmlTag('post');
-		$rsp->id = $rs->comment_id;
-		
-		$rsp->comment_dt($rs->comment_dt);
-		$rsp->comment_upddt($rs->comment_upddt);
-		$rsp->comment_author($rs->comment_author);
-		$rsp->comment_site($rs->comment_site);
-		$rsp->comment_content($rs->comment_content);
-		$rsp->comment_trackback($rs->comment_trackback);
-		$rsp->comment_status($rs->comment_status);
-		$rsp->post_title($rs->post_title);
-		$rsp->post_url($rs->post_url);
-		$rsp->post_id($rs->post_id);
-		$rsp->post_dt($rs->post_dt);
-		$rsp->user_id($rs->user_id);
-		
-		$rsp->comment_display_content($rs->getContent(true));
-		
-		if ($core->auth->userID()) {
-			$rsp->comment_ip($rs->comment_ip);
-			$rsp->comment_email($rs->comment_email);
-			$rsp->comment_spam_disp(dcAntispam::statusMessage($rs));
-		}
-		
-		return $rsp;
-	}
 	
 	public static function quickPost($core,$get,$post)
 	{
@@ -149,8 +106,6 @@ class dcRestMethods
 		$cur->post_format = !empty($post['post_format']) ? $post['post_format'] : 'xhtml';
 		$cur->post_lang = !empty($post['post_lang']) ? $post['post_lang'] : '';
 		$cur->post_status = !empty($post['post_status']) ? (integer) $post['post_status'] : 0;
-		$cur->post_open_comment = (integer) $core->blog->settings->system->allow_comments;
-		$cur->post_open_tb = (integer) $core->blog->settings->system->allow_trackbacks;
 		
 		# --BEHAVIOR-- adminBeforePostCreate
 		$core->callBehavior('adminBeforePostCreate',$cur);
@@ -207,35 +162,6 @@ class dcRestMethods
 		return $rsp;
 	}
 	
-	public static function getZipMediaContent($core,$get,$post)
-	{
-		if (empty($get['id'])) {
-			throw new Exception('No media ID');
-		}
-		
-		$id = (integer) $get['id'];
-		
-		if (!$core->auth->check('media,media_admin',$core->blog)) {
-			throw new Exception('Permission denied');
-		}
-		
-		$core->media = new dcMedia($core);
-		$file = $core->media->getFile($id);
-		
-		if ($file === null || $file->type != 'application/zip' || !$file->editable) {
-			throw new Exception('Not a valid file');
-		}
-		
-		$rsp = new xmlTag('result');
-		$content = $core->media->getZipContent($file);
-		
-		foreach ($content as $k => $v) {
-			$rsp->file($k);
-		}
-		
-		return $rsp;
-	}
-	
 	public static function getMeta($core,$get)
 	{
 		$postid = !empty($get['postId']) ? $get['postId'] : null;
@@ -250,7 +176,7 @@ class dcRestMethods
 			'limit' => $limit,
 			'meta_id' => $metaId,
 			'post_id' => $postid));
-		$rs = $core->meta->computeMetaStats($rs);
+		$stats = $core->meta->computeMetaStats($rs);
 		
 		$sortby = explode(',',$sortby);
 		$sort = $sortby[0];
@@ -270,19 +196,19 @@ class dcRestMethods
 				$sort = 'meta_type';
 		}
 		
-		$rs->sort($sort,$order);
+		$stats->sort($sort,$order);
 		
 		$rsp = new xmlTag();
 		
-		while ($rs->fetch())
+		foreach ($stats as $meta)
 		{
 			$metaTag = new xmlTag('meta');
-			$metaTag->type = $rs->meta_type;
-			$metaTag->uri = rawurlencode($rs->meta_id);
-			$metaTag->count = $rs->count;
-			$metaTag->percent = $rs->percent;
-			$metaTag->roundpercent = $rs->roundpercent;
-			$metaTag->CDATA($rs->meta_id);
+			$metaTag->type = $meta->meta_type;
+			$metaTag->uri = rawurlencode($meta->meta_id);
+			$metaTag->count = $meta->count;
+			$metaTag->percent = $meta->percent;
+			$metaTag->roundpercent = $meta->roundpercent;
+			$metaTag->CDATA($meta->meta_id);
 			
 			$rsp->insertNode($metaTag);
 		}
@@ -309,8 +235,8 @@ class dcRestMethods
 			'meta_type' => $post['metaType'],
 			'post_id' => $post['postId']));
 		$pm = array();
-		while ($post_meta->fetch()) {
-			$pm[] = $post_meta->meta_id;
+		foreach ($post_meta as $meta) {
+			$pm[] = $meta->meta_id;
 		}
 		
 		foreach ($core->meta->splitMetaValues($post['meta']) as $m)
@@ -350,7 +276,7 @@ class dcRestMethods
 		$sortby = !empty($get['sortby']) ? $get['sortby'] : 'meta_type,asc';
 		
 		$rs = $core->meta->getMetadata(array('meta_type' => $metaType));
-		$rs = $core->meta->computeMetaStats($rs);
+		$stats = $core->meta->computeMetaStats($rs);
 		
 		$sortby = explode(',',$sortby);
 		$sort = $sortby[0];
@@ -370,20 +296,20 @@ class dcRestMethods
 				$sort = 'meta_type';
 		}
 		
-		$rs->sort($sort,$order);
+		$stats->sort($sort,$order);
 		
 		$rsp = new xmlTag();
 		
-		while ($rs->fetch())
+		foreach ($stats as $meta)
 		{
-			if (preg_match('/'.$q.'/i',$rs->meta_id)) {
+			if (preg_match('/'.$q.'/i',$meta->meta_id)) {
 				$metaTag = new xmlTag('meta');
-				$metaTag->type = $rs->meta_type;
-				$metaTag->uri = rawurlencode($rs->meta_id);
-				$metaTag->count = $rs->count;
-				$metaTag->percent = $rs->percent;
-				$metaTag->roundpercent = $rs->roundpercent;
-				$metaTag->CDATA($rs->meta_id);
+				$metaTag->type = $meta->meta_type;
+				$metaTag->uri = rawurlencode($meta->meta_id);
+				$metaTag->count = $meta->count;
+				$metaTag->percent = $meta->percent;
+				$metaTag->roundpercent = $meta->roundpercent;
+				$metaTag->CDATA($meta->meta_id);
 				
 				$rsp->insertNode($metaTag);
 			}

@@ -36,18 +36,18 @@ else
 		if (empty($_REQUEST['id'])) {
 			throw new Exception(__('No given blog id.'));
 		}
-		$rs = $core->getBlog($_REQUEST['id']);
+		$blogs = $core->getBlog($_REQUEST['id']);
 		
-		if (!$rs) {
+		if (count($blogs) == 0) {
 			throw new Exception(__('No such blog.'));
 		}
-		
-		$blog_id = $rs->blog_id;
-		$blog_status = $rs->blog_status;
-		$blog_name = $rs->blog_name;
-		$blog_desc = $rs->blog_desc;
+		$blog = $blogs->current();
+		$blog_id = $blog->blog_id;
+		$blog_status = $blog->blog_status;
+		$blog_name = $blog->blog_name;
+		$blog_desc = $blog->blog_desc;
 		$blog_settings = new dcSettings($core,$blog_id);
-		$blog_url = $rs->blog_url ; 
+		$blog_url = $blog->blog_url ; 
 	}
 	catch (Exception $e)
 	{
@@ -96,34 +96,6 @@ $note_title_tag_combo = array(
 	__('P') => 2
 );
 
-# Image title combo
-$img_title_combo = array(
-	__('(none)') => '',
-	__('Title') => 'Title ;; separator(, )',
-	__('Title, Date') => 'Title ;; Date(%b %Y) ;; separator(, )',
-	__('Title, Country, Date') => 'Title ;; Country ;; Date(%b %Y) ;; separator(, )',
-	__('Title, City, Country, Date') => 'Title ;; City ;; Country ;; Date(%b %Y) ;; separator(, )',
-);
-if (!in_array($blog_settings->system->media_img_title_pattern,$img_title_combo)) {
-	$img_title_combo[html::escapeHTML($blog_settings->system->media_img_title_pattern)] = html::escapeHTML($blog_settings->system->media_img_title_pattern);
-}
-
-# Image default size combo
-$img_default_size_combo = array();
-$media = new dcMedia($core);
-$img_default_size_combo[__('original')] = 'o';
-foreach ($media->thumb_sizes as $code => $size) {
-	$img_default_size_combo[__($size[2])] = $code;
-}
-
-# Image default alignment combo
-$img_default_alignment_combo = array(
-	__('None') => 'none',
-	__('Left') => 'left',
-	__('Right') => 'right',
-	__('Center') => 'center'
-);
-
 # Robots policy options
 $robots_policy_options = array(
 	'INDEX,FOLLOW' => __("I would like search engines and archivers to index and archive my blog's content."),
@@ -145,30 +117,18 @@ if ($blog_id && !empty($_POST) && $core->auth->check('admin',$blog_id))
 	$cur->blog_name = $_POST['blog_name'];
 	$cur->blog_desc = $_POST['blog_desc'];
 	
-	$media_img_t_size = abs((integer) $_POST['media_img_t_size']);
-	if ($media_img_t_size < 0) { $media_img_t_size = 100; }
-	
-	$media_img_s_size = abs((integer) $_POST['media_img_s_size']);
-	if ($media_img_s_size < 0) { $media_img_s_size = 240; }
-	
-	$media_img_m_size = abs((integer) $_POST['media_img_m_size']);
-	if ($media_img_m_size < 0) { $media_img_m_size = 448; }
-	
 	$nb_post_per_page = abs((integer) $_POST['nb_post_per_page']);
 	if ($nb_post_per_page <= 1) { $nb_post_per_page = 1; }
 	
 	$nb_post_per_feed = abs((integer) $_POST['nb_post_per_feed']);
 	if ($nb_post_per_feed <= 1) { $nb_post_per_feed = 1; }
 	
-	$nb_comment_per_feed = abs((integer) $_POST['nb_comment_per_feed']);
-	if ($nb_comment_per_feed <= 1) { $nb_comment_per_feed = 1; }
-	
 	try
 	{
 		if ($cur->blog_id != null && $cur->blog_id != $blog_id) {
-			$rs = $core->getBlog($cur->blog_id);
+			$blogs = $core->getBlog($cur->blog_id);
 			
-			if ($rs) {
+			if (count($blogs)>0) {
 				throw new Exception(__('That blog Id is already in use.'));
 			}
 		}
@@ -207,29 +167,16 @@ if ($blog_id && !empty($_POST) && $core->auth->check('admin',$blog_id))
 		$blog_settings->system->put('blog_timezone',$_POST['blog_timezone']);
 		$blog_settings->system->put('date_format',$_POST['date_format']);
 		$blog_settings->system->put('time_format',$_POST['time_format']);
-		$blog_settings->system->put('comments_ttl',abs((integer) $_POST['comments_ttl']));
-		$blog_settings->system->put('trackbacks_ttl',abs((integer) $_POST['trackbacks_ttl']));
-		$blog_settings->system->put('allow_comments',!empty($_POST['allow_comments']));
-		$blog_settings->system->put('allow_trackbacks',!empty($_POST['allow_trackbacks']));
-		$blog_settings->system->put('comments_pub',empty($_POST['comments_pub']));
-		$blog_settings->system->put('trackbacks_pub',empty($_POST['trackbacks_pub']));
-		$blog_settings->system->put('comments_nofollow',!empty($_POST['comments_nofollow']));
-		$blog_settings->system->put('wiki_comments',!empty($_POST['wiki_comments']));
 		$blog_settings->system->put('enable_xmlrpc',!empty($_POST['enable_xmlrpc']));
 		$blog_settings->system->put('note_title_tag',$_POST['note_title_tag']);
 		
 		$blog_settings->system->put('nb_post_per_page',$nb_post_per_page);
 		$blog_settings->system->put('use_smilies',!empty($_POST['use_smilies']));
-		$blog_settings->system->put('media_img_t_size',$media_img_t_size);
-		$blog_settings->system->put('media_img_s_size',$media_img_s_size);
-		$blog_settings->system->put('media_img_m_size',$media_img_m_size);
-		$blog_settings->system->put('media_img_title_pattern',$_POST['media_img_title_pattern']);
 		$blog_settings->system->put('media_img_use_dto_first',!empty($_POST['media_img_use_dto_first']));
 		$blog_settings->system->put('media_img_default_size',$_POST['media_img_default_size']);
 		$blog_settings->system->put('media_img_default_alignment',$_POST['media_img_default_alignment']);
 		$blog_settings->system->put('media_img_default_link',!empty($_POST['media_img_default_link']));
 		$blog_settings->system->put('nb_post_per_feed',$nb_post_per_feed);
-		$blog_settings->system->put('nb_comment_per_feed',$nb_comment_per_feed);
 		$blog_settings->system->put('short_feed_items',!empty($_POST['short_feed_items']));
 		
 		if (isset($_POST['robots_policy'])) {
@@ -383,49 +330,6 @@ if ($blog_id)
 	'</fieldset>';
 	
 	echo
-	'<fieldset><legend>'.__('Comments and trackbacks').'</legend>'.
-	'<div class="two-cols">'.
-	'<div class="col">'.
-	'<p><label for="allow_comments" class="classic">'.
-	form::checkbox('allow_comments','1',$blog_settings->system->allow_comments).
-	__('Accept comments').'</label></p>'.
-	
-	'<p><label for="comments_pub" class="classic">'.
-	form::checkbox('comments_pub','1',!$blog_settings->system->comments_pub).
-	__('Moderate comments').'</label></p>'.
-	
-	'<p><label for="comments_ttl" class="classic">'.sprintf(__('Leave comments open for %s days'),
-	form::field('comments_ttl',2,3,$blog_settings->system->comments_ttl)).
-	'</label></p>'.
-	'<p class="form-note">'.__('Leave blank to disable this feature.').'</p>'.
-	
-	'<p><label for="wiki_comments" class="classic">'.
-	form::checkbox('wiki_comments','1',$blog_settings->system->wiki_comments).
-	__('Wiki syntax for comments').'</label></p>'.
-	'</div>'.
-	
-	'<div class="col">'.
-	'<p><label for="allow_trackbacks" class="classic">'.
-	form::checkbox('allow_trackbacks','1',$blog_settings->system->allow_trackbacks).
-	__('Accept trackbacks').'</label></p>'.
-	
-	'<p><label for="trackbacks_pub" class="classic">'.
-	form::checkbox('trackbacks_pub','1',!$blog_settings->system->trackbacks_pub).
-	__('Moderate trackbacks').'</label></p>'.
-	
-	'<p><label for="trackbacks_ttl" class="classic">'.sprintf(__('Leave trackbacks open for %s days'),
-	form::field('trackbacks_ttl',2,3,$blog_settings->system->trackbacks_ttl)).'</label></p>'.
-	'<p class="form-note">'.__('Leave blank to disable this feature.').'</p>'.
-	
-	'<p><label for="comments_nofollow" class="classic">'.
-	form::checkbox('comments_nofollow','1',$blog_settings->system->comments_nofollow).
-	__('Add "nofollow" relation on comments and trackbacks links').'</label></p>'.
-	'</div>'.
-	'</div>'.
-	'<br class="clear" />'. //Opera sucks
-	'</fieldset>';
-	
-	echo
 	'<fieldset><legend>'.__('Blog presentation').'</legend>'.
 	'<div class="two-cols">'.
 	'<div class="col">'.
@@ -451,55 +355,12 @@ if ($blog_id)
 	form::field('nb_post_per_feed',2,3,$blog_settings->system->nb_post_per_feed)).
 	'</label></p>'.
 	
-	'<p><label for="nb_comment_per_feed" class="classic">'.sprintf(__('Display %s comments per feed'),
-	form::field('nb_comment_per_feed',2,3,$blog_settings->system->nb_comment_per_feed)).
-	'</label></p>'.
-	
 	'<p><label for="short_feed_items" class="classic">'.
 	form::checkbox('short_feed_items','1',$blog_settings->system->short_feed_items).
 	__('Truncate feeds').'</label></p>'.
 	'</div>'.
     '</div>'.
 	'<br class="clear" />'. //Opera sucks
-	'</fieldset>';
-	
-	echo
-	'<fieldset><legend>'.__('Media and images').'</legend>'.
-	'<div class="two-cols">'.
-	'<div class="col">'.
-	'<h4>'.__('Generated image sizes (in pixels)').'</h4>'.
-	'<p class="field"><label for="media_img_t_size">'.__('Thumbnails:').' '.
-	form::field('media_img_t_size',3,3,$blog_settings->system->media_img_t_size).'</label></p>'.
-	
-	'<p class="field"><label for="media_img_s_size">'.__('Small:').' '.
-	form::field('media_img_s_size',3,3,$blog_settings->system->media_img_s_size).'</label></p>'.
-	
-	'<p class="field"><label for="media_img_m_size">'.__('Medium:').' '.
-	form::field('media_img_m_size',3,3,$blog_settings->system->media_img_m_size).'</label></p>'.
-	'</div>'.
-	
-	'<div class="col">'.
-	'<h4><label for="media_img_title_pattern">'.__('Inserted image title').'</label></h4>'.
-	'<p>'.__('This defines image tag title when you insert it in a post from the media manager. It is retrieved from the picture\'s metadata.').'</p>'.
-	'<p>'.form::combo('media_img_title_pattern',$img_title_combo,html::escapeHTML($blog_settings->system->media_img_title_pattern)).'</p>'.
-	'<p><label for="media_img_use_dto_first" class="classic">'.
-	form::checkbox('media_img_use_dto_first','1',$blog_settings->system->media_img_use_dto_first).
-	__('Use original media date if possible').'</label></p>'.
-
-	'<h4>'.__('Default image insertion attributes').'</h4>'.
-	'<p><label for="media_img_default_size">'.__('Image size:').
-	form::combo('media_img_default_size',$img_default_size_combo,
-		(html::escapeHTML($blog_settings->system->media_img_default_size) != '' ? html::escapeHTML($blog_settings->system->media_img_default_size) : 'm')).
-	'</label></p>'.
-	'<p><label for="media_img_default_alignment">'.__('Image alignment').
-	form::combo('media_img_default_alignment',$img_default_alignment_combo,html::escapeHTML($blog_settings->system->media_img_default_alignment)).
-	'</label></p>'.
-	'<p><label for="media_img_default_link" class="classic">'.
-	form::checkbox('media_img_default_link','1',$blog_settings->system->media_img_default_link).
-	__('As a link to original image').'</label></p>'.
-	'</div>'.
-	'</div>'.
-
 	'</fieldset>';
 	
 	echo

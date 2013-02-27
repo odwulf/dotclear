@@ -247,41 +247,6 @@ class dcUrlHandlers extends urlHandler
 		}
 	}
 	
-	public static function category($args)
-	{
-		$_ctx =& $GLOBALS['_ctx'];
-		$core =& $GLOBALS['core'];
-		
-		$n = self::getPageNumber($args);
-		
-		if ($args == '' && !$n) {
-			# No category was specified.
-			self::p404();
-		}
-		else
-		{
-			$params = new ArrayObject(array(
-				'cat_url' => $args,
-				'post_type' => 'post'));
-			
-			$core->callBehavior('publicCategoryBeforeGetCategories',$params,$args);
-			
-			$_ctx->categories = $core->blog->getCategories($params);
-			
-			if ($_ctx->categories->isEmpty()) {
-				# The specified category does no exist.
-				self::p404();
-			}
-			else
-			{
-				if ($n) {
-					$GLOBALS['_page_number'] = $n;
-				}
-				self::serveDocument('category.html');
-			}
-		}
-	}
-	
 	public static function archive($args)
 	{
 		$_ctx =& $GLOBALS['_ctx'];
@@ -339,15 +304,6 @@ class dcUrlHandlers extends urlHandler
 
 			$_ctx->posts = $core->blog->getPosts($params);
 			
-			$_ctx->comment_preview = new ArrayObject();
-			$_ctx->comment_preview['content'] = '';
-			$_ctx->comment_preview['rawcontent'] = '';
-			$_ctx->comment_preview['name'] = '';
-			$_ctx->comment_preview['mail'] = '';
-			$_ctx->comment_preview['site'] = '';
-			$_ctx->comment_preview['preview'] = false;
-			$_ctx->comment_preview['remember'] = false;
-			
 			$core->blog->withoutPassword(true);
 			
 			if ($_ctx->posts->isEmpty())
@@ -358,125 +314,6 @@ class dcUrlHandlers extends urlHandler
 			else
 			{
 				$post_id = $_ctx->posts->post_id;
-				$post_password = $_ctx->posts->post_password;
-				
-				# Password protected entry
-				if ($post_password != '' && !$_ctx->preview)
-				{
-					# Get passwords cookie
-					if (isset($_COOKIE['dc_passwd'])) {
-						$pwd_cookie = unserialize($_COOKIE['dc_passwd']);
-					} else {
-						$pwd_cookie = array();
-					}
-					
-					# Check for match
-					if ((!empty($_POST['password']) && $_POST['password'] == $post_password)
-					|| (isset($pwd_cookie[$post_id]) && $pwd_cookie[$post_id] == $post_password))
-					{
-						$pwd_cookie[$post_id] = $post_password;
-						setcookie('dc_passwd',serialize($pwd_cookie),0,'/');
-					}
-					else
-					{
-						self::serveDocument('password-form.html','text/html',false);
-						return;
-					}
-				}
-				
-				$post_comment =
-					isset($_POST['c_name']) && isset($_POST['c_mail']) &&
-					isset($_POST['c_site']) && isset($_POST['c_content']) &&
-					$_ctx->posts->commentsActive();
-				
-				# Posting a comment
-				if ($post_comment)
-				{
-					# Spam trap
-					if (!empty($_POST['f_mail'])) {
-						http::head(412,'Precondition Failed');
-						header('Content-Type: text/plain');
-						echo "So Long, and Thanks For All the Fish";
-						# Exits immediately the application to preserve the server.
-						exit;
-					}
-					
-					$name = $_POST['c_name'];
-					$mail = $_POST['c_mail'];
-					$site = $_POST['c_site'];
-					$content = $_POST['c_content'];
-					$preview = !empty($_POST['preview']);
-					
-					if ($content != '')
-					{
-						if ($core->blog->settings->system->wiki_comments) {
-							$core->initWikiComment();
-						} else {
-							$core->initWikiSimpleComment();
-						}
-						$content = $core->wikiTransform($content);
-						$content = $core->HTMLfilter($content);
-					}
-					
-					$_ctx->comment_preview['content'] = $content;
-					$_ctx->comment_preview['rawcontent'] = $_POST['c_content'];
-					$_ctx->comment_preview['name'] = $name;
-					$_ctx->comment_preview['mail'] = $mail;
-					$_ctx->comment_preview['site'] = $site;
-					
-					if ($preview)
-					{
-						# --BEHAVIOR-- publicBeforeCommentPreview
-						$core->callBehavior('publicBeforeCommentPreview',$_ctx->comment_preview);
-						
-						$_ctx->comment_preview['preview'] = true;
-					}
-					else
-					{
-						# Post the comment
-						$cur = $core->con->openCursor($core->prefix.'comment');
-						$cur->comment_author = $name;
-						$cur->comment_site = html::clean($site);
-						$cur->comment_email = html::clean($mail);
-						$cur->comment_content = $content;
-						$cur->post_id = $_ctx->posts->post_id;
-						$cur->comment_status = $core->blog->settings->system->comments_pub ? 1 : -1;
-						$cur->comment_ip = http::realIP();
-						
-						$redir = $_ctx->posts->getURL();
-						$redir .= $core->blog->settings->system->url_scan == 'query_string' ? '&' : '?';
-						
-						try
-						{
-							if (!text::isEmail($cur->comment_email)) {
-								throw new Exception(__('You must provide a valid email address.'));
-							}
-							
-							# --BEHAVIOR-- publicBeforeCommentCreate
-							$core->callBehavior('publicBeforeCommentCreate',$cur);
-							if ($cur->post_id) {					
-								$comment_id = $core->blog->addComment($cur);
-								
-								# --BEHAVIOR-- publicAfterCommentCreate
-								$core->callBehavior('publicAfterCommentCreate',$cur,$comment_id);
-							}
-							
-							if ($cur->comment_status == 1) {
-								$redir_arg = 'pub=1';
-							} else {
-								$redir_arg = 'pub=0';
-							}
-							
-							header('Location: '.$redir.$redir_arg);
-						}
-						catch (Exception $e)
-						{
-							$_ctx->form_error = $e->getMessage();
-							$_ctx->form_error;
-						}
-					}
-				}
-				
 				# The entry
 				self::serveDocument('post.html');
 			}
@@ -512,7 +349,6 @@ class dcUrlHandlers extends urlHandler
 	public static function feed($args)
 	{
 		$type = null;
-		$comments = false;
 		$cat_url = false;
 		$post_id = null;
 		$subtitle = '';
@@ -546,18 +382,10 @@ class dcUrlHandlers extends urlHandler
 			self::serveDocument('rss2.xsl','text/xml');
 			return;
 		}
-		elseif (preg_match('#^(atom|rss2)/comments/([0-9]+)$#',$args,$m))
-		{
-			# Post comments feed
-			$type = $m[1];
-			$comments = true;
-			$post_id = (integer) $m[2];
-		}
 		elseif (preg_match('#^(?:category/(.+)/)?(atom|rss2)(/comments)?$#',$args,$m))
 		{
 			# All posts or comments feed
 			$type = $m[2];
-			$comments = !empty($m[3]);
 			if (!empty($m[1])) {
 				$cat_url = $m[1];
 			}
@@ -607,13 +435,8 @@ class dcUrlHandlers extends urlHandler
 		}
 		
 		$tpl = $type;
-		if ($comments) {
-			$tpl .= '-comments';
-			$_ctx->nb_comment_per_page = $core->blog->settings->system->nb_comment_per_feed;
-		} else {
-			$_ctx->nb_entry_per_page = $core->blog->settings->system->nb_post_per_feed;
-			$_ctx->short_feed_items = $core->blog->settings->system->short_feed_items;
-		}
+		$_ctx->nb_entry_per_page = $core->blog->settings->system->nb_post_per_feed;
+		$_ctx->short_feed_items = $core->blog->settings->system->short_feed_items;
 		$tpl .= '.xml';
 		
 		if ($type == 'atom') {
@@ -626,17 +449,6 @@ class dcUrlHandlers extends urlHandler
 		self::serveDocument($tpl,$mime);
 		if (!$comments && !$cat_url) {
 			$core->blog->publishScheduledEntries();
-		}
-	}
-	
-	public static function trackback($args)
-	{
-		if (!preg_match('/^[0-9]+$/',$args)) {
-			# The specified trackback URL is not an number
-			self::p404();
-		} else {
-			$tb = new dcTrackback($GLOBALS['core']);
-			$tb->receive($args);
 		}
 	}
 	
@@ -678,6 +490,49 @@ class dcUrlHandlers extends urlHandler
 		$blog_id = preg_replace('#^([^/]*).*#','$1',$args);
 		$server = new dcXmlRpc($core,$blog_id);
 		$server->serve();
+	}
+	
+	public static function pluginInclude($args)
+	{
+		preg_match('#^([^/]+)/(.+)$#',$args,$m);
+		if (count($m) < 3) {
+			self::p404();
+			exit;
+		}
+		$p = $m[1];
+		$file = $m[2];
+		$allow_types = array('png','jpg','jpeg','gif','css','js','swf');
+		$rel_file = path::clean('public/'.$file);
+		$paths = explode(PATH_SEPARATOR, DC_PLUGINS_ROOT);
+		$p_dir = '';
+		foreach ($paths as $path) {
+			if (is_dir($path.'/'.$p)) {
+				$p_dir = $path.'/'.$p;
+				break;
+			}
+		}
+		$pf = $p_dir.'/'.$rel_file;
+		if ($p_dir == '' ||
+			!$GLOBALS['core']->plugins->moduleExists($p) ||
+			$pf === false || !is_file($pf) || !is_readable($pf)) {
+			self::p404();
+			exit;
+		}
+
+		if (!in_array(files::getExtension($pf),$allow_types)) {
+			header('Content-Type: text/plain');
+			http::head(404,'Not Found');
+			exit;
+		}
+
+		http::$cache_max_age = 7200;
+		http::cache(array_merge(array($pf),get_included_files()));
+
+		header('Content-Type: '.files::getMimeType($pf));
+		header('Content-Length: '.filesize($pf));
+		readfile($pf);
+		exit;
+
 	}
 }
 ?>
