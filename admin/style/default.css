@@ -39,6 +39,7 @@ h1, h2, h3, h4, h5, h6, p {
 	margin-top: 0;
 	margin-bottom: 0.6em;
 }
+
 h2 {
 	color: #666;
 	font-size: 1.4em;
@@ -51,15 +52,18 @@ h3 {
 	color: #333;
 	font-size: 1.2em;
 }
+
 p, div.p {
 	margin: 0 0 1em 0;
 }
+
 hr {
 	height: 1px;
 	border-width: 1px 0 0 0;
 	border-color: #999;
 	border-style: solid;
 }
+
 pre, code {
 	font: 100% "Andale Mono","Courier New",monospace;
 }
@@ -76,6 +80,7 @@ pre {
 abbr {
 	cursor: help;
 }
+
 
 /* LAYOUT
 -------------------------------------------------------- */
@@ -430,6 +435,7 @@ abbr {
 	padding: .2em 1em .1em 24px;
 	color: #666;
 }
+
 #dashboard-items {
 	float: left;
 	width: 27%;
@@ -535,6 +541,7 @@ select#del_cat {
 #media-original-image.overheight {
 	height: 500px;
 }
+
 #add-file-f {
 	position: relative;
 }
@@ -618,10 +625,12 @@ li.media-action input {
 	white-space: normal;
 	display: inline;
 }
+
 #default-favs h3 {
 	margin-top: 2em;
 	margin-bottom: 1em;
 }
+
 .fav-list {
 	list-style-type: none;
 	margin-left: 0;
@@ -914,6 +923,7 @@ p.top-add a img {
 	padding-right: .3em;
 	vertical-align: middle;
 }
+
 /* Si quelque chose a besoin d'être caché sauf pour les revues d'écran */
 .hidden {
     position: absolute !important;
@@ -948,15 +958,18 @@ div.clearer {
 	height: 120px;
 	overflow: auto;
 }
+
 .grid {
 	background: transparent repeat url('grid.png') 0 0;
 }
+
 .line p {
 	margin: 0;
 }
 .offline {
 	color: #666;
 }
+
 ul.nice {
 	margin: 1em 0;
 	padding: 0 0 0 2em;
@@ -1005,7 +1018,6 @@ caption {
 	text-align: left;
 	margin-bottom: .5em;
 }
-
 th, td {
 	border-width: 0 0 1px 0;
 	border-style: solid;
@@ -1020,12 +1032,14 @@ th {
 .noborder td, td.noborder, .noborder th, th.noborder {
 	border-width: 0;
 }
+
 table .maximal, table.maximal {
 	width: 100%;
 }
 table .minimal {
 	width: 1px;
 }
+
 table .nowrap {
 	white-space: nowrap;
 	vertical-align: top;
@@ -1116,6 +1130,7 @@ optgroup {
 option {
 	font-weight: normal;
 }
+
 input, textarea, select {
 	background: #f9f9f9;
 	color: #000;
@@ -1148,6 +1163,7 @@ input[type=checkbox], input[type=radio] {
 	padding: 0;
 	background: transparent;
 }
+
 label {
 	display: block;
 }
@@ -1193,6 +1209,7 @@ label.area, p.area {
 	width: 100%;
 	resize: vertical;
 }
+
 label.required {
 	font-weight: bold;
 }
@@ -1217,6 +1234,7 @@ p.field input, p.field select {
 	left: 15em;
 	top: 0;
 }
+
 label .maximal, textarea.maximal, input.maximal {
 	width: 100%;
 }
@@ -1231,6 +1249,17 @@ a.form-control {
 	color: green;
 	padding-left: 20px;
 }
+
+a#toggle-filters {
+	font-weight: bold;
+	background: url(../images/plus.png) no-repeat 0 0;
+	padding-left: 20px;
+}
+
+a#toggle-filters.opened {
+	background: url(../images/minus.png) no-repeat 0 0;
+}
+
 .constrained {
 	margin: 0;
 	padding: 0;
@@ -1350,7 +1379,6 @@ a.button.add {
 a.button.add:hover, a.button.add:focus {
 	background-color: #2373A8;
 }
-
 /* jQuery Autocomplete plugin */
 .ac_results {
 	padding: 0px;
@@ -1382,4 +1410,31 @@ a.button.add:hover, a.button.add:focus {
 .ac_over {
 	background-color: #06c;
 	color: white;
+}
+
+form#filters {font-size: 100%; background: #f0f0f0; padding: 1em; border-radius: .5em; border: 1px solid #ddd;}
+form#filters .margintop {padding-top: 1.33em;}
+form#filters ul, form#filters p {list-style-type:none;margin: 0; padding: 0 0 .5em 0; margin-left: 1em;}
+form#filters .col30 {border-left: 1px solid #999;}
+form#filters .col30 h3 {margin-left: 1em;}
+
+p.line, li.line { position: relative; padding: 3px 0 0 28px; margin: 0 0 1em 0;}
+li.line input[type=submit] {position: absolute; left:0;top:0; padding: 0 .1em; margin: 0;}
+li.line input[type=checkbox], li.line input[type=checkbox] {position: absolute; left: 0; top: .2em; padding: 0 .1em; margin: 0;}
+li.line select { margin-right: 2em;}
+li.line label { display: block; width: 8em; float: left;}
+li.line label img {margin-right: 8px;}
+li.line span.or {
+	text-align: right;
+	margin-left: 5em;
+	font-weight: bold;
+}
+p.line label.or + select {margin-left: 2em;}
+li.line { padding: 0 0 0 20px; height: 1em;}
+li.line label {width: auto;}
+
+#available_filters input[type=submit] {padding: 0 .1em; margin-left: .5em;}
+
+div.pagination span, div.pagination a {
+	margin-right: 1em;
 }
