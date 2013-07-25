@@ -1,0 +1,136 @@
+# Romanian translation for dotclear
+# Copyright (c) 2011 Rosetta Contributors and Canonical Ltd 2011
+# This file is distributed under the same license as the dotclear package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2011.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: dotclear\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2008-04-15 16:27+0200\n"
+"PO-Revision-Date: 2011-09-02 22:03+0000\n"
+"Last-Translator: transla73436 <Unknown>\n"
+"Language-Team: Romanian <ro@li.org>\n"
+"Language: ro\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Launchpad-Export-Date: 2012-05-27 15:39+0000\n"
+"X-Generator: Launchpad (build 15288)\n"
+
+msgid "%Y-%m-%d %H:%M"
+msgstr "%Y-%m-%d %H:%M"
+
+msgid "_Jan"
+msgstr "_Ian"
+
+msgid "_Feb"
+msgstr "_Feb"
+
+msgid "_Mar"
+msgstr "_Mar"
+
+msgid "_Apr"
+msgstr "_Apr"
+
+msgid "_May"
+msgstr "_Mai"
+
+msgid "_Jun"
+msgstr "_Iun"
+
+msgid "_Jul"
+msgstr "_Iul"
+
+msgid "_Aug"
+msgstr "_Aug"
+
+msgid "_Sep"
+msgstr "_Sep"
+
+msgid "_Oct"
+msgstr "_Oct"
+
+msgid "_Nov"
+msgstr "_Noi"
+
+msgid "_Dec"
+msgstr "_Dec"
+
+msgid "January"
+msgstr "Ianuarie"
+
+msgid "February"
+msgstr "Februarie"
+
+msgid "March"
+msgstr "Martie"
+
+msgid "April"
+msgstr "Aprilie"
+
+msgid "May"
+msgstr "Mai"
+
+msgid "June"
+msgstr "Iunie"
+
+msgid "July"
+msgstr "Iulie"
+
+msgid "August"
+msgstr "August"
+
+msgid "September"
+msgstr "Septembrie"
+
+msgid "October"
+msgstr "Octombrie"
+
+msgid "November"
+msgstr "Noiembrie"
+
+msgid "December"
+msgstr "Decembrie"
+
+msgid "_Mon"
+msgstr "_Lun"
+
+msgid "_Tue"
+msgstr "_Mar"
+
+msgid "_Wed"
+msgstr "_Mie"
+
+msgid "_Thu"
+msgstr "_Joi"
+
+msgid "_Fri"
+msgstr "_Vin"
+
+msgid "_Sat"
+msgstr "_Sâm"
+
+msgid "_Sun"
+msgstr "_Dum"
+
+msgid "Monday"
+msgstr "Luni"
+
+msgid "Tuesday"
+msgstr "Marţi"
+
+msgid "Wednesday"
+msgstr "Miercuri"
+
+msgid "Thursday"
+msgstr "Joi"
+
+msgid "Friday"
+msgstr "Vineri"
+
+msgid "Saturday"
+msgstr "Sâmbătă"
+
+msgid "Sunday"
+msgstr "Duminică"
