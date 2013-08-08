@@ -1912,3 +1912,9 @@ msgstr "Vous pouvez modifier cette durée dans les %s"
 
 #~ msgid "The backup file does not appear to be well formed."
 #~ msgstr "Le fichier de sauvegarde semble mal formaté."
+
+msgid "Settings for %s"
+msgstr "Réglages pour %s"
+
+msgid "Settings for %s"
+msgstr "Réglages pour %s"
