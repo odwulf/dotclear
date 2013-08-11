@@ -81,7 +81,7 @@ function prefLine($id,$s,$ws,$field_name,$strong_label)
 	
 	return
 	'<tr>'.
-	'<td scope="row"><label for="s_'.$id.'">'.sprintf($slabel,html::escapeHTML($id)).'</label></td>'.
+	'<td scope="raw"><label for="s_'.$id.'">'.sprintf($slabel,html::escapeHTML($id)).'</label></td>'.
 	'<td>'.$field.'</td>'.
 	'<td>'.$s['type'].'</td>'.
 	'<td>'.html::escapeHTML($s['label']).'</td>'.
@@ -95,7 +95,6 @@ function prefLine($id,$s,$ws,$field_name,$strong_label)
   <style type="text/css">
 	table.prefs { border: 1px solid #999; margin-bottom: 2em; }
 	table.prefs th { background: #f5f5f5; color: #444; padding-top: 0.3em; padding-bottom: 0.3em; }
-	p.anchor-nav {float: right; }
   </style>
 	<script type="text/javascript">
 	//<![CDATA[
