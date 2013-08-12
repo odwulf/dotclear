@@ -122,14 +122,22 @@ catch (Exception $e)
 
 if ($filter_gui !== false)
 {
-	echo '<h2>'.html::escapeHTML($core->blog->name).' &rsaquo; <a href="'.$p_url.'">'.$page_name.'</a>'.
-		' &rsaquo; <span class="page-title">'.sprintf(__('%s configuration'),$filter->name).'</span></h2>';
+	dcPage::breadcrumb(
+		array(
+			__('Plugins') => '',
+			$page_name => $p_url,
+			'<span class="page-title">'.sprintf(__('%s configuration'),$filter->name).'</span>' => ''
+		));
 
 	echo $filter_gui;
 }
 else
 {
-	echo '<h2>'.html::escapeHTML($core->blog->name).' &rsaquo; <span class="page-title">'.$page_name.'</span></h2>';
+	dcPage::breadcrumb(
+		array(
+			__('Plugins') => '',
+			'<span class="page-title">'.$page_name.'</span>' => ''
+		));
 
 	# Information
 	$spam_count = dcAntispam::countSpam($core);
@@ -203,7 +211,7 @@ else
 		'<td class="handle">'.form::field(array('f_order['.$fid.']'),2,5,(string) $i, 'position', '', false, 'title="'.__('position').'"').'</td>'.
 		'<td class="nowrap">'.form::checkbox(array('filters_active[]'),$fid,$f->active, '', '', false, 'title="'.__('Active').'"').'</td>'.
 		'<td class="nowrap">'.form::checkbox(array('filters_auto_del[]'),$fid,$f->auto_delete, '', '', false, 'title="'.__('Auto Del.').'"').'</td>'.
-		'<td class="nowrap" scope="row">'.$f->name.'</td>'.
+		'<td class="nowrap" scope="raw">'.$f->name.'</td>'.
 		'<td class="maximal">'.$f->description.'</td>'.
 		'<td class="status">'.$gui_link.'</td>'.
 		'</tr>';

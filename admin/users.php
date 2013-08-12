@@ -104,8 +104,13 @@ if (!$core->error->flag())
 		dcPage::message(__('The permissions have been successfully updated.'));
 	}
 	
-	echo 
-	'<h2 class="page-title">'.__('Users').'</h2>'.
+	dcPage::breadcrumb(
+		array(
+			__('System') => '',
+			'<span class="page-title">'.__('Users').'</span>' => ''
+		));
+
+	echo
 	'<p class="top-add"><strong><a class="button add" href="user.php">'.__('Create a new user').'</a></strong></p>';
 	
 	if (!$show_filters) {

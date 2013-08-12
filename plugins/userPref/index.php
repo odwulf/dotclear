@@ -81,7 +81,7 @@ function prefLine($id,$s,$ws,$field_name,$strong_label)
 	
 	return
 	'<tr>'.
-	'<td scope="row"><label for="s_'.$id.'">'.sprintf($slabel,html::escapeHTML($id)).'</label></td>'.
+	'<td scope="raw"><label for="s_'.$id.'">'.sprintf($slabel,html::escapeHTML($id)).'</label></td>'.
 	'<td>'.$field.'</td>'.
 	'<td>'.$s['type'].'</td>'.
 	'<td>'.html::escapeHTML($s['label']).'</td>'.
@@ -92,11 +92,6 @@ function prefLine($id,$s,$ws,$field_name,$strong_label)
 <head>
   <title>user:preferences</title>
   <?php echo dcPage::jsPageTabs($part); ?>
-  <style type="text/css">
-	table.prefs { border: 1px solid #999; margin-bottom: 2em; }
-	table.prefs th { background: #f5f5f5; color: #444; padding-top: 0.3em; padding-bottom: 0.3em; }
-	p.anchor-nav {float: right; }
-  </style>
 	<script type="text/javascript">
 	//<![CDATA[
 	$(function() {
@@ -122,10 +117,16 @@ if (!empty($_GET['upd'])) {
 if (!empty($_GET['upda'])) {
 	dcPage::message(__('Preferences definition successfully updated'));
 }
-?>
-<h2><?php echo html::escapeHTML($core->auth->userID()); ?> &rsaquo; <span class="page-title">user:preferences</span></h2>
 
-<div id="local" class="multi-part" title="<?php echo __('user preferences'); ?>">
+dcPage::breadcrumb(
+	array(
+		__('System') => '',
+		html::escapeHTML($core->auth->userID()) => '',
+		'<span class="page-title">'.__('user:preferences').'</span>' => ''
+	));
+?>
+
+<div id="local" class="multi-part" title="<?php echo __('User preferences'); ?>">
 
 <?php 
 $table_header = '<table class="prefs" id="%s"><caption>%s</caption>'.
@@ -183,7 +184,7 @@ foreach ($prefs as $ws => $s)
 </form>
 </div>
 
-<div id="global" class="multi-part" title="<?php echo __('global preferences'); ?>">
+<div id="global" class="multi-part" title="<?php echo __('Global preferences'); ?>">
 
 <?php
 $prefs = array();

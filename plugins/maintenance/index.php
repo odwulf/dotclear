@@ -68,7 +68,13 @@ elseif ($action == 'log')
 </head>
 
 <body>
-<h2 class="page-title"><?php echo __('Maintenance'); ?></h2>
+<?php
+	dcPage::breadcrumb(
+		array(
+			__('Plugins') => '',
+			'<span class="page-title">'.__('Maintenance').'</span>' => ''
+		));
+?>
 
 <?php
 if (!empty($_GET['vacuum'])) {

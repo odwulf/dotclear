@@ -369,7 +369,11 @@ if (!empty($_GET['replaced'])) {
 	dcPage::message(__('Default favorites have been successfully updated.'));
 }
 
-echo '<h2>'.html::escapeHTML($core->blog->name).' &rsaquo; <span class="page-title">'.$page_title.'</span></h2>';
+dcPage::breadcrumb(
+	array(
+		html::escapeHTML($core->auth->userID()) => '',
+		'<span class="page-title">'.$page_title.'</span>' => ''
+	));
 
 # User profile
 echo '<div class="multi-part" id="user-profile" title="'.__('My profile').'">';

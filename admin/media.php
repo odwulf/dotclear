@@ -204,7 +204,12 @@ if ($dir && !empty($_GET['remove']) && empty($_GET['noconfirm']))
 {
 	call_user_func($open_f,__('Media manager'));
 	
-	echo '<h2>'.html::escapeHTML($core->blog->name).' &rsaquo; '.__('Media manager').' &rsaquo; <span class="page-title">'.__('confirm removal').'</span></h2>';
+	dcPage::breadcrumb(
+		array(
+			html::escapeHTML($core->blog->name) => '',
+			__('Media manager') => '',
+			'<span class="page-title">'.__('confirm removal').'</span>' => ''
+		));
 	
 	echo
 	'<form action="'.html::escapeURL($page_url).'" method="post">'.
@@ -255,15 +260,27 @@ if (!empty($_GET['unzipok'])) {
 	dcPage::message(__('Zip file has been successfully extracted.'));
 }
 
-echo '<h2>'.html::escapeHTML($core->blog->name).' &rsaquo; ';
 if (!isset($core->media)) {
-	echo '<span class="page-title">'.__('Media manager').'</span></h2>';
+	dcPage::breadcrumb(
+		array(
+			html::escapeHTML($core->blog->name) => '',
+			'<span class="page-title">'.__('Media manager').'</span>' => ''
+		));
 } else {
 	$breadcrumb = $core->media->breadCrumb(html::escapeURL($page_url).'&amp;d=%s','<span class="page-title">%s</span>');
 	if ($breadcrumb == '') {
-		echo '<span class="page-title">'.__('Media manager').'</span></h2>';
+		dcPage::breadcrumb(
+			array(
+				html::escapeHTML($core->blog->name) => '',
+				'<span class="page-title">'.__('Media manager').'</span>' => ''
+			));
 	} else {
-		echo '<a href="'.html::escapeURL($page_url.'&d=').'">'.__('Media manager').'</a>'.' / '.$breadcrumb.'</h2>';
+		dcPage::breadcrumb(
+			array(
+				html::escapeHTML($core->blog->name) => '',
+				__('Media manager') => html::escapeURL($page_url.'&d='),
+				$breadcrumb => ''
+			));
 	}
 }
 
@@ -334,12 +351,12 @@ if ($core_media_writable)
 	}
 
 	echo
-	'<form id="fileupload" action="'.html::escapeURL($page_url).'" method="POST" enctype="multipart/form-data">'.
 	'<fieldset id="add-file-f"><legend>'.__('Add files').'</legend>'.
 	'<p>'.__('Please take care to publish media that you own and that are not protected by copyright.').'</p>'.
-	form::hidden(array('MAX_FILE_SIZE'),DC_MAX_UPLOAD_SIZE).
-	$core->formNonce().
-	'<div class="fileupload-ctrl"><div class="files"></div></div>';
+	' <form id="fileupload" action="'.html::escapeURL($page_url).'" method="POST" enctype="multipart/form-data">'.
+	'<div>'.form::hidden(array('MAX_FILE_SIZE'),DC_MAX_UPLOAD_SIZE).
+	$core->formNonce().'</div>'.
+	'<div class="fileupload-ctrl"><div class="queue-message"></div><div class="files"></div></div>';
 
 	echo
 	'<div class="fileupload-buttonbar">';
@@ -368,7 +385,7 @@ if ($core_media_writable)
 	'</div>';
 
 	echo
-	form::hidden(array('d'),$d).
+	'<div>'.form::hidden(array('d'),$d).'</div>'.
 	'</fieldset>'.
 	'</form>'.
 	'</div>';
@@ -427,11 +444,9 @@ function mediaItemLine($f,$i)
 	
 	$class = 'media-item media-col-'.($i%2);
 	
-	$alt = (!$f->d ? sprintf(__('Media details of %s'),$fname) : 
-		sprintf(__('Go to %s folder'),($fname == '..' ? __('parent') : $fname)));
 	$res =
 	'<div class="'.$class.'"><a class="media-icon media-link" href="'.$link.'">'.
-	'<img src="'.$f->media_icon.'" alt="'.$alt.'" /></a>'.
+	'<img src="'.$f->media_icon.'" alt="" /></a>'.
 	'<ul>'.
 	'<li><a class="media-link" href="'.$link.'">'.$fname.'</a></li>';
 	

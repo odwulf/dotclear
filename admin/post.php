@@ -333,7 +333,6 @@ if (!empty($_GET['xconv']))
 	dcPage::message(__('Don\'t forget to validate your XHTML conversion by saving your post.'));
 }
 
-echo '<h2>'.html::escapeHTML($core->blog->name).' &rsaquo; '.'<a href="posts.php">'.__('Entries').'</a> &rsaquo; <span class="page-title">'.$page_title;
 if ($post_id) {
 	switch ($post_status) {
 		case 1:
@@ -351,18 +350,24 @@ if ($post_id) {
 		default:
 			$img_status = '';
 	}
-	echo ' &ldquo;'.$post_title.'&rdquo;'.' '.$img_status;
+	$edit_entry_str = __('Edit entry &ldquo;%s&rdquo;');
+	$page_title_edit = sprintf($edit_entry_str, html::escapeHTML($post_title)).' '.$img_status;
 }
-echo	'</span></h2>';
+dcPage::breadcrumb(
+	array(
+		html::escapeHTML($core->blog->name) => '',
+		__('Entries') => 'posts.php',
+		'<span class="page-title">'.($post_id ? $page_title_edit : $page_title).'</span>' => ''
+	));
 
 if ($post_id && $post->post_status == 1) {
-	echo '<p><a href="'.$post->getURL().'" onclick="window.open(this.href);return false;" title="'.$post_title.' ('.__('new window').')'.'">'.__('Go to this entry on the site').' <img src="images/outgoing-blue.png" alt="" /></a></p>';
+	echo '<p><a class="preview_link" href="'.$post->getURL().'" onclick="window.open(this.href);return false;" title="'.$post_title.' ('.__('new window').')'.'">'.__('Go to this entry on the site').' <img src="images/outgoing-blue.png" alt="" /></a></p>';
 }
 if ($post_id)
 {
-	echo '<p>';
+	echo '<p class="nav_prevnext">';
 	if ($prev_link) { echo $prev_link; }
-	if ($next_link && $prev_link) { echo ' - '; }
+	if ($next_link && $prev_link) { echo ' | '; }
 	if ($next_link) { echo $next_link; }
 	
 	# --BEHAVIOR-- adminPostNavLinks
@@ -382,15 +387,15 @@ if (!$can_view_page) {
 -------------------------------------------------------- */
 if ($can_edit_post)
 {
-	echo '<div class="multi-part" title="'.__('Edit entry').'" id="edit-entry">';
+	echo '<div class="multi-part" title="'.($post_id ? __('Edit entry') : __('New entry')).'" id="edit-entry">';
 	echo '<form action="post.php" method="post" id="entry-form">';
 	echo '<div id="entry-wrapper">';
 	echo '<div id="entry-content"><div class="constrained">';
 	
 	echo
-	'<p class="col"><label class="required"><abbr title="'.__('Required field').'">*</abbr> '.__('Title:').
+	'<p class="col"><label class="required"><abbr title="'.__('Required field').'">*</abbr> '.__('Title:').'</label>'.
 	form::field('post_title',20,255,html::escapeHTML($post_title),'maximal').
-	'</label></p>'.
+	'</p>'.
 	
 	'<p class="area" id="excerpt-area"><label for="post_excerpt">'.__('Excerpt:').'</label> '.
 	form::textarea('post_excerpt',50,5,html::escapeHTML($post_excerpt)).
@@ -401,7 +406,7 @@ if ($can_edit_post)
 	form::textarea('post_content',50,$core->auth->getOption('edit_size'),html::escapeHTML($post_content)).
 	'</p>'.
 	
-	'<p class="area" id="notes-area"><label for="post_notes">'.__('Notes:').'</label>'.
+	'<p class="area" id="notes-area"><label for="post_notes">'.__('Personal notes:').'</label>'.
 	form::textarea('post_notes',50,5,html::escapeHTML($post_notes)).
 	'</p>';
 	

@@ -14,7 +14,7 @@ require dirname(__FILE__).'/../inc/admin/prepend.php';
 
 dcPage::checkSuper();
 
-$page_title = __('new user');
+$page_title = __('New user');
 
 $user_id = '';
 $user_super = '';
@@ -184,7 +184,12 @@ if (!empty($_GET['add'])) {
 	dcPage::message(__('User has been successfully created.'));
 }
 
-echo '<h2><a href="users.php">'.__('Users').'</a> &rsaquo; <span class="page-title">'.$page_title.'</span></h2>';
+dcPage::breadcrumb(
+	array(
+		__('System') => '',
+		__('Users') => 'users.php',
+		'<span class="page-title">'.$page_title.'</span>' => ''
+	));
 
 if ($user_id == $core->auth->userID()) {
 	echo

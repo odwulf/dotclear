@@ -85,7 +85,7 @@ function settingLine($id,$s,$ns,$field_name,$strong_label)
 	
 	return
 	'<tr>'.
-	'<td scope="row"><label for="s_'.$id.'">'.sprintf($slabel,html::escapeHTML($id)).'</label></td>'.
+	'<td scope="raw"><label for="s_'.$id.'">'.sprintf($slabel,html::escapeHTML($id)).'</label></td>'.
 	'<td>'.$field.'</td>'.
 	'<td>'.$s['type'].'</td>'.
 	'<td>'.html::escapeHTML($s['label']).'</td>'.
@@ -96,12 +96,7 @@ function settingLine($id,$s,$ns,$field_name,$strong_label)
 <head>
   <title>about:config</title>
   <?php echo dcPage::jsPageTabs($part); ?>
-  <style type="text/css">
-  table.settings { border: 1px solid #999; margin-bottom: 2em; }
-  table.settings th { background: #f5f5f5; color: #444; padding-top: 0.3em; padding-bottom: 0.3em; }
-  p.anchor-nav {float: right; }
-  </style>
-	<script type="text/javascript">
+  <script type="text/javascript">
 	//<![CDATA[
 	$(function() {
 		$("#gs_submit").hide();
@@ -126,12 +121,18 @@ if (!empty($_GET['upd'])) {
 if (!empty($_GET['upda'])) {
 	dcPage::message(__('Settings definition successfully updated'));
 }
+dcPage::breadcrumb(
+	array(
+		__('System') => '',
+		html::escapeHTML($core->blog->name) => '',
+		'<span class="page-title">'.__('about:config').'</span>' => ''
+	));
 ?>
-<h2><?php echo html::escapeHTML($core->blog->name); ?> &rsaquo; <span class="page-title">about:config</span></h2>
 
-<div id="local" class="multi-part" title="<?php echo __('blog settings'); ?>">
+<div id="local" class="multi-part" title="<?php echo sprintf(__('Settings for %s'),html::escapeHTML($core->blog->name)); ?>">
 
-<?php 
+
+<?php
 $table_header = '<table class="settings" id="%s"><caption>%s</caption>'.
 '<thead>'.
 '<tr>'."\n".

@@ -108,8 +108,14 @@ $core->callBehavior('adminPostsActionsCombo',array(&$combo_action));
 </head>
 <body>
 
-<h2><?php echo html::escapeHTML($core->blog->name); ?> &rsaquo;
-<span class="page-title"><?php echo __('Edit tag').' &ldquo;'.html::escapeHTML($tag).'&rdquo;'; ?></span></h2>
+<?php
+dcPage::breadcrumb(
+	array(
+		html::escapeHTML($core->blog->name) => '',
+		__('Tags') => $p_url.'&amp;m=tags',
+		'<span class="page-title">'.__('Tag').' &ldquo;'.html::escapeHTML($tag).'&rdquo;'.'</span>' => ''
+	));
+?>
 
 <?php
 if (!empty($_GET['renamed'])) {
@@ -129,17 +135,17 @@ if (!$core->error->flag())
 		form::field('new_tag_id',20,255,html::escapeHTML($tag)).
 		'<input type="submit" value="'.__('Rename').'" />'.
 		$core->formNonce().
-		'</form>';
+		'</p></form>';
 		# Remove tag
 		if (!$posts->isEmpty() && $core->auth->check('contentadmin',$core->blog->id)) {
 			echo
 			'<form id="tag_delete" action="'.$this_url.'" method="post">'.
-			'<p class="no-margin">'.__('Delete this tag:').'</p>'.
-			'<input type="submit" class="delete" name="delete" value="'.__('Delete').'" />'.
+			'<p class="no-margin">'.__('Delete this tag:').
+			'</p><p><input type="submit" class="delete" name="delete" value="'.__('Delete').'" />'.
 			$core->formNonce().
-			'</form>';
+			'</p></form>';
 		}
-		echo '</p></div>';
+		echo '</div>';
 	}
 	
 	# Show posts

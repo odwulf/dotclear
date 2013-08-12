@@ -58,9 +58,9 @@ if (!$core->auth->user_prefs->dashboard->prefExists('dcnews')) {
 }
 if (!$core->auth->user_prefs->dashboard->prefExists('quickentry')) {
 	if (!$core->auth->user_prefs->dashboard->prefExists('quickentry',true)) {
-		$core->auth->user_prefs->dashboard->put('quickentry',false,'boolean','',null,true);
+		$core->auth->user_prefs->dashboard->put('quickentry',true,'boolean','',null,true);
 	}
-	$core->auth->user_prefs->dashboard->put('quickentry',false,'boolean');
+	$core->auth->user_prefs->dashboard->put('quickentry',true,'boolean');
 }
 
 # Dashboard icons
@@ -195,7 +195,11 @@ dcPage::open(__('Dashboard'),
 	$core->callBehavior('adminDashboardHeaders')
 );
 
-echo '<h2>'.html::escapeHTML($core->blog->name).' &rsaquo; <span class="page-title">'.__('Dashboard').'</span></h2>';
+dcPage::breadcrumb(
+	array(
+	'<span class="page-title">'.__('Dashboard').' : '.html::escapeHTML($core->blog->name).'</span>' => ''
+	),
+	false);
 
 if ($core->auth->getInfo('user_default_blog') != $core->blog->id && $core->auth->blog_count > 1) {
 	echo

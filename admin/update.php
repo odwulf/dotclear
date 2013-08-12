@@ -26,7 +26,7 @@ if (!is_readable(DC_DIGESTS)) {
 }
 
 $updater = new dcUpdate(DC_UPDATE_URL,'dotclear',DC_UPDATE_VERSION,DC_TPL_CACHE.'/versions');
-$new_v = $updater->check(DC_VERSION, !empty($_GET['nocache']));
+$new_v = $updater->check(DC_VERSION);
 $zip_file = $new_v ? DC_BACKUP_PATH.'/'.basename($updater->getFileURL()) : '';
 $version_info = $new_v ? $updater->getInfoURL() : '';
 
@@ -53,7 +53,7 @@ foreach (files::scanDir(DC_BACKUP_PATH) as $v) {
 	}
 }
 if (!empty($archives)) {
-	$archives = array_reverse($archives);
+	usort($archives,"version_compare");
 } else {
 	$default_tab = 'update';
 }
@@ -171,11 +171,11 @@ dcPage::open(__('Dotclear update'),
 );
 
 if (!$core->error->flag()) {
-	echo '<h2>'.__('Dotclear update').'</h2>';
-	
-	if (!empty($_GET['nocache'])) {
-		dcPage::message(__('Manual checking of update done successfully.'));
-	}
+	dcPage::breadcrumb(
+		array(
+			__('System') => '',
+			'<span class="page-title">'.__('Dotclear update').'</span>' => ''
+		));
 }
 
 if (!$step)
@@ -183,11 +183,7 @@ if (!$step)
 	echo '<div class="multi-part" id="update" title="'.__('Dotclear update').'">';
 	if (empty($new_v))
 	{
-		echo '<p><strong>'.__('No newer Dotclear version available.').'</strong></p>'.
-		'<form action="'.$p_url.'" method="get">'.
-		'<p><input type="hidden" name="nocache" value="1" />'.
-		'<input type="submit" value="'.__('Force checking update Dotclear').'" /></p>'.
-		'</form>';
+		echo '<p><strong>'.__('No newer Dotclear version available.').'</strong></p>';
 	}
 	else
 	{
@@ -215,7 +211,6 @@ if (!$step)
 		'You can revert your previous installation or delete theses files.').'</p>';
 		
 		echo	'<form action="'.$p_url.'" method="post">';
-		
 		foreach ($archives as $v) {
 			echo
 			'<p><label class="classic">'.form::radio(array('backup_file'),html::escapeHTML($v)).' '.

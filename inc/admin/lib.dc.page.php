@@ -72,11 +72,11 @@ class dcPage
 				$blogs[html::escapeHTML($rs_blogs->blog_name.' - '.$rs_blogs->blog_url)] = $rs_blogs->blog_id;
 			}
 			$blog_box =
-			'<p><label for="switchblog" class="classic">'.
-			__('Blogs:').' '.
+			'<p><label for="switchblog" class="classic nomobile">'.
+			__('Blogs:').'</label> '.
 			$core->formNonce().
 			form::combo('switchblog',$blogs,$core->blog->id).
-			'</label></p>'.
+			'</p>'.
 			'<noscript><p><input type="submit" value="'.__('ok').'" /></p></noscript>';
 		}
 
@@ -92,10 +92,11 @@ class dcPage
 		'lang="'.$core->auth->getInfo('user_lang').'">'."\n".
 		"<head>\n".
 		'  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />'."\n".
-		'  <title>'.$title.' - '.html::escapeHTML($core->blog->name).' - '.html::escapeHTML(DC_VENDOR_NAME).' - '.DC_VERSION.'</title>'."\n".
-
 		'  <meta name="ROBOTS" content="NOARCHIVE,NOINDEX,NOFOLLOW" />'."\n".
 		'  <meta name="GOOGLEBOT" content="NOSNIPPET" />'."\n".
+		'  <meta name="viewport" content="width=device-width, initial-scale=1.0" />'."\n".
+		'  <title>'.$title.' - '.html::escapeHTML($core->blog->name).' - '.html::escapeHTML(DC_VENDOR_NAME).' - '.DC_VERSION.'</title>'."\n".
+
 
 		self::jsLoadIE7().
 		'  	<link rel="stylesheet" href="style/default.css" type="text/css" media="screen" />'."\n";
@@ -132,13 +133,13 @@ class dcPage
 		'<div id="info-box1">'.
 		'<form action="index.php" method="post">'.
 		$blog_box.
-		'<p><a href="'.$core->blog->url.'" onclick="window.open(this.href);return false;" title="'.__('Go to site').' ('.__('new window').')'.'">'.__('Go to site').' <img src="images/outgoing.png" alt="" /></a>'.
+		'<p class="nomobile"><a href="'.$core->blog->url.'" onclick="window.open(this.href);return false;" title="'.__('Go to site').' ('.__('new window').')'.'">'.__('Go to site').' <img src="images/outgoing.png" alt="" /></a>'.
 		'</p></form>'.
 		'</div>'.
 		'<div id="info-box2">'.
-		'<a'.(preg_match('/index.php$/',$_SERVER['REQUEST_URI']) ? ' class="active"' : '').' href="index.php">'.__('My dashboard').'</a>'.
-		'<span> | </span><a'.(preg_match('/preferences.php(\?.*)?$/',$_SERVER['REQUEST_URI']) ? ' class="active"' : '').' href="preferences.php">'.__('My preferences').'</a>'.
-		'<span> | </span><a href="index.php?logout=1" class="logout">'.sprintf(__('Logout %s'),$core->auth->userID()).' <img src="images/logout.png" alt="" /></a>'.
+		'<a class="smallscreen'.(preg_match('/index.php$/',$_SERVER['REQUEST_URI']) ? ' active' : '').'" href="index.php">'.__('My dashboard').'</a>'.
+		'<span class="smallscreen"> | </span><a class="smallscreen'.(preg_match('/preferences.php(\?.*)?$/',$_SERVER['REQUEST_URI']) ? ' active' : '').'" href="preferences.php">'.__('My preferences').'</a>'.
+		'<span class="smallscreen"> | </span><a href="index.php?logout=1" class="logout">'.sprintf(__('Logout %s'),$core->auth->userID()).' <img src="images/logout.png" alt="" /></a>'.
 		'</div>'.
 		'</div>'.
 		'</div>';
@@ -175,7 +176,12 @@ class dcPage
 		"</div>\n".		// End of #content
 		"</div>\n".		// End of #main
 
-		'<div id="main-menu">'."\n";
+		'<div id="main-menu">'."\n".
+
+		'<form id="search-menu" action="search.php" method="get">'.
+		'<p><label for="q" class="hidden">'.__('Search:').' </label>'.form::field('q',30,255,'').
+		'<input type="submit" value="'.__('OK').'" /></p>'.
+		'</form>';
 
 		foreach ($menu as $k => $v) {
 			echo $menu[$k]->draw();
@@ -192,7 +198,7 @@ class dcPage
 
 		echo
 		'</div>'."\n".		// End of #main-menu
-		'<div id="footer"><a href="http://dotclear.org/" title="'.$text.'"><img src="style/dc_logo_footer.png" alt="'.$text.'" /></a></div>'."\n".
+		'<div id="footer"><a href="http://dotclear.org/" title="'.$text.'"><img src="style/dc_logos/w-dotclear90.png" alt="'.$text.'" /></a></div>'."\n".
 		"</div>\n";		// End of #wrapper
 
 		if (defined('DC_DEV') && DC_DEV === true) {
@@ -215,6 +221,7 @@ class dcPage
 		'<html xmlns="http://www.w3.org/1999/xhtml" '.
 		'xml:lang="'.$core->auth->getInfo('user_lang').'" '.
 		'lang="'.$core->auth->getInfo('user_lang').'">'."\n".
+		'<meta name="viewport" content="width=device-width, initial-scale=1.0" />'."\n".
 		"<head>\n".
 		'  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />'."\n".
 		'  <title>'.$title.' - '.html::escapeHTML($core->blog->name).' - '.html::escapeHTML(DC_VENDOR_NAME).' - '.DC_VERSION.'</title>'."\n".
@@ -240,7 +247,7 @@ class dcPage
 		"</head>\n".
 		'<body id="dotclear-admin" class="popup">'."\n".
 
-		'<div id="top"><h1>'.DC_VENDOR_NAME.'</h1></div>'."\n";
+		'<div id="top hidden"><h1>'.DC_VENDOR_NAME.'</h1></div>'."\n";
 
 		echo
 		'<div id="wrapper">'."\n".
@@ -263,6 +270,24 @@ class dcPage
 		'<div id="footer"><p>&nbsp;</p></div>'."\n".
 		"</div>\n".		// End of #wrapper
 		'</body></html>';
+	}
+
+	public static function breadcrumb($elements=null,$with_home_link=true,$echo=true)
+	{
+		// First item of array elements should be blog's name, System or Plugins
+		$res = '<h2>'.($with_home_link ?
+			'<a class="go_home" href="index.php"><img src="style/dashboard.png" alt="'.__('Go to dashboard').'" /></a>' :
+			'<img src="style/dashboard-alt.png" alt="" />');
+		$index = 0;
+		foreach ($elements as $element => $url) {
+			$res .= ($with_home_link ? ($index == 1 ? ' : ' : ' &rsaquo; ') : ' ').($url ? '<a href="'.$url.'">' : '').$element.($url ? '</a>' : '');
+			$index++;
+		}
+		$res .= '</h2>';
+		if ($echo) {
+			echo $res;
+		}
+		return $res;
 	}
 
 	public static function message($msg,$timestamp=true,$div=false,$echo=true)
@@ -410,7 +435,9 @@ class dcPage
 		self::jsVar('dotclear.img_menu_off','images/menu_off.png').
 
 		self::jsVar('dotclear.msg.help',
-			__('help')).
+			__('Help about this page')).
+		self::jsVar('dotclear.msg.help_hide',
+			__('Hide')).
 		self::jsVar('dotclear.msg.no_selection',
 			__('no selection')).
 		self::jsVar('dotclear.msg.select_all',
@@ -475,8 +502,6 @@ class dcPage
 			__('There are XHTML markup errors.')).
 		self::jsVar('dotclear.msg.confirm_change_post_format',
 			__('You have unsaved changes. Switch post format will loose these changes. Proceed anyway?')).
-		self::jsVar('dotclear.msg.confirm_change_post_format_noconvert',
-			__("Warning: post format change will not convert existing content. You will need to apply new format by yourself. Proceed anyway?")).
 		self::jsVar('dotclear.msg.load_enhanced_uploader',
 			__('Loading enhanced uploader, please wait.')).
 		"\n//]]>\n".
