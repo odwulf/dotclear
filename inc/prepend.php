@@ -3,7 +3,7 @@
 #
 # This file is part of Dotclear 2.
 #
-# Copyright (c) 2003-2013 Olivier Meunier & Association Dotclear
+# Copyright (c) 2003-2011 Olivier Meunier & Association Dotclear
 # Licensed under the GPL version 2.0 license.
 # See LICENSE file or
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
@@ -11,7 +11,7 @@
 # -- END LICENSE BLOCK -----------------------------------------
 
 /* ------------------------------------------------------------------------------------------- */
-#  ClearBricks, DotClear classes auto-loader
+#  ClearBricks, Twig, DotClear classes auto-loader
 if (@is_dir('/usr/lib/clearbricks')) {
 	define('CLEARBRICKS_PATH','/usr/lib/clearbricks');
 } elseif (is_dir(dirname(__FILE__).'/libs/clearbricks')) {
@@ -45,12 +45,14 @@ $__autoload['dcXmlRpc']				= dirname(__FILE__).'/core/class.dc.xmlrpc.php';
 $__autoload['dcLog']				= dirname(__FILE__).'/core/class.dc.log.php';
 $__autoload['dcWorkspace']			= dirname(__FILE__).'/core/class.dc.workspace.php';
 $__autoload['dcPrefs']				= dirname(__FILE__).'/core/class.dc.prefs.php';
+$__autoload['dcTwigPage']			= dirname(__FILE__).'/core/class.dc.twig.page.php';
 
 $__autoload['rsExtPost']				= dirname(__FILE__).'/core/class.dc.rs.extensions.php';
 $__autoload['rsExtComment']			= dirname(__FILE__).'/core/class.dc.rs.extensions.php';
 $__autoload['rsExtDates']			= dirname(__FILE__).'/core/class.dc.rs.extensions.php';
 $__autoload['rsExtUser']				= dirname(__FILE__).'/core/class.dc.rs.extensions.php';
 
+$__autoload['dcAdminContext']				= dirname(__FILE__).'/admin/class.dc.admincontext.php';
 $__autoload['dcMenu']				= dirname(__FILE__).'/admin/class.dc.menu.php';
 $__autoload['dcPage']				= dirname(__FILE__).'/admin/lib.dc.page.php';
 $__autoload['adminGenericList']		= dirname(__FILE__).'/admin/lib.pager.php';
@@ -62,10 +64,34 @@ $__autoload['adminUserList']			= dirname(__FILE__).'/admin/lib.pager.php';
 $__autoload['dcTemplate']			= dirname(__FILE__).'/public/class.dc.template.php';
 $__autoload['context']				= dirname(__FILE__).'/public/lib.tpl.context.php';
 $__autoload['dcUrlHandlers']			= dirname(__FILE__).'/public/lib.urlhandlers.php';
+$__autoload['dcForm']			= dirname(__FILE__).'/admin/class.dc.form.php';
+$__autoload['dcFormExtension']			= dirname(__FILE__).'/admin/class.dc.form.php';
+$__autoload['dcTabExtension']			= dirname(__FILE__).'/admin/class.dc.tab.php';
+$__autoload['dcItemList']			= dirname(__FILE__).'/admin/class.dc.list.php';
+$__autoload['dcListFetcher']			= dirname(__FILE__).'/admin/class.dc.list.php';
+
+foreach (array('dcFilterSet', 'dcFilter','dcFilterCombo','dcFilterText','dcFilterBoolean') as $c) {
+	$__autoload[$c] = dirname(__FILE__).'/admin/class.dc.filter.php';
+}
 
 # Clearbricks extensions
 html::$absolute_regs[] = '/(<param\s+name="movie"\s+value=")(.*?)(")/msu';
 html::$absolute_regs[] = '/(<param\s+name="FlashVars"\s+value=".*?(?:mp3|flv)=)(.*?)(&|")/msu';
+
+if (@is_dir('/usr/lib/twig')) {
+	define('TWIG_PATH','/usr/lib/Twig');
+} elseif (is_dir(dirname(__FILE__).'/libs/Twig')) {
+	define('TWIG_PATH',dirname(__FILE__).'/libs/Twig');
+} elseif (isset($_SERVER['TWIG_PATH']) && is_dir($_SERVER['TWIG_PATH'])) {
+	define('TWIG_PATH',$_SERVER['TWIG_PATH']);
+}
+
+if (!defined('TWIG_PATH') || !is_dir(TWIG_PATH)) {
+	exit('No Twig path defined');
+}
+require TWIG_PATH.'/Autoloader.php';
+Twig_Autoloader::register();
+
 /* ------------------------------------------------------------------------------------------- */
 
 
@@ -122,7 +148,7 @@ if (!defined('DC_DEBUG')) {
 
 # Constants
 define('DC_ROOT',path::real(dirname(__FILE__).'/..'));
-define('DC_VERSION','2.6-dev');
+define('DC_VERSION','2.99-dev');
 define('DC_DIGESTS',dirname(__FILE__).'/digests');
 define('DC_L10N_ROOT',dirname(__FILE__).'/../locales');
 define('DC_L10N_UPDATE_URL','http://services.dotclear.net/dc2.l10n/?version=%s');
