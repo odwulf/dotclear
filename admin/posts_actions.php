@@ -15,7 +15,123 @@ require dirname(__FILE__).'/../inc/admin/prepend.php';
 dcPage::check('usage,contentadmin');
 
 $params = array();
-$action = '';
+
+/**
+* FieldsList - Compatibility class for hidden fields & entries[] fields
+*
+*/
+class FieldsList {
+	/** @var array list of hidden fields */
+	protected $hidden;
+	/** @var array list of selected entries */
+	protected $entries;
+
+
+   /**
+     * Class constructor
+	*/
+	public function __construct() {
+		$this->hidden=array();
+		$this->entries =array();
+	}
+
+    /**
+     * addHidden - adds a hidden field
+     * 
+     * @param string $name the field name.
+     * @param mixed $value the field value.
+     *
+     * @access public
+	 * @return the FieldsList instance, enabling to chain requests
+     */	
+	 public function addHidden($name,$value) {
+		$this->hidden[] = form::hidden($name,$value);
+		return $this;
+	}
+
+    /**
+     * addEntry - adds a antry field
+     * 
+     * @param string $id the entry id.
+     * @param mixed $title the entry title.
+     *
+     * @access public
+	 * @return the FieldsList instance, enabling to chain requests
+     */	
+	 public function addEntry($id,$title) {
+		$this->entries[$id]=$title;
+		return $this;
+	}
+
+    /**
+     * getHidden - returns the list of hidden fields, html encoded
+     *
+     * @access public
+	 * @return the list of hidden fields, html encoded
+     */
+	 public function getHidden() {
+		return join('',$this->hidden);
+	}
+	
+    /**
+     * getEntries - returns the list of entry fields, html encoded
+     *
+	 * @param boolean $hidden if set to true, returns entries as a list of hidden field
+	 *                if set to false, returns html code displaying the list of entries
+	 *                with a list of checkboxes to enable to select/deselect entries
+     * @access public
+	 * @return the list of entry fields, html encoded
+     */
+	public function getEntries ($hidden=false) {
+		$ret = '';
+		if ($hidden) {
+			foreach ($this->entries as $id=> $e) {
+				$ret .= form::hidden('entries[]',$id);
+			}
+		} else {
+			$ret = 
+				'<table class="posts-list"><tr>'.
+				'<th colspan="2">'.__('Title').'</th>'.
+				'</tr>';
+			foreach ($this->entries as $id=>$title) {
+				$ret .= 
+					'<tr><td>'.
+					form::checkbox(array('entries[]'),$id,true,'','').'</td>'.
+					'<td>'.	$title.'</td></tr>';
+			}
+			$ret .= '</table>';
+		}
+		return $ret;
+	}
+	
+    /**
+     * __toString - magic method. -- DEPRECATED here
+	 *              This method is only used to preserve compatibility with plugins 
+	 *				relying on previous versions of adminPostsActionsContent behavior, 
+	 *
+     * @access public
+	 * @return the list of hidden fields and entries (as hidden fields too), html encoded
+     */
+	public function __toString() {
+		return join('',$this->hidden).$this->getEntries(true);
+	}
+}
+
+
+function listEntries($titles) {
+	$ret = 
+		'<table class="posts-list"><tr>'.
+		'<th colspan="2">'.__('Title').'</th>'.
+		'</tr>';
+	foreach ($titles as $id=>$title) {
+		$ret .= 
+			'<tr><td>'.
+			form::checkbox(array('entries[]'),$id,true,'','').'</td>'.
+			'<td>'.	$title.'</td></tr>';
+	}
+	$ret .= '</table>';
+	return $ret;
+}
 
 /* Actions
 -------------------------------------------------------- */
@@ -194,8 +310,24 @@ if (!empty($_POST['action']) && !empty($_POST['entries']))
 			$core->error->add($e->getMessages());
 		}
 	}
-}
+} else {
+	if (empty($_POST['entries'])) {
+		$core->error->add(__('At least one entry should be selected'));
+	} else {
+		$core->error->add(__('No action specified.'));
+	}
+	dcPage::open(
+		__('Entries'),'',dcPage::breadcrumb(
+		array(
+			html::escapeHTML($core->blog->name) => '',
+			__('Entries') => 'posts.php',
+			'<span class="page-title">'.__('Entries actions').'</span>' => ''
+		))
+	);
 
+	dcPage::close();
+	exit;
+}
 /* DISPLAY
 -------------------------------------------------------- */
 // Get current users list
@@ -230,57 +362,65 @@ if (!isset($action)) {
 	exit;
 }
 
-$hidden_fields = '';
+$fields = new FieldsList();
 while ($posts->fetch()) {
-	$hidden_fields .= form::hidden(array('entries[]'),$posts->post_id);
+	$fields->addEntry($posts->post_id,$posts->post_title);
 }
 
 if (isset($_POST['redir']) && strpos($_POST['redir'],'://') === false)
 {
-	$hidden_fields .= form::hidden(array('redir'),html::escapeURL($_POST['redir']));
+	$fields->addHidden(array('redir'),html::escapeURL($_POST['redir']));
 }
 else
 {
-	$hidden_fields .=
-	form::hidden(array('user_id'),$_POST['user_id']).
-	form::hidden(array('cat_id'),$_POST['cat_id']).
-	form::hidden(array('status'),$_POST['status']).
-	form::hidden(array('selected'),$_POST['selected']).
-	form::hidden(array('month'),$_POST['month']).
-	form::hidden(array('lang'),$_POST['lang']).
-	form::hidden(array('sortby'),$_POST['sortby']).
-	form::hidden(array('order'),$_POST['order']).
-	form::hidden(array('page'),$_POST['page']).
-	form::hidden(array('nb'),$_POST['nb']);
+	$fields
+		->addHidden(array('user_id'),$_POST['user_id'])
+		->addHidden(array('cat_id'),$_POST['cat_id'])
+		->addHidden(array('status'),$_POST['status'])
+		->addHidden(array('selected'),$_POST['selected'])
+		->addHidden(array('month'),$_POST['month'])
+		->addHidden(array('lang'),$_POST['lang'])
+		->addHidden(array('sortby'),$_POST['sortby'])
+		->addHidden(array('order'),$_POST['order'])
+		->addHidden(array('page'),$_POST['page'])
+		->addHidden(array('nb'),$_POST['nb'])
+	;
 }
 
 if (isset($_POST['post_type'])) {
-	$hidden_fields .= form::hidden(array('post_type'),$_POST['post_type']);
+	$fields->addHidden(array('post_type'),$_POST['post_type']);
 }
 
 # --BEHAVIOR-- adminPostsActionsContent
-$core->callBehavior('adminPostsActionsContent',$core,$action,$hidden_fields);
+$core->callBehavior('adminPostsActionsContent',$core,$action,$fields);
 
 if ($action == 'category')
 {
-	echo '<h2 class="page-title">'.__('Change category for entries').'</h2>';
-	
+	echo dcPage::breadcrumb(
+		array(
+			html::escapeHTML($core->blog->name) => '',
+			__('Entries') => 'posts.php',
+			__('Change category for entries') => ''
+	));
+
+	# categories list
 	# Getting categories
 	$categories_combo = array(__('(No cat)') => '');
 	try {
 		$categories = $core->blog->getCategories(array('post_type'=>'post'));
 		if (!$categories->isEmpty()) {
-			while ($categories->fetch()) {
+		while ($categories->fetch()) {
 				$catparents_combo[] = $categories_combo[] = new formSelectOption(
 					str_repeat('&nbsp;&nbsp;',$categories->level-1).($categories->level-1 == 0 ? '' : '&bull; ').html::escapeHTML($categories->cat_title),
-					$categories->cat_id
-				);
-			}
+				$categories->cat_id
+			);
+		}
 		}
 	} catch (Exception $e) { }
 	
 	echo
 	'<form action="posts_actions.php" method="post">'.
+	$fields->getEntries().
 	'<p><label for="new_cat_id" class="classic">'.__('Category:').'</label> '.
 	form::combo('new_cat_id',$categories_combo,'');
 	
@@ -297,7 +437,7 @@ if ($action == 'category')
 	}
 	
 	echo
-	$hidden_fields.
+	$fields->getHidden().
 	$core->formNonce().
 	form::hidden(array('action'),'category').
 	'<input type="submit" value="'.__('Save').'" /></p>'.
@@ -305,7 +445,12 @@ if ($action == 'category')
 }
 elseif ($action == 'lang')
 {
-	echo '<h2 class="page-title">'.__('Change language for entries').'</h2>';
+	echo dcPage::breadcrumb(
+		array(
+			html::escapeHTML($core->blog->name) => '',
+			__('Entries') => 'posts.php',
+			'<span class="page-title">'.__('Change language for entries').'</span>' => ''
+	));
 	
 	# lang list
 	# Languages combo
@@ -325,11 +470,13 @@ elseif ($action == 'lang')
 	
 	echo
 	'<form action="posts_actions.php" method="post">'.
+	$fields->getEntries().
+	
 	'<p><label for="new_lang" class="classic">'.__('Entry lang:').'</label> '.
 	form::combo('new_lang',$lang_combo,'');
 	
 	echo
-	$hidden_fields.
+	$fields->getHidden().
 	$core->formNonce().
 	form::hidden(array('action'),'lang').
 	'<input type="submit" value="'.__('Save').'" /></p>'.
@@ -338,15 +485,21 @@ elseif ($action == 'lang')
 }
 elseif ($action == 'author' && $core->auth->check('admin',$core->blog->id))
 {
-	echo '<h2 class="page-title">'.__('Change author for entries').'</h2>';
+	echo dcPage::breadcrumb(
+		array(
+			html::escapeHTML($core->blog->name) => '',
+			__('Entries') => 'posts.php',
+			'<span class="page-title">'.__('Change author for entries').'</span>' => ''
+	));
 	
 	echo
 	'<form action="posts_actions.php" method="post">'.
+	$fields->getEntries().
 	'<p><label for="new_auth_id" class="classic">'.__('Author ID:').'</label> '.
 	form::field('new_auth_id',20,255);
 	
 	echo
-	$hidden_fields.
+	$fields->getHidden().
 	$core->formNonce().
 	form::hidden(array('action'),'author').
 	'<input type="submit" value="'.__('Save').'" /></p>'.
