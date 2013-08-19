@@ -152,6 +152,7 @@ jQuery.fn.helpViewer = function() {
 				select.show();
 			}
 		}
+		$('p#help-button span').text($('#content').hasClass('with-help') ? dotclear.msg.help_hide : dotclear.msg.help);
 		sizeBox();
 		return false;
 	};
@@ -195,7 +196,7 @@ jQuery.fn.helpViewer = function() {
 	this.find('h3:first').nextAll('*:not(h3)').hide();
 	sizeBox();
 
-	var img = $('<span id="help-button">'+dotclear.msg.help+'</span>');
+	var img = $('<p id="help-button"><span>'+dotclear.msg.help+'</span></p>');
 	var select = $();
 	img.click(function() { return toggle(); });
 
@@ -222,6 +223,7 @@ var dotclear = {
 				imgE.style.position = 'absolute';
 				imgE.style.top = '1.7em';
 				imgE.style.left = ($(this).width()+4)+'px';
+				imgE.alt=dotclear.msg.click_to_unlock;
 				$(imgE).css('cursor','pointer');
 
 				$(imgE).click(function() {

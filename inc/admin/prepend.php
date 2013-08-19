@@ -283,7 +283,7 @@ if ($core->auth->userID() && $core->blog !== null)
 	
 	# Set menu titles
 	
-	$_menu['System']->title = __('System');
+	$_menu['System']->title = __('System settings');
 	$_menu['Blog']->title = __('Blog');
 	$_menu['Plugins']->title = __('Plugins');
 	if (!$user_ui_nofavmenu)

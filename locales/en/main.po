@@ -752,7 +752,7 @@ msgstr ""
 msgid "Comment author:"
 msgstr ""
 
-msgid "You have one spam comments."
+msgid "You have one spam comment."
 msgstr ""
 
 msgid "Show it."
@@ -2154,9 +2154,6 @@ msgid "There are XHTML markup errors."
 msgstr ""
 
 msgid "You have unsaved changes. Switch post format will loose these changes. Proceed anyway?"
-msgstr ""
-
-msgid "Warning: post format change will not convert existing content. You will need to apply new format by yourself. Proceed anyway?"
 msgstr ""
 
 msgid "Loading enhanced uploader, please wait."

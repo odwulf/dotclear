@@ -48,7 +48,7 @@ class dcPage
 	}
 
 	# Top of admin page
-	public static function open($title='', $head='')
+	public static function open($title='',$head='',$breadcrumb='')
 	{
 		global $core;
 
@@ -72,11 +72,11 @@ class dcPage
 				$blogs[html::escapeHTML($rs_blogs->blog_name.' - '.$rs_blogs->blog_url)] = $rs_blogs->blog_id;
 			}
 			$blog_box =
-			'<p><label for="switchblog" class="classic">'.
-			__('Blogs:').' '.
+			'<p><label for="switchblog" class="classic nomobile">'.
+			__('Blogs:').'</label> '.
 			$core->formNonce().
 			form::combo('switchblog',$blogs,$core->blog->id).
-			'</label></p>'.
+			'</p>'.
 			'<noscript><p><input type="submit" value="'.__('ok').'" /></p></noscript>';
 		}
 
@@ -92,10 +92,11 @@ class dcPage
 		'lang="'.$core->auth->getInfo('user_lang').'">'."\n".
 		"<head>\n".
 		'  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />'."\n".
-		'  <title>'.$title.' - '.html::escapeHTML($core->blog->name).' - '.html::escapeHTML(DC_VENDOR_NAME).' - '.DC_VERSION.'</title>'."\n".
-
 		'  <meta name="ROBOTS" content="NOARCHIVE,NOINDEX,NOFOLLOW" />'."\n".
 		'  <meta name="GOOGLEBOT" content="NOSNIPPET" />'."\n".
+		'  <meta name="viewport" content="width=device-width, initial-scale=1.0" />'."\n".
+		'  <title>'.$title.' - '.html::escapeHTML($core->blog->name).' - '.html::escapeHTML(DC_VENDOR_NAME).' - '.DC_VERSION.'</title>'."\n".
+
 
 		self::jsLoadIE7().
 		'  	<link rel="stylesheet" href="style/default.css" type="text/css" media="screen" />'."\n";
@@ -132,13 +133,13 @@ class dcPage
 		'<div id="info-box1">'.
 		'<form action="index.php" method="post">'.
 		$blog_box.
-		'<p><a href="'.$core->blog->url.'" onclick="window.open(this.href);return false;" title="'.__('Go to site').' ('.__('new window').')'.'">'.__('Go to site').' <img src="images/outgoing.png" alt="" /></a>'.
+		'<p class="nomobile"><a href="'.$core->blog->url.'" onclick="window.open(this.href);return false;" title="'.__('Go to site').' ('.__('new window').')'.'">'.__('Go to site').' <img src="images/outgoing.png" alt="" /></a>'.
 		'</p></form>'.
 		'</div>'.
 		'<div id="info-box2">'.
-		'<a'.(preg_match('/index.php$/',$_SERVER['REQUEST_URI']) ? ' class="active"' : '').' href="index.php">'.__('My dashboard').'</a>'.
-		'<span> | </span><a'.(preg_match('/preferences.php(\?.*)?$/',$_SERVER['REQUEST_URI']) ? ' class="active"' : '').' href="preferences.php">'.__('My preferences').'</a>'.
-		'<span> | </span><a href="index.php?logout=1" class="logout">'.sprintf(__('Logout %s'),$core->auth->userID()).' <img src="images/logout.png" alt="" /></a>'.
+		'<a class="smallscreen'.(preg_match('/index.php$/',$_SERVER['REQUEST_URI']) ? ' active' : '').'" href="index.php">'.__('My dashboard').'</a>'.
+		'<span class="smallscreen"> | </span><a class="smallscreen'.(preg_match('/preferences.php(\?.*)?$/',$_SERVER['REQUEST_URI']) ? ' active' : '').'" href="preferences.php">'.__('My preferences').'</a>'.
+		'<span class="smallscreen"> | </span><a href="index.php?logout=1" class="logout">'.sprintf(__('Logout %s'),$core->auth->userID()).' <img src="images/logout.png" alt="" /></a>'.
 		'</div>'.
 		'</div>'.
 		'</div>';
@@ -156,6 +157,9 @@ class dcPage
 			'<p>'.__('You are in safe mode. All plugins have been temporarily disabled. Remind to log out then log in again normally to get back all functionalities').'</p>'.
 			'</div>';
 		}
+
+		// Display breadcrumb (if given) before any error message
+		echo $breadcrumb;
 
 		if ($core->error->flag()) {
 			echo
@@ -175,7 +179,12 @@ class dcPage
 		"</div>\n".		// End of #content
 		"</div>\n".		// End of #main
 
-		'<div id="main-menu">'."\n";
+		'<div id="main-menu">'."\n".
+
+		'<form id="search-menu" action="search.php" method="get">'.
+		'<p><label for="q" class="hidden">'.__('Search:').' </label>'.form::field('q',30,255,'').
+		'<input type="submit" value="'.__('OK').'" /></p>'.
+		'</form>';
 
 		foreach ($menu as $k => $v) {
 			echo $menu[$k]->draw();
@@ -192,7 +201,7 @@ class dcPage
 
 		echo
 		'</div>'."\n".		// End of #main-menu
-		'<div id="footer"><a href="http://dotclear.org/" title="'.$text.'"><img src="style/dc_logo_footer.png" alt="'.$text.'" /></a></div>'."\n".
+		'<div id="footer"><a href="http://dotclear.org/" title="'.$text.'"><img src="style/dc_logos/w-dotclear90.png" alt="'.$text.'" /></a></div>'."\n".
 		"</div>\n";		// End of #wrapper
 
 		if (defined('DC_DEV') && DC_DEV === true) {
@@ -203,7 +212,7 @@ class dcPage
 		'</body></html>';
 	}
 
-	public static function openPopup($title='', $head='')
+	public static function openPopup($title='',$head='',$breadcrumb='')
 	{
 		global $core;
 
@@ -215,6 +224,7 @@ class dcPage
 		'<html xmlns="http://www.w3.org/1999/xhtml" '.
 		'xml:lang="'.$core->auth->getInfo('user_lang').'" '.
 		'lang="'.$core->auth->getInfo('user_lang').'">'."\n".
+		'<meta name="viewport" content="width=device-width, initial-scale=1.0" />'."\n".
 		"<head>\n".
 		'  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />'."\n".
 		'  <title>'.$title.' - '.html::escapeHTML($core->blog->name).' - '.html::escapeHTML(DC_VENDOR_NAME).' - '.DC_VERSION.'</title>'."\n".
@@ -240,12 +250,15 @@ class dcPage
 		"</head>\n".
 		'<body id="dotclear-admin" class="popup">'."\n".
 
-		'<div id="top"><h1>'.DC_VENDOR_NAME.'</h1></div>'."\n";
+		'<div id="top hidden"><h1>'.DC_VENDOR_NAME.'</h1></div>'."\n";
 
 		echo
 		'<div id="wrapper">'."\n".
 		'<div id="main">'."\n".
 		'<div id="content">'."\n";
+
+		// display breadcrumb if given
+		echo $breadcrumb;
 
 		if ($core->error->flag()) {
 			echo
@@ -263,6 +276,25 @@ class dcPage
 		'<div id="footer"><p>&nbsp;</p></div>'."\n".
 		"</div>\n".		// End of #wrapper
 		'</body></html>';
+	}
+
+	public static function breadcrumb($elements=null,$with_home_link=true,$echo=false)
+	{
+		// First item of array elements should be blog's name, System or Plugins
+		$res = '<h2>'.($with_home_link ?
+			'<a class="go_home" href="index.php"><img src="style/dashboard.png" alt="'.__('Go to dashboard').'" /></a>' :
+			'<img src="style/dashboard-alt.png" alt="" />');
+		$index = 0;
+		foreach ($elements as $element => $url) {
+			$res .= ($with_home_link ? ($index == 1 ? ' : ' : ' &rsaquo; ') : ($index == 0 ? ' ' : ' &rsaquo; ')).
+				($url ? '<a href="'.$url.'">' : '').$element.($url ? '</a>' : '');
+			$index++;
+		}
+		$res .= '</h2>';
+		if ($echo) {
+			echo $res;
+		}
+		return $res;
 	}
 
 	public static function message($msg,$timestamp=true,$div=false,$echo=true)
@@ -332,6 +364,12 @@ class dcPage
 	public static function helpBlock()
 	{
 		$args = func_get_args();
+
+		$args = new ArrayObject($args);
+
+		# --BEHAVIOR-- adminPageHelpBlock
+		$GLOBALS['core']->callBehavior('adminPageHelpBlock',$args);
+
 		if (empty($args)) {
 			return;
 		};
@@ -410,7 +448,9 @@ class dcPage
 		self::jsVar('dotclear.img_menu_off','images/menu_off.png').
 
 		self::jsVar('dotclear.msg.help',
-			__('help')).
+			__('Help about this page')).
+		self::jsVar('dotclear.msg.help_hide',
+			__('Hide')).
 		self::jsVar('dotclear.msg.no_selection',
 			__('no selection')).
 		self::jsVar('dotclear.msg.select_all',
@@ -435,6 +475,8 @@ class dcPage
 			__("Are you sure you want to delete selected entries (%s)?")).
 		self::jsVar('dotclear.msg.confirm_delete_post',
 			__("Are you sure you want to delete this entry?")).
+		self::jsVar('dotclear.msg.click_to_unlock',
+			__("Click here to unlock the field")).
 		self::jsVar('dotclear.msg.confirm_spam_delete',
 			__('Are you sure you want to delete all spams?')).
 		self::jsVar('dotclear.msg.confirm_delete_comments',
@@ -477,8 +519,6 @@ class dcPage
 			__('There are XHTML markup errors.')).
 		self::jsVar('dotclear.msg.confirm_change_post_format',
 			__('You have unsaved changes. Switch post format will loose these changes. Proceed anyway?')).
-		self::jsVar('dotclear.msg.confirm_change_post_format_noconvert',
-			__("Warning: post format change will not convert existing content. You will need to apply new format by yourself. Proceed anyway?")).
 		self::jsVar('dotclear.msg.load_enhanced_uploader',
 			__('Loading enhanced uploader, please wait.')).
 		"\n//]]>\n".
@@ -488,8 +528,8 @@ class dcPage
 	public static function jsLoadIE7()
 	{
 		return
-		'<!--[if lt IE 8]>'."\n".
-		self::jsLoad('js/ie7/IE8.js').
+		'<!--[if lt IE 9]>'."\n".
+		self::jsLoad('js/ie7/IE9.js').
 		'<link rel="stylesheet" type="text/css" href="style/iesucks.css" />'."\n".
 		'<![endif]-->'."\n";
 	}
@@ -691,59 +731,6 @@ public static function jsUpload($params=array(),$base_url=null)
 	return
 	'<link rel="stylesheet" type="text/css" href="style/jsUpload/style.css" />'."\n".
 
-	'<script id="template-upload" type="text/x-tmpl">
-	{% for (var i=0, file; file=o.files[i]; i++) { %}
-	<div class="template-upload fade">
-	<div class="upload-file">
-	<div class="upload-fileinfo">
-		<span class="upload-filename">{%=file.name%}</span>
-		<span class="upload-filesize">({%=o.formatFileSize(file.size)%})</span>
-		<span class="upload-filecancel cancel">'.__('Cancel').'</span>
-		{% if (!o.files.error && !i && !o.options.autoUpload) { %}
-		<input type="submit" class="button start"  value="'.__('Send').'"/>
-		{% } %}
-		<span class="upload-filemsg"></span>
-	</div>
-	{% if (!o.files.error) { %}
-	<div class="upload-progress progress progress-success progress-striped active"><div class="bar" style="width:0%;"></div></div>
-	{% } %}
-	</div>
-	{% } %}
-	</script>
-	<!-- The template to display files available for download -->
-	<script id="template-download" type="text/x-tmpl">
-	{% for (var i=0, file; file=o.files[i]; i++) { %}
-	<div class="template-download fade">
-	<div class="upload-file">
-	<div class="upload-fileinfo">
-		<span class="upload-filename">{%=file.name%}</span>
-		<span class="upload-filesize">({%=o.formatFileSize(file.size)%})</span>
-		<span class="upload-filemsg{% if (file.error) { %} upload-error{% } %}">
-		{% if (file.error) { %}
-		'.__('Error:').' {%=file.error%}
-		{% } else { %}
-		'.__('File successfully uploaded.').'
-		{% } %}
-		</span>
-	</div>
-	<div class="upload-progress">
-		{% if (!file.error) { %}
-		<div class="bar" style="width:100%;">100%</div>
-		{% } %}
-	</div>
-	</div>
-	{% } %}
-	</script>'.
-
-	self::jsLoad('js/jsUpload/vendor/jquery.ui.widget.js').
-	self::jsLoad('js/jsUpload/tmpl.js').
-	self::jsLoad('js/jsUpload/load-image.js').
-	self::jsLoad('js/jsUpload/jquery.iframe-transport.js').
-	self::jsLoad('js/jsUpload/jquery.fileupload.js').
-	self::jsLoad('js/jsUpload/jquery.fileupload-process.js').
-	self::jsLoad('js/jsUpload/jquery.fileupload-resize.js').
-	self::jsLoad('js/jsUpload/jquery.fileupload-ui.js').
-
 	'<script type="text/javascript">'."\n".
 	"//<![CDATA[\n".
 	"dotclear.jsUpload = {};\n".
@@ -760,13 +747,26 @@ public static function jsUpload($params=array(),$base_url=null)
 	self::jsVar('dotclear.jsUpload.msg.cancel',__('Cancel')).
 	self::jsVar('dotclear.jsUpload.msg.clean',__('Clean')).
 	self::jsVar('dotclear.jsUpload.msg.upload',__('Upload')).
+	self::jsVar('dotclear.jsUpload.msg.send',__('Send')).
+	self::jsVar('dotclear.jsUpload.msg.file_successfully_uploaded',__('File successfully uploaded.')).
 	self::jsVar('dotclear.jsUpload.msg.no_file_in_queue',__('No file in queue.')).
 	self::jsVar('dotclear.jsUpload.msg.file_in_queue',__('1 file in queue.')).
 	self::jsVar('dotclear.jsUpload.msg.files_in_queue',__('%d files in queue.')).
 	self::jsVar('dotclear.jsUpload.msg.queue_error',__('Queue error:')).
 	self::jsVar('dotclear.jsUpload.base_url',$base_url).
 	"\n//]]>\n".
-	"</script>\n";
+	"</script>\n".
+
+	self::jsLoad('js/jsUpload/vendor/jquery.ui.widget.js').
+	self::jsLoad('js/jsUpload/tmpl.js').
+	self::jsLoad('js/jsUpload/template-upload.js').
+	self::jsLoad('js/jsUpload/template-download.js').
+	self::jsLoad('js/jsUpload/load-image.js').
+	self::jsLoad('js/jsUpload/jquery.iframe-transport.js').
+	self::jsLoad('js/jsUpload/jquery.fileupload.js').
+	self::jsLoad('js/jsUpload/jquery.fileupload-process.js').
+	self::jsLoad('js/jsUpload/jquery.fileupload-resize.js').
+	self::jsLoad('js/jsUpload/jquery.fileupload-ui.js');
 }
 
 public static function jsToolMan()

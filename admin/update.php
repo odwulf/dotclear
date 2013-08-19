@@ -170,7 +170,12 @@ dcPage::open(__('Dotclear update'),
 	(!$step ? 
 		dcPage::jsPageTabs($default_tab).
 		dcPage::jsLoad('js/_update.js')
-	: '')
+		: ''),
+	dcPage::breadcrumb(
+		array(
+			__('System') => '',
+			'<span class="page-title">'.__('Dotclear update').'</span>' => ''
+		))
 );
 
 if (!$core->error->flag()) {

@@ -78,17 +78,9 @@ $(function() {
 	{
 		// Get document format and prepare toolbars
 		var formatField = $('#post_format').get(0);
-		var last_post_format = $(formatField).val();
 		$(formatField).change(function() {
-			// Confirm post format change
-			if(window.confirm(dotclear.msg.confirm_change_post_format_noconvert)){
-				excerptTb.switchMode(this.value);
-				contentTb.switchMode(this.value);
-				last_post_format = $(this).val();
-			}else{
-				// Restore last format if change cancelled
-				$(this).val(last_post_format);
-			}
+			excerptTb.switchMode(this.value);
+			contentTb.switchMode(this.value);
 		});
 		
 		var excerptTb = new jsToolBar(document.getElementById('post_excerpt'));
@@ -133,7 +125,21 @@ $(function() {
 			cookie: 'dcx_post_password',
 			hide: $('#post_password').val() == ''
 		});
-		
+		$('#post_status').parent().toggleWithLegend($('#post_status'),{
+			cookie: 'dcx_post_status'
+		});
+		$('#post_dt').parent().toggleWithLegend($('#post_dt').parent().children().not('label'),{
+			cookie: 'dcx_post_dt'
+		});
+		$('#post_format').parent().toggleWithLegend($('#post_format').parent().children().not('label').add($('#post_format').parents('p').next()),{
+			cookie: 'dcx_post_format'
+		});
+		$('#cat_id').parent().toggleWithLegend($('#cat_id'),{
+			cookie: 'cat_id'
+		});
+		$('#post_url').parent().toggleWithLegend($('#post_url').parent().children().not('label'),{
+			cookie: 'post_url'
+		});
 		// We load toolbar on excerpt only when it's ready
 		$('#excerpt-area label').toggleWithLegend($('#excerpt-area').children().not('label'),{
 			fn: function() { excerptTb.switchMode(formatField.value); },
@@ -160,6 +166,7 @@ $(function() {
 		var h = document.createElement('h4');
 		var a = document.createElement('a');
 		a.href = '#';
+		a.className = 'button';
 		$(a).click(function() {
 			var params = {
 				xd_check: dotclear.nonce,

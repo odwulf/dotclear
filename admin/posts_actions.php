@@ -281,9 +281,8 @@ if ($action == 'category')
 	
 	echo
 	'<form action="posts_actions.php" method="post">'.
-	'<p><label for="new_cat_id" class="classic">'.__('Category:').' '.
-	form::combo('new_cat_id',$categories_combo,'').
-	'</label> ';
+	'<p><label for="new_cat_id" class="classic">'.__('Category:').'</label> '.
+	form::combo('new_cat_id',$categories_combo,'');
 	
 	if ($core->auth->check('categories', $core->blog->id)) {
 		echo 
@@ -326,9 +325,8 @@ elseif ($action == 'lang')
 	
 	echo
 	'<form action="posts_actions.php" method="post">'.
-	'<p><label for="new_lang" class="classic">'.__('Entry lang:').' '.
-	form::combo('new_lang',$lang_combo,'').
-	'</label> ';
+	'<p><label for="new_lang" class="classic">'.__('Entry lang:').'</label> '.
+	form::combo('new_lang',$lang_combo,'');
 	
 	echo
 	$hidden_fields.
@@ -344,9 +342,8 @@ elseif ($action == 'author' && $core->auth->check('admin',$core->blog->id))
 	
 	echo
 	'<form action="posts_actions.php" method="post">'.
-	'<p><label for="new_auth_id" class="classic">'.__('Author ID:').' '.
-	form::field('new_auth_id',20,255).
-	'</label> ';
+	'<p><label for="new_auth_id" class="classic">'.__('Author ID:').'</label> '.
+	form::field('new_auth_id',20,255);
 	
 	echo
 	$hidden_fields.

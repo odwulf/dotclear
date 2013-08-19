@@ -264,6 +264,7 @@ xml:lang="<?php echo $dlang; ?>" lang="<?php echo $dlang; ?>">
   <meta http-equiv="Content-Language" content="<?php echo $dlang; ?>" />
   <meta name="ROBOTS" content="NOARCHIVE,NOINDEX,NOFOLLOW" />
   <meta name="GOOGLEBOT" content="NOSNIPPET" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title><?php echo html::escapeHTML(DC_VENDOR_NAME); ?></title>
   
 <?php
@@ -393,7 +394,7 @@ else
 		'<label for="user_remember" class="classic">'.
 		__('Remember my ID on this computer').'</label></p>'.
 		
-		'<p><input type="submit" value="'.__('log in').'" /></p>';
+		'<p><input class="add button" type="submit" value="'.__('log in').'" /></p>';
 		
 		if (!empty($_REQUEST['blog'])) {
 			echo form::hidden('blog',html::escapeHTML($_REQUEST['blog']));

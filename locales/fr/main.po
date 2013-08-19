@@ -792,7 +792,7 @@ msgstr "Commentaires par page"
 msgid "Comment author:"
 msgstr "Auteur du commentaire :"
 
-msgid "You have one spam comments."
+msgid "You have one spam comment."
 msgstr "Vous avez un commentaire indésirable."
 
 msgid "Show it."
@@ -1037,7 +1037,7 @@ msgstr "Pour les raisons ci-dessus, Dotclear ne peut pas être installé. Réfé
 
 #, fuzzy, php-format
 msgid "Path <strong>%s</strong> is not writable."
-msgstr "Le répertoire <strong>%s</strong> n'est pas accessible en écriture."
+msgstr "Le répertoire de cache <strong>%s</strong> n'est pas accessible en écriture."
 
 #, fuzzy
 msgid "Dotclear installation wizard could not create configuration file for you. You must change folder right or create the <strong>config.php</strong> file manually, please refer to <a href=\"http://dotclear.org/documentation/2.0/admin/install\">the documentation</a> to learn how to do this."
@@ -1122,7 +1122,7 @@ msgstr "Sur cette page, vous pouvez installer, mettre à jour ou supprimer des l
 
 #, php-format
 msgid "You can change your user language in your <a href=\"%1$s\">preferences</a> or change your blog's main language in your <a href=\"%2$s\">blog settings</a>."
-msgstr "Vous pouvez changer votre langue d'utilisateur dans vos <a href=\"%1$s\">préférences</a> ou changer la langue principale de votre blog dans vos <a href=\"%2$s\">paramètres du blog</a>."
+msgstr "Vous pouvez changer votre langue d'utilisateur dans vos <a href=\"%1$s\">préférences</a> ou changer la langue principale de votre blog dans vos <a href=\"%2$s\">paramètres de blog</a>."
 
 msgid "Installed languages"
 msgstr "Langues installées"
@@ -1489,7 +1489,7 @@ msgid "To install or upgrade a plugin you just need to extract it in your plugin
 msgstr "Tout ce que vous avez à faire pour installer une extension est de l'extraire dans votre répertoire d'extensions."
 
 msgid "Plugins"
-msgstr "Extensions"
+msgstr "Plugins"
 
 msgid "Activated plugins"
 msgstr "Extensions activées"
@@ -1567,7 +1567,7 @@ msgid "post"
 msgstr "billet"
 
 msgid "Search"
-msgstr "Recherche"
+msgstr "Rechercher"
 
 msgid "cancel"
 msgstr "annuler"
@@ -1627,7 +1627,7 @@ msgid "Published on:"
 msgstr "Publié le :"
 
 msgid "Text formating:"
-msgstr "Format du texte :"
+msgstr "Syntaxe de saisie :"
 
 msgid "Convert to XHTML"
 msgstr "Convertir en XHTML"
@@ -1922,11 +1922,11 @@ msgstr "Options de recherche"
 msgid "Query:"
 msgstr "Requête :"
 
-msgid "Search entries"
-msgstr "Rechercher des billets"
+msgid "Search in entries"
+msgstr "Rechercher dans les billets"
 
-msgid "Search comments"
-msgstr "Rechercher des commentaires"
+msgid "Search in comments"
+msgstr "Rechercher dans les commentaires"
 
 msgid "schedule"
 msgstr "programmer"
@@ -2063,7 +2063,7 @@ msgid "If you change your username, you will have to log in again."
 msgstr "Si vous changez votre login, vous devrez vous identifier à nouveau."
 
 msgid "Mandatory for password recovering procedure."
-msgstr "Obligatoire pour la procédure de récupération de mot de passe."
+msgstr "Indispensable pour la procédure de récupération de mot de passe."
 
 msgid "Password change required to connect"
 msgstr "Changement de mot de passe requis pour la connexion"
@@ -2173,6 +2173,9 @@ msgstr "Merci d'utiliser %s."
 msgid "Help"
 msgstr "Aide"
 
+msgid "Help about this page"
+msgstr "Aide pour cette page"
+
 msgid "uncover"
 msgstr "dévoiler"
 
@@ -2258,7 +2261,7 @@ msgid "Zip file content"
 msgstr "Contenu du fichier zip"
 
 msgid "XHTML markup validator"
-msgstr "Validation XHTML"
+msgstr "Vérifier la validité XHTML"
 
 msgid "XHTML content is valid."
 msgstr "Le contenu XHTML est valide."
@@ -2942,6 +2945,138 @@ msgstr "Seul un superadministrateur peut supprimer un blog"
 
 msgid "Invalid publication date"
 msgstr "Date de publication invalide"
+
+msgid "System settings"
+msgstr "Réglages système"
+
+msgid "Additional plugins"
+msgstr "Modules complémentaires"
+
+msgid "Personal notes:"
+msgstr "Notes personnelles :"
+
+msgid "New user"
+msgstr "Nouvel utilisateur"
+
+msgid "Published"
+msgstr "Publié"
+
+msgid "Unpublished"
+msgstr "Non publié"
+
+msgid "Pending"
+msgstr "En attente"
+
+msgid "Junk"
+msgstr "Indésirable"
+
+msgid "Scheduled"
+msgstr "Programmé"
+
+msgid "Protected"
+msgstr "Protégé"
+
+msgid "Publish"
+msgstr "Publier"
+
+msgid "Unpublish"
+msgstr "Mettre hors ligne"
+
+msgid "Mark as pending"
+msgstr "Mettre en attente"
+
+msgid "Mark as junk"
+msgstr "Mettre en indésirable"
+
+msgid "Next entry"
+msgstr "Billet suivant"
+
+msgid "Previous entry"
+msgstr "Billet précédent"
+
+msgid "Add an introduction to the post."
+msgstr "Ajoute une introduction au billet."
+
+msgid "Add unpublished notes."
+msgstr "Ajoute des notes non publiées."
+
+msgid "Edit basename:"
+msgstr "Modifier l'URL spécifique :"
+
+msgid "Protect with password"
+msgstr "Protéger par un mot de passe"
+
+msgid "Information collected"
+msgstr "Informations recueillies"
+
+msgid "Comment submitted"
+msgstr "Commentaire déposé"
+
+msgid "Entry status"
+msgstr "État du billet"
+
+msgid "Publication date and hour"
+msgstr "Date et heure de publication"
+
+msgid "Text formating"
+msgstr "Syntaxe de saisie"
+
+msgid "Entry lang"
+msgstr "Langue du billet"
+
+msgid "Password"
+msgstr "Mot de passe"
+
+msgid "Edit basename"
+msgstr "URL spécifique"
+
+msgid "Ordering"
+msgstr "Classement"
+
+msgid "Filter posts list"
+msgstr "Filtrer la liste des billets"
+
+msgid "entries per page"
+msgstr "billets par page"
+
+msgid "Show"
+msgstr "Afficher"
+
+msgid "Filter blogs list"
+msgstr "Filtrer la liste des blogs"
+
+msgid "blogs per page"
+msgstr "blogs par page"
+
+msgid "Filter comments and trackbacks list"
+msgstr "Filtrer la liste des commentaires et rétroliens"
+
+msgid "Filter users list"
+msgstr "Filtrer la liste des utilisateurs"
+
+msgid "users per page"
+msgstr "utilisateurs par page"
+
+msgid "Available themes in your installation"
+msgstr "Thèmes disponibles sur votre installation"
+
+msgid "You can also install themes by uploading or downloading zip files."
+msgstr "Vous pouvez aussi installer des thèmes en les déposant ou en téléchargeant des fichiers zip."
+
+msgid "Add themes to your installation"
+msgstr "Ajouter des thèmes sur votre installation"
+
+msgid "Select this comment"
+msgstr "Sélectionner ce commentaire"
+
+msgid "Next page"
+msgstr "Page suivante"
+
+msgid "Previous page"
+msgstr "Page précédente"
+
+msgid "Add an introduction to the page."
+msgstr "Ajoute une introduction à la page."
 
 msgid "(No cat)"
 msgstr "(aucune)"

@@ -367,6 +367,21 @@ if ($step) {
 
 <?php
 
+if ($step) {
+	echo dcPage::breadcrumb(
+		array(
+			html::escapeHTML($core->blog->name) => '',
+			$page_title => $p_url,
+			'<span class="page-title">'.__('Add item').'</span>' => ''
+		));
+} else {
+	echo dcPage::breadcrumb(
+		array(
+			html::escapeHTML($core->blog->name) => '',
+			'<span class="page-title">'.$page_title.'</span>' => ''
+		));
+}
+
 if (!empty($_GET['added'])) {
 	dcPage::message(__('Menu item has been successfully added.'));
 }
@@ -380,15 +395,13 @@ if (!empty($_GET['updated'])) {
 	dcPage::message(__('Menu items have been successfully updated.'));
 }
 
-if ($step) 
+if ($step)
 {
 	// Formulaire d'ajout d'un item
-	echo '<h2>'.html::escapeHTML($core->blog->name).' &rsaquo; <a href="'.$p_url.'">'.$page_title.'</a> &rsaquo; <span class="page-title">'.__('Add item').'</span></h2>';
-	
 	switch ($step) {
 		case 1:
 			// Selection du type d'item
-			echo '<form id="additem" action="'.$p_url.'&amp;add=2" method="post">';
+			echo '<form id="additem" action="'.$p_url.'&add=2" method="post">';
 			echo '<fieldset><legend>'.__('Select type').'</legend>';
 			echo '<p class="field"><label for="item_type" class="classic">'.__('Type of item menu:').'</label>'.form::combo('item_type',$items_combo,'').'</p>';
 			echo '<p>'.$core->formNonce().'<input type="submit" name="appendaction" value="'.__('Continue...').'" />'.'</p>';
@@ -398,7 +411,7 @@ if ($step)
 		case 2:
 			if ($items[$item_type][1]) {
 				// Choix à faire
-				echo '<form id="additem" action="'.$p_url.'&amp;add=3" method="post">';
+				echo '<form id="additem" action="'.$p_url.'&add=3" method="post">';
 				echo '<fieldset><legend>'.$item_type_label.'</legend>';
 				switch ($item_type) {
 					case 'lang':
@@ -435,7 +448,7 @@ if ($step)
 			}
 		case 3:
 			// Libellé et description
-			echo '<form id="additem" action="'.$p_url.'&amp;add=4" method="post">';
+			echo '<form id="additem" action="'.$p_url.'&add=4" method="post">';
 			echo '<fieldset><legend>'.$item_type_label.($item_select_label != '' ? ' ('.$item_select_label.')' : '').'</legend>';
 			echo '<p class="field"><label for="item_label" class="classic required"><abbr title="'.__('Required field').'">*</abbr> '.
 				__('Label of item menu:').'</label>'.form::field('item_label',20,255,$item_label).'</p>';
@@ -453,12 +466,8 @@ if ($step)
 
 // Liste des items
 if (!$step) {
-	echo '<h2>'.html::escapeHTML($core->blog->name).' &rsaquo; <span class="page-title">'.$page_title.'</span></h2>';
-}
-
-if (!$step) {
-	echo '<form id="menuitemsappend" action="'.$p_url.'&amp;add=1" method="post">';
-	echo '<p>'.$core->formNonce().'<input class="add" type="submit" name="appendaction" value="'.__('Add an item').'" /></p>';
+	echo '<form id="menuitemsappend" action="'.$p_url.'&add=1" method="post">';
+	echo '<p class="top-add">'.$core->formNonce().'<input class="button add" type="submit" name="appendaction" value="'.__('Add an item').'" /></p>';
 	echo '</form>';
 }
 
