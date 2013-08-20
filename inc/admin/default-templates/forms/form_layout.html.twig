@@ -1,0 +1,120 @@
+{# Form Fields #}
+{# Heavily inspired from Symfony Framework #}
+
+{% block field_text %}
+{% spaceless %}
+	{% set type = type|default('text') %}
+	{{ block('field_input') }}
+{% endspaceless %}
+{% endblock field_text %}
+
+{% block field_submit %}
+{% spaceless %}
+	{% set type = type|default('submit') %}
+	{{ block('field_input') }}
+{% endspaceless %}
+{% endblock field_submit %}
+
+{% block field_textarea %}
+{% spaceless %}
+	{{ block('startlabel') }}
+    <textarea {{ block('field_attr') }}>{{ value }}</textarea>
+    {{ block('endlabel') }}
+{% endspaceless %}
+{% endblock field_textarea %}
+
+{% block field_password %}
+{% spaceless %}
+	{% set type = type|default('password') %}
+	{{ block('field_input') }}
+{% endspaceless %}
+{% endblock field_password %}
+
+{% block field_hidden %}
+    {% set type = type|default('hidden') %}
+    {{ block('field_input') }}
+{% endblock field_hidden %}
+
+{% block field_input %}
+{% autoescape "html" %}
+{% spaceless %}
+    {% set type = type|default('text') %}
+    {{ block('startlabel') }}
+	<input type="{{ type }}" {{ block('field_attr') }} {% if value is not empty %}value="{{ value }}" {% endif %} />
+    {{ block('endlabel') }}
+{% endspaceless %}
+{% endautoescape %}
+{% endblock field_input %}
+
+{% block field_checkbox %}
+{% set type = type|default('checkbox') %}
+{% set nestedlabel = true %}
+{% set labelclass = "classic" %}
+{% set descafter = true %}
+    {{ block('field_input') }}
+{% endblock field_checkbox %}
+
+{% block field_attr %}
+{% spaceless %}
+ {% if id %}id="{{id}}"{% endif %} name="{{name}}" {% if read_only %} disabled="disabled"{% endif %}{#{% if required %} required="required"{% endif %}#}{% if maxlength %} maxlength="{{ maxlength }}"{% endif %}{% if checked %} checked="{{ checked }}"{% endif %}{% if pattern %} pattern="{{ pattern }}"{% endif %}
+    {% for attrname,attrvalue in attr %}{{attrname}}="{{attrvalue}}" {% endfor %}
+{% endspaceless %}
+{% endblock field_attr %}
+
+{% block field_options %}
+{% spaceless %}
+    {% for choice, label in options %}
+        {% if _form_is_choice_group(label) %}
+            <optgroup label="{{ choice }}">
+                {% for nestedChoice, nestedLabel in label %}
+                    <option value="{{ nestedChoice }}"{% if nestedChoice == value %} selected="selected"{% endif %}>{{ nestedLabel }}</option>
+                {% endfor %}
+            </optgroup>
+        {% else %}
+            <option value="{{ choice }}"{% if choice == value %} selected="selected"{% endif %}>{{ label|raw }}</option>
+        {% endif %}
+    {% endfor %}
+{% endspaceless %}
+{% endblock field_options %}
+
+{% block field_combo %}
+{% spaceless %}
+    {{ block('startlabel') }}
+    <select {{ block('field_attr') }}>
+        {{ block('field_options') }}
+    </select>
+    {{ block('endlabel') }}
+{% endspaceless %}
+{% endblock field_combo %}
+
+{% block startlabel %}
+{% spaceless %}
+    {% if label is not empty %}
+        {% if required is not empty %}
+            {% set labelclass = labelclass ~ " required" %}
+        {% endif %}
+        <label for="{{name}}" {% if labelclass is not empty %}class="{{labelclass}}"{% endif %}>{% if required is not empty %}<abbr title="{{__('Required field')}}">*</abbr>{% endif %} 
+
+		{% if descafter is empty %} {{label}} {% endif %}
+        {% if nestedlabel is empty %}</label> {% endif %}
+    {% endif %}
+{% endspaceless %}
+{% endblock startlabel %}
+
+{% block endlabel %}
+{% spaceless %}
+    {% if label is not empty %}
+		{% if descafter %} {{label}} {% endif %}
+        {% if nestedlabel is not empty %}</label>{% endif %}
+    {% endif %}
+{% endspaceless %}
+{% endblock endlabel %}
+
+{%- block beginform -%}
+<form {% if class is not empty -%} class="{{class|join(' ')}}" {%- endif %} {% if id is not empty -%} id="{{id}}" {%- endif %}
+ method="{{method}}" action="{{action}}">
+{%- endblock beginform -%}
+
+{% block endform -%}
+</form>
+{%- endblock endform %}
