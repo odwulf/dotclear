@@ -3,7 +3,7 @@
 #
 # This file is part of Dotclear 2.
 #
-# Copyright (c) 2003-2013 Olivier Meunier & Association Dotclear
+# Copyright (c) 2003-2011 Olivier Meunier & Association Dotclear
 # Licensed under the GPL version 2.0 license.
 # See LICENSE file or
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
@@ -38,6 +38,7 @@ class dcCore
 	public $postmedia;	///< <b>dcPostMedia</b>		dcPostMedia object
 	public $rest;		///< <b>dcRestServer</b>	dcRestServer object
 	public $log;		///< <b>dcLog</b>			dcLog object
+	public $tpl;		///< <b>Twig_Environment</b>	Twig_Environment object
 	
 	private $versions = null;
 	private $formaters = array();
@@ -94,6 +95,7 @@ class dcCore
 		
 		$this->addFormater('xhtml', create_function('$s','return $s;'));
 		$this->addFormater('wiki', array($this,'wikiTransform'));
+		$this->loadTemplateEnvironment();
 	}
 	
 	private function authInstance()
@@ -117,6 +119,41 @@ class dcCore
 		return new $c($this);
 	}
 	
+	/**
+	Create template environment (Twig_Environment instance)
+	
+	default-templates path must be added from admin|public/prepend.php with:
+	$core->tpl->getLoader()->addPath('PATH_TO/default-templates');
+	Selected theme path must be added with:
+	$core->tpl->getLoader()->prependPath('PATH_TO/MY_THEME');
+	*/
+	public function loadTemplateEnvironment()
+	{
+		$cache_dir = path::real(DC_TPL_CACHE.'/twtpl',false);
+		if (!is_dir($cache_dir)) {
+			try {
+				files::makeDir($cache_dir);
+			} catch (Exception $e) {
+				$cache_dir = false;
+			}
+		}
+		
+		$this->tpl = new Twig_Environment(
+			new Twig_Loader_Filesystem(dirname(__FILE__).'/../swf'),
+			array(
+				'auto_reload' => true,
+				'autoescape' => false,
+				'base_template_class' => 'Twig_Template',
+				'cache' => $cache_dir, 
+				'charset' => 'UTF-8',
+				'debug' => DC_DEBUG,
+				'optimizations' => -1,
+				'strict_variables' => 0 //DC_DEBUG // Please fix undefined variables!
+			)
+		);
+		$this->tpl->addExtension(new dcFormExtension($this));
+		$this->tpl->addExtension(new dcTabExtension($this));
+	}
 	
 	/// @name Blog init methods
 	//@{
