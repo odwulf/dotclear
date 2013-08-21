@@ -48,7 +48,7 @@ class dcPage
 	}
 
 	# Top of admin page
-	public static function open($title='', $head='')
+	public static function open($title='',$head='',$breadcrumb='')
 	{
 		global $core;
 
@@ -158,9 +158,12 @@ class dcPage
 			'</div>';
 		}
 
+		// Display breadcrumb (if given) before any error message
+		echo $breadcrumb;
+
 		if ($core->error->flag()) {
 			echo
-			'<div class="error"><p><strong>'.(count($core->error->getErrors()) > 1 ? __('Errors:') : __('Error:')).'</p></strong>'.
+			'<div class="error"><p><strong>'.(count($core->error->getErrors()) > 1 ? __('Errors:') : __('Error:')).'</strong></p>'.
 			$core->error->toHTML().
 			'</div>';
 		}
@@ -209,7 +212,7 @@ class dcPage
 		'</body></html>';
 	}
 
-	public static function openPopup($title='', $head='')
+	public static function openPopup($title='',$head='',$breadcrumb='')
 	{
 		global $core;
 
@@ -254,6 +257,9 @@ class dcPage
 		'<div id="main">'."\n".
 		'<div id="content">'."\n";
 
+		// display breadcrumb if given
+		echo $breadcrumb;
+
 		if ($core->error->flag()) {
 			echo
 			'<div class="error"><strong>'.__('Errors:').'</strong>'.
@@ -272,7 +278,7 @@ class dcPage
 		'</body></html>';
 	}
 
-	public static function breadcrumb($elements=null,$with_home_link=true,$echo=true)
+	public static function breadcrumb($elements=null,$with_home_link=true,$echo=false)
 	{
 		// First item of array elements should be blog's name, System or Plugins
 		$res = '<h2>'.($with_home_link ?
@@ -280,7 +286,8 @@ class dcPage
 			'<img src="style/dashboard-alt.png" alt="" />');
 		$index = 0;
 		foreach ($elements as $element => $url) {
-			$res .= ($with_home_link ? ($index == 1 ? ' : ' : ' &rsaquo; ') : ' ').($url ? '<a href="'.$url.'">' : '').$element.($url ? '</a>' : '');
+			$res .= ($with_home_link ? ($index == 1 ? ' : ' : ' &rsaquo; ') : ($index == 0 ? ' ' : ' &rsaquo; ')).
+				($url ? '<a href="'.$url.'">' : '').$element.($url ? '</a>' : '');
 			$index++;
 		}
 		$res .= '</h2>';
@@ -357,6 +364,12 @@ class dcPage
 	public static function helpBlock()
 	{
 		$args = func_get_args();
+
+		$args = new ArrayObject($args);
+
+		# --BEHAVIOR-- adminPageHelpBlock
+		$GLOBALS['core']->callBehavior('adminPageHelpBlock',$args);
+
 		if (empty($args)) {
 			return;
 		};
@@ -462,6 +475,8 @@ class dcPage
 			__("Are you sure you want to delete selected entries (%s)?")).
 		self::jsVar('dotclear.msg.confirm_delete_post',
 			__("Are you sure you want to delete this entry?")).
+		self::jsVar('dotclear.msg.click_to_unlock',
+			__("Click here to unlock the field")).
 		self::jsVar('dotclear.msg.confirm_spam_delete',
 			__('Are you sure you want to delete all spams?')).
 		self::jsVar('dotclear.msg.confirm_delete_comments',
@@ -492,6 +507,8 @@ class dcPage
 			__('Remove this theme')).
 		self::jsVar('dotclear.msg.confirm_delete_theme',
 			__('Are you sure you want to delete "%s" theme?')).
+		self::jsVar('dotclear.msg.confirm_delete_backup',
+			__('Are you sure you want to delete this backup?')).
 		self::jsVar('dotclear.msg.zip_file_content',
 			__('Zip file content')).
 		self::jsVar('dotclear.msg.xhtml_validator',
@@ -511,8 +528,8 @@ class dcPage
 	public static function jsLoadIE7()
 	{
 		return
-		'<!--[if lt IE 8]>'."\n".
-		self::jsLoad('js/ie7/IE8.js').
+		'<!--[if lt IE 9]>'."\n".
+		self::jsLoad('js/ie7/IE9.js').
 		'<link rel="stylesheet" type="text/css" href="style/iesucks.css" />'."\n".
 		'<![endif]-->'."\n";
 	}
@@ -714,59 +731,6 @@ public static function jsUpload($params=array(),$base_url=null)
 	return
 	'<link rel="stylesheet" type="text/css" href="style/jsUpload/style.css" />'."\n".
 
-	'<script id="template-upload" type="text/x-tmpl">
-	{% for (var i=0, file; file=o.files[i]; i++) { %}
-	<div class="template-upload fade">
-	<div class="upload-file">
-	<div class="upload-fileinfo">
-		<span class="upload-filename">{%=file.name%}</span>
-		<span class="upload-filesize">({%=o.formatFileSize(file.size)%})</span>
-		<span class="upload-filecancel cancel">'.__('Cancel').'</span>
-		{% if (!o.files.error && !i && !o.options.autoUpload) { %}
-		<input type="submit" class="button start"  value="'.__('Send').'"/>
-		{% } %}
-		<span class="upload-filemsg"></span>
-	</div>
-	{% if (!o.files.error) { %}
-	<div class="upload-progress progress progress-success progress-striped active"><div class="bar" style="width:0%;"></div></div>
-	{% } %}
-	</div>
-	{% } %}
-	</script>
-	<!-- The template to display files available for download -->
-	<script id="template-download" type="text/x-tmpl">
-	{% for (var i=0, file; file=o.files[i]; i++) { %}
-	<div class="template-download fade">
-	<div class="upload-file">
-	<div class="upload-fileinfo">
-		<span class="upload-filename">{%=file.name%}</span>
-		<span class="upload-filesize">({%=o.formatFileSize(file.size)%})</span>
-		<span class="upload-filemsg{% if (file.error) { %} upload-error{% } %}">
-		{% if (file.error) { %}
-		'.__('Error:').' {%=file.error%}
-		{% } else { %}
-		'.__('File successfully uploaded.').'
-		{% } %}
-		</span>
-	</div>
-	<div class="upload-progress">
-		{% if (!file.error) { %}
-		<div class="bar" style="width:100%;">100%</div>
-		{% } %}
-	</div>
-	</div>
-	{% } %}
-	</script>'.
-
-	self::jsLoad('js/jsUpload/vendor/jquery.ui.widget.js').
-	self::jsLoad('js/jsUpload/tmpl.js').
-	self::jsLoad('js/jsUpload/load-image.js').
-	self::jsLoad('js/jsUpload/jquery.iframe-transport.js').
-	self::jsLoad('js/jsUpload/jquery.fileupload.js').
-	self::jsLoad('js/jsUpload/jquery.fileupload-process.js').
-	self::jsLoad('js/jsUpload/jquery.fileupload-resize.js').
-	self::jsLoad('js/jsUpload/jquery.fileupload-ui.js').
-
 	'<script type="text/javascript">'."\n".
 	"//<![CDATA[\n".
 	"dotclear.jsUpload = {};\n".
@@ -783,13 +747,26 @@ public static function jsUpload($params=array(),$base_url=null)
 	self::jsVar('dotclear.jsUpload.msg.cancel',__('Cancel')).
 	self::jsVar('dotclear.jsUpload.msg.clean',__('Clean')).
 	self::jsVar('dotclear.jsUpload.msg.upload',__('Upload')).
+	self::jsVar('dotclear.jsUpload.msg.send',__('Send')).
+	self::jsVar('dotclear.jsUpload.msg.file_successfully_uploaded',__('File successfully uploaded.')).
 	self::jsVar('dotclear.jsUpload.msg.no_file_in_queue',__('No file in queue.')).
 	self::jsVar('dotclear.jsUpload.msg.file_in_queue',__('1 file in queue.')).
 	self::jsVar('dotclear.jsUpload.msg.files_in_queue',__('%d files in queue.')).
 	self::jsVar('dotclear.jsUpload.msg.queue_error',__('Queue error:')).
 	self::jsVar('dotclear.jsUpload.base_url',$base_url).
 	"\n//]]>\n".
-	"</script>\n";
+	"</script>\n".
+
+	self::jsLoad('js/jsUpload/vendor/jquery.ui.widget.js').
+	self::jsLoad('js/jsUpload/tmpl.js').
+	self::jsLoad('js/jsUpload/template-upload.js').
+	self::jsLoad('js/jsUpload/template-download.js').
+	self::jsLoad('js/jsUpload/load-image.js').
+	self::jsLoad('js/jsUpload/jquery.iframe-transport.js').
+	self::jsLoad('js/jsUpload/jquery.fileupload.js').
+	self::jsLoad('js/jsUpload/jquery.fileupload-process.js').
+	self::jsLoad('js/jsUpload/jquery.fileupload-resize.js').
+	self::jsLoad('js/jsUpload/jquery.fileupload-ui.js');
 }
 
 public static function jsToolMan()

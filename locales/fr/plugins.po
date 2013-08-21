@@ -41,7 +41,7 @@ msgid "Settings definition successfully updated"
 msgstr "Les réglages ont été enregistrés avec succès"
 
 msgid "blog settings"
-msgstr "Réglages du blog"
+msgstr "paramètres du blog"
 
 msgid "Value"
 msgstr "Valeur"
@@ -237,8 +237,8 @@ msgid "Are you sure you want to delete all spams?"
 msgstr "Êtes-vous sûr de vouloir supprimer tous les indésirables ?"
 
 #, php-format
-msgid "%s configuration"
-msgstr "configuration %s"
+msgid "%s filter configuration"
+msgstr "Configuration du filtre %s"
 
 msgid "Information"
 msgstr "Information"
@@ -300,11 +300,14 @@ msgstr "Fil RSS des commentaires publiés"
 msgid "Attachments"
 msgstr "Annexes"
 
+msgid "Attachments (%d)"
+msgstr "Annexes (%s)"
+
 msgid "remove"
 msgstr "supprimer"
 
 msgid "No attachment."
-msgstr "Pas de fichier attaché"
+msgstr "Pas de fichier attaché."
 
 msgid "Add files to this entry"
 msgstr "Ajouter des fichiers à la page"
@@ -960,10 +963,10 @@ msgstr "Êtes-vous sûr de vouloir importer un fichier de sauvegarde complet ?"
 
 #, php-format
 msgid ""
-"This will import a single blog backup as new content in the current blog: %s."
+"This will import a single blog backup as new content in the current blog: <strong>%s</strong>."
 msgstr ""
 "Cela importera une sauvegarde d'un blog comme nouveau contenu du blog "
-"courant : %s."
+"courant : <strong>%s</strong>."
 
 msgid "Upload a backup file"
 msgstr "Téléversez un fichier de sauvegarde"
@@ -1023,8 +1026,8 @@ msgstr ""
 
 msgid ""
 "On the other hand, in WordPress, a post can not be uncategorized, and a "
-"default installation has a first category labelised <i>\"Uncategorized\"</"
-"i>. If you did not change that category, you can just ignore it while "
+"default installation has a first category labelised <i>\"Uncategorized\"</i>."
+"If you did not change that category, you can just ignore it while "
 "importing your blog, as Dotclear allows you to actually keep your posts "
 "uncategorized."
 msgstr ""
@@ -1165,6 +1168,12 @@ msgstr "Vidage du répertoire"
 msgid "Pages"
 msgstr "Pages"
 
+msgid "My first page"
+msgstr "Ma première page"
+
+msgid "This is your first page. When you\'re ready to blog, log in to edit or delete it."
+msgstr "Ceci est votre première page. Quand vous serez prêt à bloguer, connectez-vous pour l'éditer ou la supprimer."
+
 #, php-format
 msgid "%d page"
 msgstr "%d page"
@@ -1276,7 +1285,7 @@ msgid "page"
 msgstr "page"
 
 msgid "Pings"
-msgstr "Signalements"
+msgstr "Signalements (pings)"
 
 msgid "Ping services"
 msgstr "Services de signalement"
@@ -1749,13 +1758,13 @@ msgid "Extra sidebar"
 msgstr "Volet d'extra"
 
 msgid "Custom sidebar"
-msgstr "Bandeau supplémentaire"
+msgstr "Volet supplémentaire"
 
 msgid "Update sidebars"
-msgstr "Mettre à jour les bandeaux"
+msgstr "Mettre à jour les volets"
 
 msgid "Reset sidebars"
-msgstr "Réinitialiser les bandeaux"
+msgstr "Réinitialiser les volets"
 
 msgid "Use of widgets"
 msgstr "Utilisation des widgets"
@@ -1776,10 +1785,10 @@ msgstr ""
 
 msgid ""
 "Once included in a sidebar, widgets have configuration options that you can "
-"reach by clicking on the + sign next to their name."
+"reach by clicking on the arrow next to their name."
 msgstr ""
 "Une fois inclus dans un bandeau, les widgets ont généralement des options "
-"que vous pouvez configurer. Cliquez sur le signe + à côté de leur nom pour y "
+"que vous pouvez configurer. Cliquez sur la flèche à côté de leur nom pour y "
 "accéder."
 
 msgid "Reset sidebars to get back to default widgets installation."
@@ -1925,3 +1934,11 @@ msgstr "Préférences utilisateur"
 msgid "Global preferences"
 msgstr "Préférences globales"
 
+msgid "Edit theme files"
+msgstr "Modifier les fichiers du thème"
+
+msgid "Blog settings"
+msgstr "Paramètres du blog"
+
+msgid "Move widgets from this list to one of the sidebars."
+msgstr "Déplacez des widgets de cette liste vers l'un des volets."

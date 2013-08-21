@@ -343,11 +343,30 @@ dcPage::open($page_title,
 	dcPage::jsLoad('js/_preferences.js').
 	($user_acc_nodragdrop ? '' : dcPage::jsLoad('js/_preferences-dragdrop.js')).
 	dcPage::jsLoad('js/jquery/jquery-ui.custom.js').
+	dcPage::jsLoad('js/jquery/jquery.pwstrength.js').
+		'<script type="text/javascript">'."\n".
+		"//<![CDATA[\n".
+		"\$(function() {\n".
+		"	\$('#new_pwd').pwstrength({texts: ['".
+				sprintf(__('Password strength: %s'),__('very weak'))."', '".
+				sprintf(__('Password strength: %s'),__('weak'))."', '".
+				sprintf(__('Password strength: %s'),__('mediocre'))."', '".
+				sprintf(__('Password strength: %s'),__('strong'))."', '".
+				sprintf(__('Password strength: %s'),__('very strong'))."']});\n".
+		"});\n".
+		"\n//]]>\n".
+		"</script>\n".
 	dcPage::jsPageTabs($default_tab).
 	dcPage::jsConfirmClose('user-form').
 	
 	# --BEHAVIOR-- adminPreferencesHeaders
-	$core->callBehavior('adminPreferencesHeaders')
+	$core->callBehavior('adminPreferencesHeaders'),
+
+	dcPage::breadcrumb(
+	array(
+		html::escapeHTML($core->auth->userID()) => '',
+		'<span class="page-title">'.$page_title.'</span>' => ''
+	))
 );
 
 if (!empty($_GET['upd'])) {
@@ -369,12 +388,6 @@ if (!empty($_GET['replaced'])) {
 	dcPage::message(__('Default favorites have been successfully updated.'));
 }
 
-dcPage::breadcrumb(
-	array(
-		html::escapeHTML($core->auth->userID()) => '',
-		'<span class="page-title">'.$page_title.'</span>' => ''
-	));
-
 # User profile
 echo '<div class="multi-part" id="user-profile" title="'.__('My profile').'">';
 
@@ -383,34 +396,33 @@ echo
 '<fieldset><legend>'.__('My profile').'</legend>'.
 '<div class="two-cols">'.
 '<div class="col">'.
-'<p><label for="user_name">'.__('Last Name:').
-form::field('user_name',20,255,html::escapeHTML($user_name)).'</label></p>'.
+'<p><label for="user_name">'.__('Last Name:').'</label>'.
+form::field('user_name',20,255,html::escapeHTML($user_name)).'</p>'.
 
-'<p><label for="user_firstname">'.__('First Name:').
-form::field('user_firstname',20,255,html::escapeHTML($user_firstname)).'</label></p>'.
+'<p><label for="user_firstname">'.__('First Name:').'</label>'.
+form::field('user_firstname',20,255,html::escapeHTML($user_firstname)).'</p>'.
 
-'<p><label for="user_displayname">'.__('Display name:').
-form::field('user_displayname',20,255,html::escapeHTML($user_displayname)).'</label></p>'.
+'<p><label for="user_displayname">'.__('Display name:').'</label>'.
+form::field('user_displayname',20,255,html::escapeHTML($user_displayname)).'</p>'.
 
-'<p><label for="user_email">'.__('Email:').
-form::field('user_email',20,255,html::escapeHTML($user_email)).'</label></p>'.
+'<p><label for="user_email">'.__('Email:').'</label>'.
+form::field('user_email',20,255,html::escapeHTML($user_email)).'</p>'.
 
-'<p><label for="user_url">'.__('URL:').
-form::field('user_url',30,255,html::escapeHTML($user_url)).'</label></p>'.
+'<p><label for="user_url">'.__('URL:').'</label>'.
+form::field('user_url',30,255,html::escapeHTML($user_url)).'</p>'.
 
 '</div>'.
 
 '<div class="col">'.
 
-'<p><label for="user_lang">'.__('User language:').
-form::combo('user_lang',$lang_combo,$user_lang,'l10n').'</label></p>'.
+'<p><label for="user_lang">'.__('User language:').'</label>'.
+form::combo('user_lang',$lang_combo,$user_lang,'l10n').'</p>'.
 
-'<p><label for="user_tz">'.__('User timezone:').
-form::combo('user_tz',dt::getZones(true,true),$user_tz).'</label></p>'.
+'<p><label for="user_tz">'.__('User timezone:').'</label>'.
+form::combo('user_tz',dt::getZones(true,true),$user_tz).'</p>'.
 
 '</div>'.
 '</div>'.
-'<br class="clear" />'. //Opera sucks
 '</fieldset>';
 
 if ($core->auth->allowPassChange())
@@ -419,16 +431,22 @@ if ($core->auth->allowPassChange())
 	'<fieldset>'.
 	'<legend>'.__('Change your password').'</legend>'.
 	
-	'<p><label for="new_pwd">'.__('New password:').
-	form::password('new_pwd',20,255).'</label></p>'.
+	'<div class="pw-table">'.
+	'<p class="pw-cell"><label for="new_pwd">'.__('New password:').'</label>'.
+	form::password('new_pwd',20,255,'','','',false,' data-indicator="pwindicator" ').'</p>'.
+	'<div id="pwindicator">'.
+	'    <div class="bar"></div>'.
+	'    <p class="label no-margin"></p>'.
+	'</div>'.
+	'</div>'.
 	
-	'<p><label for="new_pwd_c">'.__('Confirm password:').
-	form::password('new_pwd_c',20,255).'</label></p>'.
+	'<p><label for="new_pwd_c">'.__('Confirm new password:').'</label>'.
+	form::password('new_pwd_c',20,255).'</p>'.
 	'</fieldset>'.
 	
 	'<p>'.__('If you have changed this user email or password you must provide your current password to save these modifications.').'</p>'.
-	'<p><label for="cur_pwd">'.__('Your password:').
-	form::password('cur_pwd',20,255).'</label></p>';
+	'<p><label for="cur_pwd">'.__('Your password:').'</label>'.
+	form::password('cur_pwd',20,255).'</p>';
 }
 
 echo
@@ -446,14 +464,14 @@ echo
 '<form action="preferences.php" method="post" id="opts-forms">'.
 '<fieldset><legend>'.__('My options').'</legend>'.
 
-'<p><label for="user_post_format">'.__('Preferred format:').
-form::combo('user_post_format',$formaters_combo,$user_options['post_format']).'</label></p>'.
+'<p><label for="user_post_format">'.__('Preferred format:').'</label>'.
+form::combo('user_post_format',$formaters_combo,$user_options['post_format']).'</p>'.
 
-'<p><label for="user_post_status">'.__('Default entry status:').
-form::combo('user_post_status',$status_combo,$user_post_status).'</label></p>'.
+'<p><label for="user_post_status">'.__('Default entry status:').'</label>'.
+form::combo('user_post_status',$status_combo,$user_post_status).'</p>'.
 
-'<p><label for="user_edit_size">'.__('Entry edit field height:').
-form::field('user_edit_size',5,4,(integer) $user_options['edit_size']).'</label></p>'.
+'<p><label for="user_edit_size">'.__('Entry edit field height:').'</label>'.
+form::field('user_edit_size',5,4,(integer) $user_options['edit_size']).'</p>'.
 
 '<p><label for="user_wysiwyg" class="classic">'.
 form::checkbox('user_wysiwyg',1,$user_options['enable_wysiwyg']).' '.
@@ -469,8 +487,8 @@ __('Hide My favorites menu').'</label></p>';
 
 if (count($iconsets_combo) > 1) {
 	echo 
-		'<p><label for="user_ui_iconset">'.__('Iconset:').
-		form::combo('user_ui_iconset',$iconsets_combo,$user_ui_iconset).'</label></p>';
+		'<p><label for="user_ui_iconset">'.__('Iconset:').'</label>'.
+		form::combo('user_ui_iconset',$iconsets_combo,$user_ui_iconset).'</p>';
 } else {
 	form::hidden('user_ui_iconset','');
 }
@@ -480,11 +498,11 @@ if ($core->auth->isSuperAdmin()) {
 	'<p><label for="user_ui_hide_std_favicon" class="classic">'.
 	form::checkbox('user_ui_hide_std_favicon',1,$user_ui_hide_std_favicon).' '.
 	__('Do not use standard favicon').'</label></p>'.
-	'<p class="clear form-note info">'.__('This will be applied for all users').'</p>';
+	'<p class="clear form-note info">'.__('This will be applied for all users').
+	'<br class="clear" /></p>';//Opera sucks;
 }
 
 echo 
-'<br class="clear" />'. //Opera sucks
 '</fieldset>';
 
 echo
@@ -510,9 +528,9 @@ __('Display Dotclear news').'</label></p>'.
 
 '<p><label for="user_dm_quickentry" class="classic">'.
 form::checkbox('user_dm_quickentry',1,$user_dm_quickentry).' '.
-__('Display quick entry form').'</label></p>'.
+__('Display quick entry form').'</label><br class="clear" />'. //Opera sucks
+'</p>'.
 
-'<br class="clear" />'. //Opera sucks
 '</fieldset>';
 
 # --BEHAVIOR-- adminPreferencesForm

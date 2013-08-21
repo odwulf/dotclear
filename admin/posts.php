@@ -76,8 +76,8 @@ if (!$core->error->flag())
 	
 	$selected_combo = array(
 	'-' => '',
-	__('selected') => '1',
-	__('not selected') => '0'
+	__('Selected') => '1',
+	__('Not selected') => '0'
 	);
 	
 	# Months array
@@ -244,58 +244,64 @@ if (!$show_filters) {
 	$starting_script .= dcPage::jsLoad('js/filter-controls.js');
 }
 
-dcPage::open(__('Entries'),$starting_script);
-
-if (!$core->error->flag())
-{
+dcPage::open(__('Entries'),$starting_script,
 	dcPage::breadcrumb(
 		array(
 			html::escapeHTML($core->blog->name) => '',
 			'<span class="page-title">'.__('Entries').'</span>' => ''
-		));
-
+		))
+);
+if (!empty($_GET['upd'])) {
+	dcPage::message(__('Selected entries have been successfully updated.'));
+} elseif (!empty($_GET['del'])) {
+	dcPage::message(__('Selected entries have been successfully deleted.'));
+}
+if (!$core->error->flag())
+{
 	echo
 	'<p class="top-add"><a class="button add" href="post.php">'.__('New entry').'</a></p>';
 	
 	if (!$show_filters) {
 		echo '<p><a id="filter-control" class="form-control" href="#">'.
-		__('Filters').'</a></p>';
+		__('Filter posts list').'</a></p>';
 	}
 	
 	echo
 	'<form action="posts.php" method="get" id="filters-form">'.
-	'<fieldset><legend>'.__('Filters').'</legend>'.
-	'<div class="three-cols">'.
-	'<div class="col">'.
-	'<label for="user_id">'.__('Author:').
-	form::combo('user_id',$users_combo,$user_id).'</label> '.
-	'<label for="cat_id">'.__('Category:').
-	form::combo('cat_id',$categories_combo,$cat_id).'</label> '.
-	'<label for="status">'.__('Status:').
-	form::combo('status',$status_combo,$status).'</label> '.
+	'<h3>'.__('Filter posts list').'</h3>'.
+
+	'<div class="table">'.
+	'<div class="cell">'.
+	'<p><label for="user_id" class="ib">'.__('Author:').'</label> '.
+	form::combo('user_id',$users_combo,$user_id).'</p>'.
+	'<p><label for="cat_id" class="ib">'.__('Category:').'</label> '.
+	form::combo('cat_id',$categories_combo,$cat_id).'</p>'.
+	'<p><label for="status" class="ib">'.__('Status:').'</label> ' .
+	form::combo('status',$status_combo,$status).'</p> '.
 	'</div>'.
 	
-	'<div class="col">'.
-	'<label for="selected">'.__('Selected:').
-	form::combo('selected',$selected_combo,$selected).'</label> '.
-	'<label for="month">'.__('Month:').
-	form::combo('month',$dt_m_combo,$month).'</label> '.
-	'<label for="lang">'.__('Lang:').
-	form::combo('lang',$lang_combo,$lang).'</label> '.
+	'<div class="cell">'.
+	'<p><label for="selected" class="ib">'.__('Selected:').'</label> '.
+	form::combo('selected',$selected_combo,$selected).'</p>'.
+	'<p><label for="month" class="ib">'.__('Month:').'</label> '.
+	form::combo('month',$dt_m_combo,$month).'</p>'.
+	'<p><label for="lang" class="ib">'.__('Lang:').'</label> '.
+	form::combo('lang',$lang_combo,$lang).'</p> '.
 	'</div>'.
 	
-	'<div class="col">'.
-	'<p><label for="sortby">'.__('Order by:').
-	form::combo('sortby',$sortby_combo,$sortby).'</label> '.
-	'<label for="order">'.__('Sort:').
-	form::combo('order',$order_combo,$order).'</label></p>'.
-	'<p><label for="nb" class="classic">'.	form::field('nb',3,3,$nb_per_page).' '.
-	__('Entries per page').'</label></p> '.
-	'<p><input type="submit" value="'.__('Apply filters').'" /></p>'.
+	'<div class="cell filters-options">'.
+	'<p><label for="sortby" class="ib">'.__('Order by:').'</label> '.
+	form::combo('sortby',$sortby_combo,$sortby).'</p>'.
+	'<p><label for="order" class="ib">'.__('Sort:').'</label> '.
+	form::combo('order',$order_combo,$order).'</p>'.
+	'<p><span class="label ib">'.__('Show').'</span> <label for="nb" class="classic">'.
+	form::field('nb',3,3,$nb_per_page).' '.
+	__('entries per page').'</label></p>'.
 	'</div>'.
 	'</div>'.
-	'<br class="clear" />'. //Opera sucks
-	'</fieldset>'.
+
+	'<p><input type="submit" value="'.__('Apply filters').'" />'.
+	'<br class="clear" /></p>'. //Opera sucks
 	'</form>';
 	
 	# Show posts

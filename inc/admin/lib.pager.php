@@ -41,10 +41,15 @@ class adminPostList extends adminGenericList
 			$pager->html_prev = $this->html_prev;
 			$pager->html_next = $this->html_next;
 			$pager->var_page = 'page';
-			
+			$entries = array();
+			if (isset($_REQUEST['entries'])) {
+				foreach ($_REQUEST['entries'] as $v) {
+					$entries[(integer)$v]=true;
+				}
+			}
 			$html_block =
 			'<table class="clear"><tr>'.
-			'<th colspan="2">'.__('Title').'</th>'.
+			'<th colspan="2" class="first">'.__('Title').'</th>'.
 			'<th>'.__('Date').'</th>'.
 			'<th>'.__('Category').'</th>'.
 			'<th>'.__('Author').'</th>'.
@@ -57,7 +62,7 @@ class adminPostList extends adminGenericList
 				$html_block = sprintf($enclose_block,$html_block);
 			}
 			
-			echo '<p>'.__('Page(s)').' : '.$pager->getLinks().'</p>';
+			echo '<p class="pagination">'.__('Page(s)').' : '.$pager->getLinks().'</p>';
 			
 			$blocks = explode('%s',$html_block);
 			
@@ -65,16 +70,16 @@ class adminPostList extends adminGenericList
 			
 			while ($this->rs->fetch())
 			{
-				echo $this->postLine();
+				echo $this->postLine(isset($entries[$this->rs->post_id]));
 			}
 			
 			echo $blocks[1];
 			
-			echo '<p>'.__('Page(s)').' : '.$pager->getLinks().'</p>';
+			echo '<p class="pagination">'.__('Page(s)').' : '.$pager->getLinks().'</p>';
 		}
 	}
 	
-	private function postLine()
+	private function postLine($checked)
 	{
 		if ($this->core->auth->check('categories',$this->core->blog->id)) {
 			$cat_link = '<a href="category.php?id=%s">%s</a>';
@@ -86,33 +91,33 @@ class adminPostList extends adminGenericList
 			$cat_title = sprintf($cat_link,$this->rs->cat_id,
 			html::escapeHTML($this->rs->cat_title));
 		} else {
-			$cat_title = __('None');
+			$cat_title = __('(No cat)');
 		}
 		
 		$img = '<img alt="%1$s" title="%1$s" src="images/%2$s" />';
 		switch ($this->rs->post_status) {
 			case 1:
-				$img_status = sprintf($img,__('published'),'check-on.png');
+				$img_status = sprintf($img,__('Published'),'check-on.png');
 				break;
 			case 0:
-				$img_status = sprintf($img,__('unpublished'),'check-off.png');
+				$img_status = sprintf($img,__('Unpublished'),'check-off.png');
 				break;
 			case -1:
-				$img_status = sprintf($img,__('scheduled'),'scheduled.png');
+				$img_status = sprintf($img,__('Scheduled'),'scheduled.png');
 				break;
 			case -2:
-				$img_status = sprintf($img,__('pending'),'check-wrn.png');
+				$img_status = sprintf($img,__('Pending'),'check-wrn.png');
 				break;
 		}
 		
 		$protected = '';
 		if ($this->rs->post_password) {
-			$protected = sprintf($img,__('protected'),'locker.png');
+			$protected = sprintf($img,__('Protected'),'locker.png');
 		}
 		
 		$selected = '';
 		if ($this->rs->post_selected) {
-			$selected = sprintf($img,__('selected'),'selected.png');
+			$selected = sprintf($img,__('Selected'),'selected.png');
 		}
 		
 		$attach = '';
@@ -127,7 +132,7 @@ class adminPostList extends adminGenericList
 		
 		$res .=
 		'<td class="nowrap">'.
-		form::checkbox(array('entries[]'),$this->rs->post_id,'','','',!$this->rs->isEditable()).'</td>'.
+		form::checkbox(array('entries[]'),$this->rs->post_id,$checked,'','',!$this->rs->isEditable()).'</td>'.
 		'<td class="maximal"><a href="'.$this->core->getPostAdminURL($this->rs->post_type,$this->rs->post_id).'">'.
 		html::escapeHTML($this->rs->post_title).'</a></td>'.
 		'<td class="nowrap">'.dt::dt2str(__('%Y-%m-%d %H:%M'),$this->rs->post_dt).'</td>'.
@@ -169,7 +174,7 @@ class adminPostMiniList extends adminGenericList
 				$html_block = sprintf($enclose_block,$html_block);
 			}
 			
-			echo '<p>'.__('Page(s)').' : '.$pager->getLinks().'</p>';
+			echo '<p class="pagination">'.__('Page(s)').' : '.$pager->getLinks().'</p>';
 			
 			$blocks = explode('%s',$html_block);
 			
@@ -182,7 +187,7 @@ class adminPostMiniList extends adminGenericList
 			
 			echo $blocks[1];
 			
-			echo '<p>'.__('Page(s)').' : '.$pager->getLinks().'</p>';
+			echo '<p class="pagination">'.__('Page(s)').' : '.$pager->getLinks().'</p>';
 		}
 	}
 	
@@ -191,27 +196,27 @@ class adminPostMiniList extends adminGenericList
 		$img = '<img alt="%1$s" title="%1$s" src="images/%2$s" />';
 		switch ($this->rs->post_status) {
 			case 1:
-				$img_status = sprintf($img,__('published'),'check-on.png');
+				$img_status = sprintf($img,__('Published'),'check-on.png');
 				break;
 			case 0:
-				$img_status = sprintf($img,__('unpublished'),'check-off.png');
+				$img_status = sprintf($img,__('Unpublished'),'check-off.png');
 				break;
 			case -1:
-				$img_status = sprintf($img,__('scheduled'),'scheduled.png');
+				$img_status = sprintf($img,__('Scheduled'),'scheduled.png');
 				break;
 			case -2:
-				$img_status = sprintf($img,__('pending'),'check-wrn.png');
+				$img_status = sprintf($img,__('Pending'),'check-wrn.png');
 				break;
 		}
 		
 		$protected = '';
 		if ($this->rs->post_password) {
-			$protected = sprintf($img,__('protected'),'locker.png');
+			$protected = sprintf($img,__('Protected'),'locker.png');
 		}
 		
 		$selected = '';
 		if ($this->rs->post_selected) {
-			$selected = sprintf($img,__('selected'),'selected.png');
+			$selected = sprintf($img,__('Selected'),'selected.png');
 		}
 		
 		$attach = '';
@@ -254,19 +259,19 @@ class adminCommentList extends adminGenericList
 			
 			$html_block =
 			'<table><tr>'.
-			'<th colspan="2">'.__('Title').'</th>'.
+			'<th colspan="2" class="first">'.__('Author').'</th>'.
 			'<th>'.__('Date').'</th>'.
-			'<th>'.__('Author').'</th>'.
+			'<th>'.__('Entry title').'</th>'.
 			'<th>'.__('Type').'</th>'.
 			'<th>'.__('Status').'</th>'.
-			'<th>&nbsp;</th>'.
+			'<th>'.__('Edit').'</th>'.
 			'</tr>%s</table>';
 			
 			if ($enclose_block) {
 				$html_block = sprintf($enclose_block,$html_block);
 			}
 			
-			echo '<p>'.__('Page(s)').' : '.$pager->getLinks().'</p>';
+			echo '<p class="pagination">'.__('Page(s)').' : '.$pager->getLinks().'</p>';
 			
 			$blocks = explode('%s',$html_block);
 			
@@ -279,7 +284,7 @@ class adminCommentList extends adminGenericList
 			
 			echo $blocks[1];
 			
-			echo '<p>'.__('Page(s)').' : '.$pager->getLinks().'</p>';
+			echo '<p class="pagination">'.__('Page(s)').' : '.$pager->getLinks().'</p>';
 		}
 	}
 	
@@ -305,22 +310,22 @@ class adminCommentList extends adminGenericList
 		$img = '<img alt="%1$s" title="%1$s" src="images/%2$s" />';
 		switch ($this->rs->comment_status) {
 			case 1:
-				$img_status = sprintf($img,__('published'),'check-on.png');
+				$img_status = sprintf($img,__('Published'),'check-on.png');
 				break;
 			case 0:
-				$img_status = sprintf($img,__('unpublished'),'check-off.png');
+				$img_status = sprintf($img,__('Unpublished'),'check-off.png');
 				break;
 			case -1:
-				$img_status = sprintf($img,__('pending'),'check-wrn.png');
+				$img_status = sprintf($img,__('Pending'),'check-wrn.png');
 				break;
 			case -2:
-				$img_status = sprintf($img,__('junk'),'junk.png');
+				$img_status = sprintf($img,__('Junk'),'junk.png');
 				break;
 		}
 		
-		$comment_author = html::escapeHTML($this->rs->comment_author);
-		if (mb_strlen($comment_author) > 20) {
-			$comment_author = mb_strcut($comment_author,0,17).'...';
+		$post_title = html::escapeHTML($this->rs->post_title);
+		if (mb_strlen($post_title) > 50) {
+			$post_title = mb_strcut($post_title,0,47).'...';
 		}
 		
 		$res = '<tr class="line'.($this->rs->comment_status != 1 ? ' offline' : '').'"'.
@@ -329,15 +334,15 @@ class adminCommentList extends adminGenericList
 		$res .=
 		'<td class="nowrap">'.
 		form::checkbox(array('comments[]'),$this->rs->comment_id,'','','',0).'</td>'.
-		'<td class="maximal"><a href="'.$post_url.'">'.
-		html::escapeHTML($this->rs->post_title).'</a>'.
-		($this->rs->post_type != 'post' ? ' ('.html::escapeHTML($this->rs->post_type).')' : '').'</td>'.
+		'<td class="maximal"><a href="'.$author_url.'">'.html::escapeHTML($this->rs->comment_author).'</a></td>'.
 		'<td class="nowrap">'.dt::dt2str(__('%Y-%m-%d %H:%M'),$this->rs->comment_dt).'</td>'.
-		'<td class="nowrap"><a href="'.$author_url.'">'.html::escapeHTML($comment_author).'</a></td>'.
+		'<td class="nowrap"><a href="'.$post_url.'">'.
+		html::escapeHTML($post_title).'</a>'.
+		($this->rs->post_type != 'post' ? ' ('.html::escapeHTML($this->rs->post_type).')' : '').'</td>'.
 		'<td class="nowrap">'.($this->rs->comment_trackback ? __('trackback') : __('comment')).'</td>'.
 		'<td class="nowrap status">'.$img_status.'</td>'.
 		'<td class="nowrap status"><a href="'.$comment_url.'">'.
-		'<img src="images/edit-mini.png" alt="" title="'.__('Edit this comment').'" /></a></td>';
+		'<img src="images/edit-mini.png" alt="" title="'.__('Edit this comment').'" /> '.__('Edit').'</a></td>';
 		
 		$res .= '</tr>';
 		
@@ -373,7 +378,7 @@ class adminUserList extends adminGenericList
 				$html_block = sprintf($enclose_block,$html_block);
 			}
 			
-			echo '<p>'.__('Page(s)').' : '.$pager->getLinks().'</p>';
+			echo '<p class="pagination">'.__('Page(s)').' : '.$pager->getLinks().'</p>';
 			
 			$blocks = explode('%s',$html_block);
 			
@@ -386,7 +391,7 @@ class adminUserList extends adminGenericList
 			
 			echo $blocks[1];
 			
-			echo '<p>'.__('Page(s)').' : '.$pager->getLinks().'</p>';
+			echo '<p class="pagination">'.__('Page(s)').' : '.$pager->getLinks().'</p>';
 		}
 	}
 	

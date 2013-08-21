@@ -454,7 +454,7 @@ msgid "Themes"
 msgstr "Motywy"
 
 #, php-format
-msgid "You are currently using \"%s\""
+msgid "You are currently using <strong>%s</strong>"
 msgstr "Aktualnie używasz \"%s\""
 
 #, fuzzy
@@ -759,7 +759,7 @@ msgstr "Komentarzy na stronę"
 msgid "Comment author:"
 msgstr "Autor komentarza:"
 
-msgid "You have one spam comments."
+msgid "You have one spam comment."
 msgstr "Masz jeden komentarz oznaczony jako spam."
 
 msgid "Show it."

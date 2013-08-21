@@ -464,7 +464,7 @@ msgid "Themes"
 msgstr "Témák"
 
 #, php-format
-msgid "You are currently using \"%s\""
+msgid "You are currently using <strong>%s</strong>"
 msgstr "A \"%s\"-t használod"
 
 #, fuzzy
@@ -786,7 +786,7 @@ msgstr "Megjegyések oldalanként"
 msgid "Comment author:"
 msgstr "Megjegyzés szerzője:"
 
-msgid "You have one spam comments."
+msgid "You have one spam comment."
 msgstr "Van egy spam megjegyzésed."
 
 msgid "Show it."
