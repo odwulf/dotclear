@@ -1,0 +1,102 @@
+{# Form filter default layout #}
+
+
+{% block filterset -%}
+<p>
+	<a href="#" id="filter-control" class="form-control">{{ __('Toggle filters and display options') }} </a>
+</p>
+{% form filtersetname with {'id':'filters-form' } -%}
+<h3>Filtrer la liste des billets</h3>
+<div class="table">
+<div class="two-cols">
+{% set fenv = _context['filterset_' ~ filtersetname] %}
+	<div class="col70">
+		<h3>{{__('Entries filters')}}</h3>
+		<table summary="{{__('Query filters')}}" id="tfilters">
+		<tbody>
+			{%- for f in fenv.active_filters -%}
+				<tr class="{{f.id}}">
+					<td>{{form_field(f.del_id)}}</td>
+					{{block(f.fwidget)}}
+				</tr>
+			{%- endfor -%}
+		</tbody>
+		</table>
+		<h3 class="margintop">{{ __('Add a filter') }}</h3>
+		<p id="available_filters">
+			{{ form_field(fenv.prefix ~ 'add_filter')}} {{ form_field(fenv.prefix ~ 'add') }}
+		</p>
+		<p class="clear">{{form_field(fenv.prefix ~ 'clear_filters',{'class':'delete'})}} {{form_field(fenv.prefix ~ 'reset')}}</p>
+		<p class="clear margintop">
+		{{ form_field(fenv.prefix ~ 'apply')}}
+		</p>
+	</div>
+	<div class="col30">
+		{%- for f in fenv.static_filters -%}
+			{{block(f.fwidget)}}
+		{%- endfor -%}
+	</div>
+	<p class="clear margintop"></p>
+{%- endform -%}
+</div>
+</div>
+<p class="applied-filters">{{__('Applied filters :') }} </p>
+<ul>
+	{% for f in fenv.applied_filters %}
+		<li>{{f}}</li>
+	{% endfor %}
+</ul>
+{%- endblock %}
+
+
+{% block filterenabled -%}
+	<tr class="{{ id }}">';
+		<td>
+			<input id="{{ del_id }}" class="delete" type="submit" title="{{__('Delete the following filter : ') }}"
+			value=" - " name=" {{ del_id }}"/>
+		</td>
+		{{ block(filter) }}
+	</tr>
+{%- endblock %}
+
+
+{% block filter_combo -%}
+	{% if f.display_inline is defined -%}
+		<p id='{{f.filter_id}}'>{{form_field(f.ffield,{'offset':f.foffset},{'label':f.desc,'nestedlabel': true, 'labelclass':'classic' })}}</p>
+	{%- else -%}
+		<td id='{{f.filter_id}}' title='{{f.desc}}' class="filter-title" colspan="2">{{f.desc}} : </td>
+		<td >{{ form_field(f.ffield,{'offset':f.foffset}) }}</td>
+	{%- endif %}
+{%- endblock %}
+
+{% block filter_combo_cont -%}
+	{% if f.display_inline is defined -%}
+		<p id='{{filter_id}}'>{{form_field(f.ffield,{'offset':f.foffset,'label':__('or :')})}}</p>
+	{%- else -%}
+		<td id='{{filter_id}}' colspan="2">{{ __('or :') }} </td><td>{{ form_field(f.ffield,{'offset':f.foffset}) }}</td>
+	{%- endif %}
+{%- endblock %}
+
+
+{% block filter_richcombo -%}
+	<td id='{{filterd_id}}' title='{{f.desc}}' class="filter-title">{{f.desc}} : </td>
+	<td>{{ form_field(f.fverb)}}</td>
+	<td>{{ form_field(f.ffield,{'offset':f.foffset}) }}</td>
+{%- endblock %}
+
+
+{% block filter_boolean -%}
+	<td id='{{filterd_id}}' title='{{f.desc}}' class="filter-title" colspan="2">{{f.desc}}</td>
+	<td>{{ form_field(f.ffield,{'offset':f.foffset}) }}</td>
+{%- endblock %}
+
+{% block filter_text -%}
+	{% if f.display_inline is defined -%}
+		<p id='{{filter_id}}'>{{form_field(f.ffield,{'offset':f.foffset},{'label':f.desc,'nestedlabel': true, 'labelclass':'classic' })}}</p>
+	{%- else -%}
+		<td id='{{filterd_id}}' title='{{f.desc}}' class="filter-title" colspan="2">{{f.desc}}</td>
+		<td>{{ form_field(f.ffield,{'offset':f.foffset}) }}</td>
+	{%- endif %}
+{%- endblock %}
+
+
