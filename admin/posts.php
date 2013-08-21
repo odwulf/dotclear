@@ -3,7 +3,7 @@
 #
 # This file is part of Dotclear 2.
 #
-# Copyright (c) 2003-2013 Olivier Meunier & Association Dotclear
+# Copyright (c) 2003-2011 Olivier Meunier & Association Dotclear
 # Licensed under the GPL version 2.0 license.
 # See LICENSE file or
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
@@ -11,7 +11,7 @@
 # -- END LICENSE BLOCK -----------------------------------------
 
 require dirname(__FILE__).'/../inc/admin/prepend.php';
-
+global $_ctx;
 dcPage::check('usage,contentadmin');
 
 # Getting categories
@@ -47,7 +47,6 @@ if (!$core->error->flag())
 {
 	# Filter form we'll put in html_block
 	$users_combo = $categories_combo = array();
-	$users_combo['-'] = $categories_combo['-'] = '';
 	while ($users->fetch())
 	{
 		$user_cn = dcUtils::getUserCN($users->user_id,$users->user_name,
@@ -60,51 +59,40 @@ if (!$core->error->flag())
 		$users_combo[$user_cn] = $users->user_id; 
 	}
 	
-	$categories_combo[__('None')] = 'NULL';
+
+# Getting categories
+$categories_combo = array();
+try {
+	$categories = $core->blog->getCategories(array('post_type'=>'post'));
 	while ($categories->fetch()) {
-		$categories_combo[str_repeat('&nbsp;&nbsp;',$categories->level-1).($categories->level-1 == 0 ? '' : '&bull; ').
-			html::escapeHTML($categories->cat_title).
-			' ('.$categories->nb_post.')'] = $categories->cat_id;
+		$categories_combo[$categories->cat_id] = 
+			str_repeat('&nbsp;&nbsp;',$categories->level-1).
+			($categories->level-1 == 0 ? '' : '&bull; ').
+			html::escapeHTML($categories->cat_title);
 	}
-	
+} catch (Exception $e) { }
 	$status_combo = array(
-	'-' => ''
 	);
 	foreach ($core->blog->getAllPostStatus() as $k => $v) {
-		$status_combo[$v] = (string) $k;
+		$status_combo[(string) $k] = (string)$v;
 	}
 	
 	$selected_combo = array(
-	'-' => '',
-	__('Selected') => '1',
-	__('Not selected') => '0'
+	'1' => __('is selected'),
+	'0' => __('is not selected')
 	);
 	
 	# Months array
-	$dt_m_combo['-'] = '';
 	while ($dates->fetch()) {
-		$dt_m_combo[dt::str('%B %Y',$dates->ts())] = $dates->year().$dates->month();
+		$dt_m_combo[$dates->year().$dates->month()] = dt::str('%B %Y',$dates->ts());
 	}
 	
-	$lang_combo['-'] = '';
 	while ($langs->fetch()) {
 		$lang_combo[$langs->post_lang] = $langs->post_lang;
 	}
-	
-	$sortby_combo = array(
-	__('Date') => 'post_dt',
-	__('Title') => 'post_title',
-	__('Category') => 'cat_title',
-	__('Author') => 'user_id',
-	__('Status') => 'post_status',
-	__('Selected') => 'post_selected'
-	);
-	
-	$order_combo = array(
-	__('Descending') => 'desc',
-	__('Ascending') => 'asc'
-	);
 }
+$form = new dcForm($core,'post','post.php');
+
 
 # Actions combo box
 $combo_action = array();
@@ -137,201 +125,73 @@ if ($core->auth->check('delete,contentadmin',$core->blog->id))
 # --BEHAVIOR-- adminPostsActionsCombo
 $core->callBehavior('adminPostsActionsCombo',array(&$combo_action));
 
-/* Get posts
--------------------------------------------------------- */
-$user_id = !empty($_GET['user_id']) ?	$_GET['user_id'] : '';
-$cat_id = !empty($_GET['cat_id']) ?	$_GET['cat_id'] : '';
-$status = isset($_GET['status']) ?	$_GET['status'] : '';
-$selected = isset($_GET['selected']) ?	$_GET['selected'] : '';
-$month = !empty($_GET['month']) ?		$_GET['month'] : '';
-$lang = !empty($_GET['lang']) ?		$_GET['lang'] : '';
-$sortby = !empty($_GET['sortby']) ?	$_GET['sortby'] : 'post_dt';
-$order = !empty($_GET['order']) ?		$_GET['order'] : 'desc';
 
-$show_filters = false;
 
-$page = !empty($_GET['page']) ? (integer) $_GET['page'] : 1;
-$nb_per_page =  30;
-
-if (!empty($_GET['nb']) && (integer) $_GET['nb'] > 0) {
-	if ($nb_per_page != $_GET['nb']) {
-		$show_filters = true;
+class monthdcFilterCombo extends dcFilterCombo {
+	public function applyFilter($params) {
+		$month=$this->avalues['values'][0];
+		$params['post_month'] = substr($month,4,2);
+		$params['post_year'] = substr($month,0,4);
 	}
-	$nb_per_page = (integer) $_GET['nb'];
 }
 
-$params['limit'] = array((($page-1)*$nb_per_page),$nb_per_page);
-$params['no_content'] = true;
+class PostsFetcher extends dcListFetcher {
 
-# - User filter
-if ($user_id !== '' && in_array($user_id,$users_combo)) {
-	$params['user_id'] = $user_id;
-	$show_filters = true;
-} else {
-	$user_id='';
-}
-
-# - Categories filter
-if ($cat_id !== '' && in_array($cat_id,$categories_combo)) {
-	$params['cat_id'] = $cat_id;
-	$show_filters = true;
-} else {
-	$cat_id='';
-}
-
-# - Status filter
-if ($status !== '' && in_array($status,$status_combo)) {
-	$params['post_status'] = $status;
-	$show_filters = true;
-} else {
-	$status='';
-}
-
-# - Selected filter
-if ($selected !== '' && in_array($selected,$selected_combo)) {
-	$params['post_selected'] = $selected;
-	$show_filters = true;
-} else {
-	$selected='';
-}
-
-# - Month filter
-if ($month !== '' && in_array($month,$dt_m_combo)) {
-	$params['post_month'] = substr($month,4,2);
-	$params['post_year'] = substr($month,0,4);
-	$show_filters = true;
-} else {
-	$month='';
-}
-
-# - Lang filter
-if ($lang !== '' && in_array($lang,$lang_combo)) {
-	$params['post_lang'] = $lang;
-	$show_filters = true;
-} else {
-	$lang='';
-}
-
-# - Sortby and order filter
-if ($sortby !== '' && in_array($sortby,$sortby_combo)) {
-	if ($order !== '' && in_array($order,$order_combo)) {
-		$params['order'] = $sortby.' '.$order;
-	} else {
-		$order='desc';
+	public function getEntries($params,$offset,$limit) {
+		$params['limit'] = array($offset,$limit);
+		return $this->core->blog->getPosts($params);
 	}
-	
-	if ($sortby != 'post_dt' || $order != 'desc') {
-		$show_filters = true;
-	}
-} else {
-	$sortby='post_dt';
-	$order='desc';
-}
 
-# Get posts
-try {
-	$posts = $core->blog->getPosts($params);
-	$counter = $core->blog->getPosts($params,true);
-	$post_list = new adminPostList($core,$posts,$counter->f(0));
-} catch (Exception $e) {
-	$core->error->add($e->getMessage());
+	public function getEntriesCount($params) {
+		$count = $this->core->blog->getPosts($params,true);
+		return $count->f(0);
+	}
 }
 
 /* DISPLAY
 -------------------------------------------------------- */
-$starting_script = dcPage::jsLoad('js/_posts_list.js');
-if (!$show_filters) {
-	$starting_script .= dcPage::jsLoad('js/filter-controls.js');
-}
+$filterSet = new dcFilterSet($core,'fposts','posts.php');
 
-dcPage::open(__('Entries'),$starting_script,
-	dcPage::breadcrumb(
-		array(
-			html::escapeHTML($core->blog->name) => '',
-			'<span class="page-title">'.__('Entries').'</span>' => ''
-		))
-);
-if (!empty($_GET['upd'])) {
-	dcPage::message(__('Selected entries have been successfully updated.'));
-} elseif (!empty($_GET['del'])) {
-	dcPage::message(__('Selected entries have been successfully deleted.'));
-}
-if (!$core->error->flag())
-{
-	echo
-	'<p class="top-add"><a class="button add" href="post.php">'.__('New entry').'</a></p>';
-	
-	if (!$show_filters) {
-		echo '<p><a id="filter-control" class="form-control" href="#">'.
-		__('Filter posts list').'</a></p>';
-	}
-	
-	echo
-	'<form action="posts.php" method="get" id="filters-form">'.
-	'<h3>'.__('Filter posts list').'</h3>'.
+$filterSet
+	->addFilter(new dcFilterRichCombo(
+		'users',__('Author'), __('Author'), 'user_id', $users_combo,array(
+			'multiple' => true)))
+	->addFilter(new dcFilterRichCombo(
+		'category',__('Category'), __('Category'), 'cat_id', $categories_combo,array(
+			'multiple' => true)))
+	->addFilter(new dcFilterRichCombo(
+		'post_status',__('Status'), __('Status'), 'post_status', $status_combo))
+	->addFilter(new dcFilterRichCombo(
+		'lang',__('Lang'), __('Lang'), 'post_lang', $lang_combo))
+	->addFilter(new dcFilterCombo(
+		'selected',__('Selected'), __('The post : '),'post_selected', $selected_combo))
+	->addFilter(new monthdcFilterCombo(
+		'month',__('Month'),__('Month'), 'post_month', $dt_m_combo,array('singleval' => 1)))
+	->addFilter(new dcFilterText(
+		'search',__('Contains'),__('The entry contains'), 'search',20,255));
 
-	'<div class="table">'.
-	'<div class="cell">'.
-	'<p><label for="user_id" class="ib">'.__('Author:').'</label> '.
-	form::combo('user_id',$users_combo,$user_id).'</p>'.
-	'<p><label for="cat_id" class="ib">'.__('Category:').'</label> '.
-	form::combo('cat_id',$categories_combo,$cat_id).'</p>'.
-	'<p><label for="status" class="ib">'.__('Status:').'</label> ' .
-	form::combo('status',$status_combo,$status).'</p> '.
-	'</div>'.
-	
-	'<div class="cell">'.
-	'<p><label for="selected" class="ib">'.__('Selected:').'</label> '.
-	form::combo('selected',$selected_combo,$selected).'</p>'.
-	'<p><label for="month" class="ib">'.__('Month:').'</label> '.
-	form::combo('month',$dt_m_combo,$month).'</p>'.
-	'<p><label for="lang" class="ib">'.__('Lang:').'</label> '.
-	form::combo('lang',$lang_combo,$lang).'</p> '.
-	'</div>'.
-	
-	'<div class="cell filters-options">'.
-	'<p><label for="sortby" class="ib">'.__('Order by:').'</label> '.
-	form::combo('sortby',$sortby_combo,$sortby).'</p>'.
-	'<p><label for="order" class="ib">'.__('Sort:').'</label> '.
-	form::combo('order',$order_combo,$order).'</p>'.
-	'<p><span class="label ib">'.__('Show').'</span> <label for="nb" class="classic">'.
-	form::field('nb',3,3,$nb_per_page).' '.
-	__('entries per page').'</label></p>'.
-	'</div>'.
-	'</div>'.
 
-	'<p><input type="submit" value="'.__('Apply filters').'" />'.
-	'<br class="clear" /></p>'. //Opera sucks
-	'</form>';
-	
-	# Show posts
-	$post_list->display($page,$nb_per_page,
-	'<form action="posts_actions.php" method="post" id="form-entries">'.
-	
-	'%s'.
-	
-	'<div class="two-cols">'.
-	'<p class="col checkboxes-helpers"></p>'.
-	
-	'<p class="col right"><label for="action" class="classic">'.__('Selected entries action:').'</label> '.
-	form::combo('action',$combo_action).
-	'<input type="submit" value="'.__('ok').'" /></p>'.
-	form::hidden(array('user_id'),$user_id).
-	form::hidden(array('cat_id'),$cat_id).
-	form::hidden(array('status'),$status).
-	form::hidden(array('selected'),$selected).
-	form::hidden(array('month'),$month).
-	form::hidden(array('lang'),$lang).
-	form::hidden(array('sortby'),$sortby).
-	form::hidden(array('order'),$order).
-	form::hidden(array('page'),$page).
-	form::hidden(array('nb'),$nb_per_page).
-	$core->formNonce().
-	'</div>'.
-	'</form>'
-	);
-}
+$lfetcher = new PostsFetcher($core);
+$lposts = new dcItemList ($core,array('lposts','form-entries'),$lfetcher,'posts_actions.php');
+$lposts->setFilterSet($filterSet);
+$lposts->addTemplate('posts_cols.html.twig');
 
-dcPage::helpBlock('core_posts');
-dcPage::close();
+$lposts
+	->addColumn(new dcColumn('title',__('Title'),'post_title'))
+	->addColumn(new dcColumn('cat',__('Category'),'cat_title'))
+	->addColumn(new dcColumn('date',__('Date'),'post_date'))
+	->addColumn(new dcColumn('datetime',__('Date and Time'),'post_dt'))
+	->addColumn(new dcColumn('author',__('Author'),'user_id'))
+	->addColumn(new dcColumn('status',__('Status'),'post_status'));
+
+
+$lposts->setup();
+
+$_ctx
+	->setBreadCrumb(array(__('Entries') => 'posts.php'));
+
+
+$core->tpl->display('posts.html.twig');
+
+
 ?>

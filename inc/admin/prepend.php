@@ -3,7 +3,7 @@
 #
 # This file is part of Dotclear 2.
 #
-# Copyright (c) 2003-2013 Olivier Meunier & Association Dotclear
+# Copyright (c) 2003-2011 Olivier Meunier & Association Dotclear
 # Licensed under the GPL version 2.0 license.
 # See LICENSE file or
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
@@ -285,7 +285,7 @@ if ($core->auth->userID() && $core->blog !== null)
 	
 	$_menu['System']->title = __('System settings');
 	$_menu['Blog']->title = __('Blog');
-	$_menu['Plugins']->title = __('Plugins');
+	$_menu['Plugins']->title = __('Additional plugins');
 	if (!$user_ui_nofavmenu)
 		$_menu['Favorites']->title = __('My favorites');
 
@@ -374,4 +374,13 @@ if ($core->auth->userID() && $core->blog !== null)
 		}
 	}
 }
+
+# Add admin default templates path
+$core->tpl->getLoader()->addPath(dirname(__FILE__).'/default-templates');
+# Set admin context
+$_ctx = new dcAdminContext($core);
+$core->tpl->addExtension($_ctx);
+
+# --BEHAVIOR-- adminPrepend
+$core->callBehavior('adminPrepend',$core,$_ctx);
 ?>

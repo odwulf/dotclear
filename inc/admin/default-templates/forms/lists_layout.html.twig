@@ -1,0 +1,52 @@
+{% block entrieslist -%}
+{% set lenv = _context['list_' ~ listname] %}
+{% if lenv.entries %}
+{% block list_pagination -%}
+<p class="pagination">{{__('Page:')}}
+{% for p in lenv.pages_links -%}
+	{% if p == lenv.page or p == '...' %}
+		<b>{{p}}</b>
+	{% else %}
+		<a href="{{build_url(lenv.url,{'page':p})}}">{{p}}</a>
+	{% endif %}
+	{% if not loop.last %} - {% endif %}
+{%- endfor %}</p>
+{% endblock %}
+{% form listname -%}
+{% spaceless %}
+<table class="maximal clear">
+	<caption> {{ caption }} - {{__('%s entries')|format(lenv.nb_entries)}}</caption>
+		<tr>
+		{% for h in lenv.cols -%}
+			<th scope="col"{% if loop.first %} colspan="2"{% endif %}>{{h.name}}</th>
+		{%- endfor %}
+		</tr>
+		{% for e in lenv.entries %}
+			{% block list_line_start %}<tr class="line">{% endblock %}
+			<td>{{widget('col_ref',{'e':e,'offset':loop.parent.loop.index0})}}</td>
+			{% for h in lenv.cols %}
+				<td>{{widget(h.widget,{'e':e,'offset':loop.parent.loop.index0})}}</td>
+			{% endfor %}
+			</tr>
+		{% endfor %}
+</table>
+<div class="two-cols">
+	<p class="col checkboxes-helpers"></p>
+	<p class="col right">{{ form_field ('action',{},{'labelclass':'classic'})}} {{form_field('ok')}}</p>
+</div>
+{% endspaceless %}
+{%- endform %}
+{% else %}
+	<p>{{ __('No entries') }}</p>
+{% endif %}
+{{ block('list_pagination')}}
+{%- endblock %}
+
+{% block filter_checkbox %}
+
+{% endblock filter_checkbox %}
+
+
+{% block col_ref %}
+	{{form_field('entries',{'offset':offset})}}
+{% endblock %}
