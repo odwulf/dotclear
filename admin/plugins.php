@@ -190,14 +190,13 @@ $plugins_install = $core->plugins->installModules();
 -------------------------------------------------------- */
 dcPage::open(__('Plugins management'),
 	dcPage::jsLoad('js/_plugins.js').
-	dcPage::jsPageTabs($default_tab)
+	dcPage::jsPageTabs($default_tab),
+	dcPage::breadcrumb(
+		array(
+			__('System') => '',
+			'<span class="page-title">'.__('Plugins management').'</span>' => ''
+		))
 );
-
-dcPage::breadcrumb(
-	array(
-		__('System') => '',
-		'<span class="page-title">'.__('Plugins management').'</span>' => ''
-	));
 
 if (!empty($_GET['removed'])) {
 	dcPage::message(__('Plugin has been successfully deleted.'));
@@ -236,10 +235,10 @@ echo (!$core->plugins->moduleExists('daInstaller') ?
 		'<a href="plugin.php?p=daInstaller">'.__('DotAddict.org Installer').'</a>'));
 
 if ($is_writable) {
-	echo __('To install or upgrade a plugin you generally just need to upload it '.
+	echo '<p>'.__('To install or upgrade a plugin you generally just need to upload it '.
 	'in "Install or upgrade a plugin" section.');
 } else {
-	echo __('To install or upgrade a plugin you just need to extract it in your plugins directory.');
+	echo '<p>'.__('To install or upgrade a plugin you just need to extract it in your plugins directory.');
 }
 echo '</p>';
 
@@ -354,27 +353,25 @@ if ($is_writable)
 	
 	# 'Upload plugin' form
 	echo
-	'<form method="post" action="plugins.php" id="uploadpkg" enctype="multipart/form-data">'.
-	'<fieldset>'.
-	'<legend>'.__('Upload a zip file').'</legend>'.
-	'<p class="field"><label for="pkg_file" class="classic required"><abbr title="'.__('Required field').'">*</abbr> '.__('Plugin zip file:').' '.
-	'<input type="file" id="pkg_file" name="pkg_file" /></label></p>'.
-	'<p class="field"><label for="your_pwd1" class="classic required"><abbr title="'.__('Required field').'">*</abbr> '.__('Your password:').' '.
-	form::password(array('your_pwd','your_pwd1'),20,255).'</label></p>'.
-	'<input type="submit" name="upload_pkg" value="'.__('Upload plugin').'" />'.
+	'<form method="post" action="plugins.php" id="uploadpkg" enctype="multipart/form-data" class="fieldset">'.
+	'<h3>'.__('Upload a zip file').'</h3>'.
+	'<p class="field"><label for="pkg_file" class="classic required"><abbr title="'.__('Required field').'">*</abbr> '.__('Plugin zip file:').'</label> '.
+	'<input type="file" id="pkg_file" name="pkg_file" /></p>'.
+	'<p class="field"><label for="your_pwd1" class="classic required"><abbr title="'.__('Required field').'">*</abbr> '.__('Your password:').'</label> '.
+	form::password(array('your_pwd','your_pwd1'),20,255).'</p>'.
+	'<p><input type="submit" name="upload_pkg" value="'.__('Upload plugin').'" />'.
 	$core->formNonce().
-	'</fieldset>'.
+	'</p>'.
 	'</form>';
 	
 	# 'Fetch plugin' form
 	echo
-	'<form method="post" action="plugins.php" id="fetchpkg">'.
-	'<fieldset>'.
-	'<legend>'.__('Download a zip file').'</legend>'.
-	'<p class="field"><label for="pkg_url" class="classic required"><abbr title="'.__('Required field').'">*</abbr> '.__('Plugin zip file URL:').' '.
-	form::field(array('pkg_url','pkg_url'),40,255).'</label></p>'.
-	'<p class="field"><label for="your_pwd2" class="classic required"><abbr title="'.__('Required field').'">*</abbr> '.__('Your password:').' '.
-	form::password(array('your_pwd','your_pwd2'),20,255).'</label></p>'.
+	'<form method="post" action="plugins.php" id="fetchpkg" class="fieldset">'.
+	'<h3>'.__('Download a zip file').'</h3>'.
+	'<p class="field"><label for="pkg_url" class="classic required"><abbr title="'.__('Required field').'">*</abbr> '.__('Plugin zip file URL:').'</label> '.
+	form::field(array('pkg_url','pkg_url'),40,255).'</p>'.
+	'<p class="field"><label for="your_pwd2" class="classic required"><abbr title="'.__('Required field').'">*</abbr> '.__('Your password:').'</label> '.
+	form::password(array('your_pwd','your_pwd2'),20,255).'</p>'.
 	'<input type="submit" name="fetch_pkg" value="'.__('Download plugin').'" />'.
 	$core->formNonce().
 	'</fieldset>'.

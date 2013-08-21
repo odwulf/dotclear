@@ -80,8 +80,8 @@ function prefLine($id,$s,$ws,$field_name,$strong_label)
 	$slabel = $strong_label ? '<strong>%s</strong>' : '%s';
 	
 	return
-	'<tr>'.
-	'<td scope="raw"><label for="s_'.$id.'">'.sprintf($slabel,html::escapeHTML($id)).'</label></td>'.
+	'<tr class="line">'.
+	'<td scope="row"><label for="s_'.$id.'">'.sprintf($slabel,html::escapeHTML($id)).'</label></td>'.
 	'<td>'.$field.'</td>'.
 	'<td>'.$s['type'].'</td>'.
 	'<td>'.html::escapeHTML($s['label']).'</td>'.
@@ -110,6 +110,13 @@ function prefLine($id,$s,$ws,$field_name,$strong_label)
 
 <body>
 <?php
+echo dcPage::breadcrumb(
+	array(
+		__('System') => '',
+		html::escapeHTML($core->auth->userID()) => '',
+		'<span class="page-title">'.__('user:preferences').'</span>' => ''
+	));
+
 if (!empty($_GET['upd'])) {
 	dcPage::message(__('Preferences successfully updated'));
 }
@@ -117,19 +124,12 @@ if (!empty($_GET['upd'])) {
 if (!empty($_GET['upda'])) {
 	dcPage::message(__('Preferences definition successfully updated'));
 }
-
-dcPage::breadcrumb(
-	array(
-		__('System') => '',
-		html::escapeHTML($core->auth->userID()) => '',
-		'<span class="page-title">'.__('user:preferences').'</span>' => ''
-	));
 ?>
 
 <div id="local" class="multi-part" title="<?php echo __('User preferences'); ?>">
 
 <?php 
-$table_header = '<table class="prefs" id="%s"><caption>%s</caption>'.
+$table_header = '<table class="prefs" id="%s"><caption class="as_h3">%s</caption>'.
 '<thead>'.
 '<tr>'."\n".
 '  <th class="nowrap">Setting ID</th>'."\n".

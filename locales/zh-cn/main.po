@@ -457,7 +457,7 @@ msgid "Themes"
 msgstr "主题"
 
 #, php-format
-msgid "You are currently using \"%s\""
+msgid "You are currently using <strong>%s</strong>"
 msgstr "您正在使用“%s”"
 
 #, fuzzy
@@ -764,7 +764,7 @@ msgstr "每页的评论数"
 msgid "Comment author:"
 msgstr "评论作者："
 
-msgid "You have one spam comments."
+msgid "You have one spam comment."
 msgstr "您有一个垃圾评论。"
 
 msgid "Show it."

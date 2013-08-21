@@ -459,7 +459,7 @@ msgid "Themes"
 msgstr "Temalar"
 
 #, php-format
-msgid "You are currently using \"%s\""
+msgid "You are currently using <strong>%s</strong>"
 msgstr "Şimdi \"%s\" kullanıyorsunuz."
 
 #, fuzzy
@@ -760,7 +760,7 @@ msgstr "Sayfa başına ahkam"
 msgid "Comment author:"
 msgstr "Ahkamı yazan:"
 
-msgid "You have one spam comments."
+msgid "You have one spam comment."
 msgstr ""
 
 msgid "Show it."

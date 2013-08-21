@@ -179,9 +179,9 @@ class dcImportFlat extends dcIeModule
 		"</script>\n";
 		
 		echo
-		'<form action="'.$this->getURL(true).'" method="post" enctype="multipart/form-data">'.
-		'<fieldset><legend>'.__('Single blog').'</legend>'.
-		'<p>'.sprintf(__('This will import a single blog backup as new content in the current blog: %s.'),html::escapeHTML($this->core->blog->name)).'</p>'.
+		'<form action="'.$this->getURL(true).'" method="post" enctype="multipart/form-data" class="fieldset">'.
+		'<h3>'.__('Single blog').'</h3>'.
+		'<p>'.sprintf(__('This will import a single blog backup as new content in the current blog: <strong>%s</strong>.'),html::escapeHTML($this->core->blog->name)).'</p>'.
 		
 		'<p><label for="up_single_file" class="classic">'.__('Upload a backup file').
 		' ('.sprintf(__('Maximum size %s'),files::size(DC_MAX_UPLOAD_SIZE)).')'.' </label>'.
@@ -190,9 +190,9 @@ class dcImportFlat extends dcIeModule
 		
 		if ($has_files) {
 			echo 
-			'<p><label for="public_single_file" class="classic">'.__('or pick up a local file in your public directory').' '.
+			'<p><label for="public_single_file" class="classic">'.__('or pick up a local file in your public directory').'</label> '.
 			form::combo('public_single_file',$public_files).
-			'</label></p>';
+			'</p>';
 		}
 		
 		echo 
@@ -202,14 +202,13 @@ class dcImportFlat extends dcIeModule
 		form::hidden(array('MAX_FILE_SIZE'),DC_MAX_UPLOAD_SIZE).
 		'<input type="submit" value="'.__('Import').'" /></p>'.
 		
-		'</fieldset>'.
 		'</form>';
 		
 		if ($this->core->auth->isSuperAdmin())
 		{
 			echo
-			'<form action="'.$this->getURL(true).'" method="post" enctype="multipart/form-data" id="formfull">'.
-			'<fieldset><legend>'.__('Multiple blogs').'</legend>'.
+			'<form action="'.$this->getURL(true).'" method="post" enctype="multipart/form-data" id="formfull" class="fieldset">'.
+			'<h3>'.__('Multiple blogs').'</h3>'.
 			'<p class="warning">'.__('This will reset all the content of your database, except users.').'</p>'.
 			
 			'<p><label for="up_full_file" class="classic">'.__('Upload a backup file').' '.
@@ -234,7 +233,6 @@ class dcImportFlat extends dcIeModule
 			form::hidden(array('MAX_FILE_SIZE'),DC_MAX_UPLOAD_SIZE).
 			'<input type="submit" value="'.__('Import').'" /></p>'.
 			
-			'</fieldset>'.
 			'</form>';
 		}
 	}
