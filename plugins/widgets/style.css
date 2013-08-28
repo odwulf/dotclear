@@ -5,17 +5,21 @@
 	padding: 1.5em 1% 0; 
 	margin: 0 1% 0 0;
 }
-#widgets > div {
+#widgets > li {
 	border: 1px solid #ccc;
 	margin-bottom: .5em;
 	background: #fff;
 	min-height: 3em;
 	padding: 0 0 4px 0;
+	list-style: none;
 }
 #widgets .widget-name, #widgets .js-remove {
 	background: #fff;
 	margin-bottom: 0;
 	padding: 4px 8px; 
+}
+#widgets .js-hide {
+	display: none;
 }
 #widgets .widget-name {
 	min-height: 3em;
@@ -37,14 +41,41 @@
 .widgets.fieldset {
 	margin-bottom: 2em;
 }
+.widgets.fieldset.drag {
+	margin-bottom: 0;
+	border-radius: 6px 6px 0 0;
+}
 #widgets, #dndnav, #dndextra, #dndcustom {
 	padding: 1em 0;
+	margin: 1em 0 0;
 }
-#dndnav > div, #dndextra > div, #dndcustom > div {
+#dndnav > li,
+#dndextra > li,
+#dndcustom > li,
+.sortable-delete > li {
 	padding: O;
 	border: 1px solid #999;
 	margin-bottom: 1em;
+	list-style: none;
 }
+
+.sortable-delete > li {
+	margin-bottom: 3px;
+}
+
+#dndnav li.ui-sortable-placeholder,
+#dndextra li.ui-sortable-placeholder,
+#dndcustom li.ui-sortable-placeholder,
+.sortable-delete li.ui-sortable-placeholder {
+	border: 1px dashed #999;
+	height: 2rem;
+	padding: 3px;
+}
+
+#dndnav .form-note, #dndextra .form-note, #dndcustom .form-note {
+	display: none;
+}
+
 
 .widget-name {
 	background: #eef;
@@ -72,6 +103,27 @@
 	padding: 8px 6px;
 	background: #f5f5f5;
 }
+
+.sortable-delete {
+    display: none;
+}
+
+.sortable-delete.drag {
+    background: url("style/JsToolbar/bt_clean.png") no-repeat scroll 2px 5px #FFBABA;
+    border-color: #999999;
+    border-radius: 0 0 6px 6px;
+    border-right: 1px solid #999999;
+    border-style: solid;
+    border-width: 0 1px 1px;
+    color: #000000;
+    font-weight: bold;
+    list-style: none outside none;
+    margin: 0 0 2em;
+    min-height: 25px;
+    padding: 4px 4px 0 24px;
+    display: block;
+}
+
 #widgets .widgetSettings {
 	display: none;
 }
