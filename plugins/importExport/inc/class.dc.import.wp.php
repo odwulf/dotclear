@@ -175,47 +175,59 @@ class dcImportWP extends dcIeModule
 				echo
 				'<p>'.sprintf(__('This will import your WordPress content as new content in the current blog: %s.'),
 				'<strong>'.html::escapeHTML($this->core->blog->name).'</strong>').'</p>'.
-				'<p class="static-msg">'.__('Please note that this process '.
-				'will empty your categories, blogroll, entries and comments on the current blog.').'</p>'.
-				'<p>'.__('Depending on the size of your blog, it could take a few minutes.').'</p>';
+				'<p class="warning">'.__('Please note that this process '.
+				'will empty your categories, blogroll, entries and comments on the current blog.').'</p>';
 				
 				printf($this->imForm(1,__('General information'),__('Import my blog now')),
-				'<h3>'.__('We first need some information about your old WordPress installation.').'</h3>'.
-				'<p><label for="db_host">'.__('Database Host Name:').' '.
-				form::field('db_host',30,255,html::escapeHTML($this->vars['db_host'])).'</label></p>'.
-				'<p><label for="db_name">'.__('Database Name:',html::escapeHTML($this->vars['db_name'])).' '.
-				form::field('db_name',30,255,html::escapeHTML($this->vars['db_name'])).'</label></p>'.
-				'<p><label for="db_user">'.__('Database User Name:').' '.
-				form::field('db_user',30,255,html::escapeHTML($this->vars['db_user'])).'</label></p>'.
-				'<p><label for="db_pwd">'.__('Database Password:').' '.
-				form::password('db_pwd',30,255).'</label></p>'.
-				'<p><label for="db_prefix">'.__('Database Tables Prefix:').' '.
-				form::field('db_prefix',30,255,html::escapeHTML($this->vars['db_prefix'])).'</label></p>'.
-				'<h3>'.__('Entries import options').'</h3>'.
+				'<p>'.__('We first need some information about your old WordPress installation.').'</p>'.
+				'<p><label for="db_host">'.__('Database Host Name:').'</label> '.
+				form::field('db_host',30,255,html::escapeHTML($this->vars['db_host'])).'</p>'.
+				'<p><label for="db_name">'.__('Database Name:',html::escapeHTML($this->vars['db_name'])).'</label> '.
+				form::field('db_name',30,255,html::escapeHTML($this->vars['db_name'])).'</p>'.
+				'<p><label for="db_user">'.__('Database User Name:').'</label> '.
+				form::field('db_user',30,255,html::escapeHTML($this->vars['db_user'])).'</p>'.
+				'<p><label for="db_pwd">'.__('Database Password:').'</label> '.
+				form::password('db_pwd',30,255).'</p>'.
+				'<p><label for="db_prefix">'.__('Database Tables Prefix:').'</label> '.
+				form::field('db_prefix',30,255,html::escapeHTML($this->vars['db_prefix'])).'</p>'.
+
+				'<h3 class="vertical-separator">'.__('Entries import options').'</h3>'.
+				'<div class="two-cols">'.
+
+				'<div class="col">'.
 				'<p>'.__('WordPress and Dotclear\'s handling of categories are quite different. '.
 				'You can assign several categories to a single post in WordPress. In the Dotclear world, '.
 				'we see it more like "One category, several tags." Therefore Dotclear can only import one '.
 				'category per post and will chose the lowest numbered one. If you want to keep a trace of '.
 				'every category, you can import them as tags, with an optional prefix.').'</p>'.
-				'<p>'.__('On the other hand, in WordPress, a post can not be uncategorized, and a default '.
-				'installation has a first category labelised <i>"Uncategorized"</i>. If you did not change that '.
-				'category, you can just ignore it while importing your blog, as Dotclear allows you to '.
-				'actually keep your posts uncategorized.').'</p>'.
+				'<p>'.__('On the other hand, in WordPress, a post can not be uncategorized, and a '.
+				'default installation has a first category labelised <i>"Uncategorized"</i>.'.
+				'If you did not change that category, you can just ignore it while '.
+				'importing your blog, as Dotclear allows you to actually keep your posts '.
+				'uncategorized.').'</p>'.
+				'</div>'.
+
+				'<div class="col">'.
 				'<p><label for="ignore_first_cat" class="classic">'.form::checkbox('ignore_first_cat',1,$this->vars['ignore_first_cat']).' '.
 				__('Ignore the first category:').'</label></p>'.
 				'<p><label for="cat_import" class="classic">'.form::checkbox('cat_import',1,$this->vars['cat_import']).' '.
 				__('Import lowest numbered category on posts:').'</label></p>'.
 				'<p><label for="cat_as_tags" class="classic">'.form::checkbox('cat_as_tags',1,$this->vars['cat_as_tags']).' '.
 				__('Import all categories as tags:').'</label></p>'.
-				'<p><label for="cat_tags_prefix">'.__('Prefix such tags with:').' '.
-				form::field('cat_tags_prefix',10,20,html::escapeHTML($this->vars['cat_tags_prefix'])).'</label></p>'.
-				'<p><label for="post_limit">'.__('Number of entries to import at once:').' '.
-				form::field('post_limit',3,3,html::escapeHTML($this->vars['post_limit'])).'</label></p>'.
+				'<p><label for="cat_tags_prefix">'.__('Prefix such tags with:').'</label> '.
+				form::field('cat_tags_prefix',10,20,html::escapeHTML($this->vars['cat_tags_prefix'])).'</p>'.
+				'<p><label for="post_limit">'.__('Number of entries to import at once:').'</label> '.
+				form::field('post_limit',3,3,html::escapeHTML($this->vars['post_limit'])).'</p>'.
+				'</div>'.
 				
-				'<h3>'.__('Content filters').'</h3>'.
+				'</div>'.
+
+				'<h3 class="clear vertical-separator">'.__('Content filters').'</h3>'.
 				'<p>'.__('You may want to process your post and/or comment content with the following filters.').'</p>'.
-				'<p><label for="post_formater">'.__('Post content formatter:').' '.form::combo('post_formater',$this->formaters,$this->vars['post_formater']).'</label></p>'.
-				'<p><label for="comment_formater">'.__('Comment content formatter:').' '.form::combo('comment_formater',$this->formaters,$this->vars['comment_formater']).'</label></p>'
+				'<p><label for="post_formater">'.__('Post content formatter:').'</label> '.
+				form::combo('post_formater',$this->formaters,$this->vars['post_formater']).'</p>'.
+				'<p><label for="comment_formater">'.__('Comment content formatter:').'</label> '
+				.form::combo('comment_formater',$this->formaters,$this->vars['comment_formater']).'</p>'
 				);
 				break;
 			case 2:
@@ -260,12 +272,12 @@ class dcImportWP extends dcIeModule
 		
 		return
 		'<form action="'.$this->getURL(true).'" method="post">'.
-		'<fieldset><legend>'.$legend.'</legend>'.
-		$this->core->formNonce().
+		'<h3 class="vertical-separator">'.$legend.'</h3>'.
+		'<div>'.$this->core->formNonce().
 		form::hidden(array('do'),'step'.$step).
-		'%s'.
+		'%s'.'</div>'.
 		'<p><input type="submit" value="'.$submit_value.'" /></p>'.
-		'</fieldset>'.
+		'<p class="form-note info">'.__('Depending on the size of your blog, it could take a few minutes.').'</p>'.
 		'</form>';
 	}
 	

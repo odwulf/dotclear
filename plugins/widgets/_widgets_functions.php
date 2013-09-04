@@ -28,8 +28,10 @@ class defaultWidgets
 		($w->content_only ? '' : '<div id="search"'.($w->class ? ' class="'.html::escapeHTML($w->class).'"' : '').'>').
 		($w->title ? '<h2><label for="q">'.html::escapeHTML($w->title).'</label></h2>' : '').
 		'<form action="'.$core->blog->url.'" method="get">'.
+		'<fieldset>'.
 		'<p><input type="text" size="10" maxlength="255" id="q" name="q" value="'.$value.'" /> '.
 		'<input type="submit" class="submit" value="ok" /></p>'.
+		'</fieldset>'.
 		'</form>'.
 		($w->content_only ? '' : '</div>');
 	}
@@ -74,7 +76,7 @@ class defaultWidgets
 			return;
 		}
 
-		$rs = $core->blog->getCategories(array('post_type'=>'post'));
+		$rs = $core->blog->getCategories(array('post_type'=>'post','without_empty'=> !$w->with_empty));
 		if ($rs->isEmpty()) {
 			return;
 		}

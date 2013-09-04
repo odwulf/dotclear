@@ -173,14 +173,17 @@ dcPage::open(__('Dotclear update'),
 	(!$step ? 
 		dcPage::jsPageTabs($default_tab).
 		dcPage::jsLoad('js/_update.js')
-	: '')
+		: ''),
+	dcPage::breadcrumb(
+		array(
+			__('System') => '',
+			'<span class="page-title">'.__('Dotclear update').'</span>' => ''
+		))
 );
 
 if (!$core->error->flag()) {
-	echo '<h2>'.__('Dotclear update').'</h2>';
-	
 	if (!empty($_GET['nocache'])) {
-		dcPage::message(__('Manual checking of update done successfully.'));
+		dcPage::success(__('Manual checking of update done successfully.'));
 	}
 }
 
@@ -199,7 +202,7 @@ if (!$step)
 	{
 		echo
 			'<p class="static-msg">'.sprintf(__('Dotclear %s is available.'),$new_v).
-				($version_info ? ' ('.sprintf(__('<a href=\"%s\">Information about this version</a>.'),$version_info).')' : '').
+				($version_info ? ' <a href="'.$version_info.'">('.__('Information about this version').')</a>' : '').
 				'</p>'.
 		
 		'<p>'.__('To upgrade your Dotclear installation simply click on the following button. '.

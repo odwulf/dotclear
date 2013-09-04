@@ -159,18 +159,35 @@ if (!$core->error->flag() && isset($rs))
 
 /* DISPLAY
 -------------------------------------------------------- */
+if ($comment_id) {
+	$breadcrumb = dcPage::breadcrumb(
+		array(
+			html::escapeHTML($core->blog->name) => '',
+			html::escapeHTML($post_title) => $core->getPostAdminURL($post_type,$post_id).'&amp;co=1#c'.$comment_id,
+			'<span class="page-title">'.__('Edit comment').'</span>' => ''
+		));
+} else {
+	$breadcrumb = dcPage::breadcrumb(
+		array(
+			html::escapeHTML($core->blog->name) => '',
+			html::escapeHTML($post_title) => $core->getPostAdminURL($post_type,$post_id),
+			'<span class="page-title">'.__('Edit comment').'</span>' => ''
+		));
+}
+
 dcPage::open(__('Edit comment'),
 	dcPage::jsConfirmClose('comment-form').
 	dcPage::jsToolBar().
 	dcPage::jsLoad('js/_comment.js').
 	# --BEHAVIOR-- adminCommentHeaders
-	$core->callBehavior('adminCommentHeaders')
+	$core->callBehavior('adminCommentHeaders'),
+	$breadcrumb
 );
 
 if ($comment_id)
 {
 	if (!empty($_GET['upd'])) {
-		dcPage::message(__('Comment has been successfully updated.'));
+		dcPage::success(__('Comment has been successfully updated.'));
 	}
 	
 	$comment_mailto = '';
@@ -182,35 +199,35 @@ if ($comment_id)
 		.rawurlencode(sprintf(__("Hi!\n\nYou wrote a comment on:\n%s\n\n\n"),$rs->getPostURL()))
 		.'">'.__('Send an e-mail').'</a>';
 	}
-	
-	echo '<h2>'.html::escapeHTML($core->blog->name).' &rsaquo; <a href="'.
-		$core->getPostAdminURL($post_type,$post_id).'&amp;co=1#c'.$comment_id.'"> '.
-		$post_title.'</a> &rsaquo; <span class="page-title">'.__('Edit comment').'</span></h2>';
-		
+
 	echo
 	'<form action="comment.php" method="post" id="comment-form">'.
-	'<p>'.__('IP address:').'<br /> '.
+	'<div class="fieldset">'.
+	'<h3>'.__('Information collected').'</h3>'.
+	'<p>'.__('IP address:').' '.
 	'<a href="comments.php?ip='.$comment_ip.'">'.$comment_ip.'</a></p>'.
 	
-	'<p>'.__('Date:').'<br /> '.
+	'<p>'.__('Date:').' '.
 	dt::dt2str(__('%Y-%m-%d %H:%M'),$comment_dt).'</p>'.
-	
-	'<p><label for="comment_author" class="required"><abbr title="'.__('Required field').'">*</abbr>'.__('Author:').
+	'</div>'.
+
+	'<h3>'.__('Comment submitted').'</h3>'.	
+	'<p><label for="comment_author" class="required"><abbr title="'.__('Required field').'">*</abbr>'.__('Author:').'</label>'.
 	form::field('comment_author',30,255,html::escapeHTML($comment_author)).
-	'</label></p>'.
+	'</p>'.
 	
-	'<p><label for="comment_email">'.__('Email:').
+	'<p><label for="comment_email">'.__('Email:').'</label>'.
 	form::field('comment_email',30,255,html::escapeHTML($comment_email)).
-	$comment_mailto.
-	'</label></p>'.
+	'<span>'.$comment_mailto.'</span>'.
+	'</p>'.
 	
-	'<p><label for="comment_site">'.__('Web site:').
+	'<p><label for="comment_site">'.__('Web site:').'</label>'.
 	form::field('comment_site',30,255,html::escapeHTML($comment_site)).
-	'</label></p>'.
+	'</p>'.
 	
-	'<p><label for="comment_status">'.__('Status:').
+	'<p><label for="comment_status">'.__('Status:').'</label>'.
 	form::combo('comment_status',$status_combo,$comment_status,'','',!$can_publish).
-	'</label></p>'.
+	'</p>'.
 	
 	# --BEHAVIOR-- adminAfterCommentDesc
 	$core->callBehavior('adminAfterCommentDesc', $rs).

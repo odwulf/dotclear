@@ -216,7 +216,7 @@ msgid "I would like to prevent search engines and archivers from indexing or arc
 msgstr "Želim da moj blog ne bude ni indeksiran ni arhivisan kroz internet pretraživača."
 
 #, fuzzy
-msgid "That blog Id is already in use."
+msgid "This blog ID is already used."
 msgstr "Dotclear est déjà installé."
 
 msgid "Invalid language code"
@@ -459,7 +459,7 @@ msgid "Themes"
 msgstr "Thèmes"
 
 #, php-format
-msgid "You are currently using \"%s\""
+msgid "You are currently using <strong>%s</strong>"
 msgstr "Vous utilisez actuellement \"%s\""
 
 msgid "Use selected theme"
@@ -591,7 +591,7 @@ msgid "The category has been successfully moved."
 msgstr "Catégorie mise à jour avec succès."
 
 #, fuzzy
-msgid "No category yet."
+msgid "No category so far."
 msgstr "Pas de catégorie."
 
 #, fuzzy
@@ -777,7 +777,7 @@ msgstr "Commentaires par page"
 msgid "Comment author:"
 msgstr "Auteur du commentaire :"
 
-msgid "You have one spam comments."
+msgid "You have one spam comment."
 msgstr "Vous avez un commentaire indésirable."
 
 msgid "Show it."
@@ -1171,7 +1171,7 @@ msgid "By dates, in descending order"
 msgstr "Par dates, décroissantes"
 
 msgid "Media manager"
-msgstr "Gestionnaire de médias"
+msgstr "Médiathèque"
 
 msgid "confirm removal"
 msgstr "Confirmer la suppression"
@@ -1653,7 +1653,7 @@ msgid "Warning: If you set the URL manually, it may conflict with another entry.
 msgstr "Attention : si vous indiquez l'URL manuellement, celle-ci peut entrer en conflit avec un autre billet."
 
 msgid "Ping blogs"
-msgstr "Faire des rétroliens"
+msgstr "Envoyer des rétroliens"
 
 msgid "Trackbacks"
 msgstr "Rétroliens"
@@ -1771,10 +1771,10 @@ msgstr "Action sur les billets sélectionnés :"
 msgid "This user does not exist"
 msgstr "Cet utilisateur n'existe pas"
 
-msgid "Change category for entries"
+msgid "Change category for this selection"
 msgstr "Changer de catégorie pour les billets"
 
-msgid "Change author for entries"
+msgid "Change author for this selection"
 msgstr "Changer l'auteur des billets"
 
 msgid "Author ID:"
@@ -2166,7 +2166,7 @@ msgstr "Aucune sélection"
 msgid "select all"
 msgstr "tout sélectionner"
 
-msgid "invert selection"
+msgid "Invert selection"
 msgstr "inverser la sélection"
 
 msgid "view entry"

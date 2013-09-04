@@ -174,7 +174,13 @@ if ($popup) {
 call_user_func($open_f,__('Media manager'),
 	$starting_scripts.
 	dcPage::jsDatePicker().
-	dcPage::jsPageTabs($tab)
+	dcPage::jsPageTabs($tab),
+	dcPage::breadcrumb(
+		array(
+			html::escapeHTML($core->blog->name) => '',
+			__('Media manager') => html::escapeURL($media_page_url),
+			$core->media->breadCrumb(html::escapeURL($media_page_url).'&amp;d=%s').'<span class="page-title">'.$file->basename.'</span>' => ''
+		),!$popup)
 );
 
 if ($file === null) {
@@ -183,15 +189,11 @@ if ($file === null) {
 }
 
 if (!empty($_GET['fupd']) || !empty($_GET['fupl'])) {
-	dcPage::message(__('File has been successfully updated.'));
+	dcPage::success(__('File has been successfully updated.'));
 }
 if (!empty($_GET['thumbupd'])) {
-	dcPage::message(__('Thumbnails have been successfully updated.'));
+	dcPage::success(__('Thumbnails have been successfully updated.'));
 }
-
-echo '<h2><a href="'.html::escapeURL($media_page_url).'">'.__('Media manager').'</a>'.
-' / '.$core->media->breadCrumb(html::escapeURL($media_page_url).'&amp;d=%s').
-'<span class="page-title">'.$file->basename.'</span></h2>';
 
 # Insertion popup
 if ($popup)
@@ -330,7 +332,7 @@ if ($popup)
 	
 	echo
 	'<p><a id="media-insert-cancel" class="button" href="#">'.__('Cancel').'</a> - '.
-	'<strong><a id="media-insert-ok" class="button" href="#">'.__('Insert').'</a></strong>'.
+	'<a id="media-insert-ok" class="button" href="#">'.__('Insert').'</a>'.
 	form::hidden(array('type'),html::escapeHTML($media_type)).
 	form::hidden(array('title'),html::escapeHTML($file->media_title)).
 	form::hidden(array('description'),html::escapeHTML($media_desc)).
@@ -345,7 +347,8 @@ echo
 '<p id="media-icon"><img src="'.$file->media_icon.'?'.time()*rand().'" alt="" /></p>';
 
 echo
-'<div id="media-details">';
+'<div id="media-details">'.
+'<div class="near-icon">';
 
 if ($file->media_image)
 {
@@ -353,6 +356,15 @@ if ($file->media_image)
 	
 	if (!isset($core->media->thumb_sizes[$thumb_size]) && $thumb_size != 'o') {
 		$thumb_size = 's';
+	}
+	
+	if (isset($file->media_thumb[$thumb_size])) {
+		echo '<p><img src="'.$file->media_thumb[$thumb_size].'?'.time()*rand().'" alt="" /></p>';
+	} elseif ($thumb_size == 'o') {
+		$S = getimagesize($file->file);
+		$class = ($S[1] > 500) ? ' class="overheight"' : '';
+		unset($S);
+		echo '<p id="media-original-image"'.$class.'><img src="'.$file->file_url.'?'.time()*rand().'" alt="" /></p>';
 	}
 	
 	echo '<p>'.__('Available sizes:').' ';
@@ -364,15 +376,6 @@ if ($file->media_image)
 	}
 	echo '<a href="'.html::escapeURL($page_url).'&amp;id='.$id.'&amp;size=o&amp;tab=media-details-tab">'.__('original').'</a>';
 	echo '</p>';
-	
-	if (isset($file->media_thumb[$thumb_size])) {
-		echo '<p><img src="'.$file->media_thumb[$thumb_size].'?'.time()*rand().'" alt="" /></p>';
-	} elseif ($thumb_size == 'o') {
-		$S = getimagesize($file->file);
-		$class = ($S[1] > 500) ? ' class="overheight"' : '';
-		unset($S);
-		echo '<p id="media-original-image"'.$class.'><img src="'.$file->file_url.'?'.time()*rand().'" alt="" /></p>';
-	}
 }
 
 if ($file->type == 'audio/mpeg3')
@@ -397,8 +400,8 @@ echo
 if (empty($_GET['find_posts']))
 {
 	echo
-	'<p><strong><a href="'.html::escapeHTML($page_url).'&amp;id='.$id.'&amp;find_posts=1&amp;tab=media-details-tab">'.
-	__('Show entries containing this media').'</a></strong></p>';
+	'<p><a class="button" href="'.html::escapeHTML($page_url).'&amp;id='.$id.'&amp;find_posts=1&amp;tab=media-details-tab">'.
+	__('Show entries containing this media').'</a></p>';
 }
 else
 {
@@ -483,18 +486,22 @@ if ($file->type == 'image/jpeg')
 	}
 }
 
+echo '</div>';
+
+echo '<h3>'.__('Updates and modifications').'</h3>';
+
 if ($file->editable && $core_media_writable)
 {
 	if ($file->media_type == 'image')
 	{
 		echo
-		'<form class="clear" action="'.html::escapeURL($page_url).'" method="post">'.
-		'<fieldset><legend>'.__('Update thumbnails').'</legend>'.
+		'<form class="clear fieldset" action="'.html::escapeURL($page_url).'" method="post">'.
+		'<h4>'.__('Update thumbnails').'</h4>'.
 		'<p>'.__('This will create or update thumbnails for this image.').'</p>'.
 		'<p><input type="submit" name="thumbs" value="'.__('Update thumbnails').'" />'.
 		form::hidden(array('id'),$id).
 		$core->formNonce().'</p>'.
-		'</fieldset></form>';
+		'</form>';
 	}
 	
 	if ($file->type == 'application/zip')
@@ -505,43 +512,43 @@ if ($file->editable && $core_media_writable)
 		);
 		
 		echo
-		'<form class="clear" id="file-unzip" action="'.html::escapeURL($page_url).'" method="post">'.
-		'<fieldset><legend>'.__('Extract archive').'</legend>'.
+		'<form class="clear fieldset" id="file-unzip" action="'.html::escapeURL($page_url).'" method="post">'.
+		'<h4>'.__('Extract archive').'</h4>'.
 		'<ul>'.
 		'<li><strong>'.__('Extract in a new directory').'</strong> : '.
 		__('This will extract archive in a new directory that should not exist yet.').'</li>'.
 		'<li><strong>'.__('Extract in current directory').'</strong> : '.
 		__('This will extract archive in current directory and will overwrite existing files or directory.').'</li>'.
 		'</ul>'.
-		'<p><label for="inflate_mode" class="classic">'.__('Extract mode:').' '.
-		form::combo('inflate_mode',$inflate_combo,'new').'</label> '.
+		'<p><label for="inflate_mode" class="classic">'.__('Extract mode:').'</label> '.
+		form::combo('inflate_mode',$inflate_combo,'new').
 		'<input type="submit" name="unzip" value="'.__('Extract').'" />'.
 		form::hidden(array('id'),$id).
 		$core->formNonce().'</p>'.
-		'</fieldset></form>';
+		'</form>';
 	}
 	
 	echo
-	'<form class="clear" action="'.html::escapeURL($page_url).'" method="post">'.
-	'<fieldset><legend>'.__('Change media properties').'</legend>'.
-	'<p><label for="media_file">'.__('File name:').
-	form::field('media_file',30,255,html::escapeHTML($file->basename)).'</label></p>'.
-	'<p><label for="media_title">'.__('File title:').
-	form::field('media_title',30,255,html::escapeHTML($file->media_title)).'</label></p>'.
-	'<p><label for="media_dt">'.__('File date:').
-	form::field('media_dt',16,16,html::escapeHTML($file->media_dtstr)).'</label></p>'.
+	'<form class="clear fieldset" action="'.html::escapeURL($page_url).'" method="post">'.
+	'<h4>'.__('Change media properties').'</h4>'.
+	'<p><label for="media_file">'.__('File name:').'</label>'.
+	form::field('media_file',30,255,html::escapeHTML($file->basename)).'</p>'.
+	'<p><label for="media_title">'.__('File title:').'</label>'.
+	form::field('media_title',30,255,html::escapeHTML($file->media_title)).'</p>'.
+	'<p><label for="media_dt">'.__('File date:').'</label>'.
+	form::field('media_dt',16,16,html::escapeHTML($file->media_dtstr)).'</p>'.
 	'<p><label for="media_private" class="classic">'.form::checkbox('media_private',1,$file->media_priv).' '.
 	__('Private').'</label></p>'.
-	'<p><label for="media_path">'.__('New directory:').
-	form::combo('media_path',$dirs_combo,dirname($file->relname)).'</label></p>'.
+	'<p><label for="media_path">'.__('New directory:').'</label>'.
+	form::combo('media_path',$dirs_combo,dirname($file->relname)).'</p>'.
 	'<p><input type="submit" accesskey="s" value="'.__('Save').'" />'.
 	form::hidden(array('id'),$id).
 	$core->formNonce().'</p>'.
-	'</fieldset></form>';
+	'</form>';
 	
 	echo
-	'<form class="clear" action="'.html::escapeURL($page_url).'" method="post" enctype="multipart/form-data">'.
-	'<fieldset><legend>'.__('Change file').'</legend>'.
+	'<form class="clear fieldset" action="'.html::escapeURL($page_url).'" method="post" enctype="multipart/form-data">'.
+	'<h4>'.__('Change file').'</h4>'.
 	'<div>'.form::hidden(array('MAX_FILE_SIZE'),DC_MAX_UPLOAD_SIZE).'</div>'.
 	'<p><label for="upfile">'.__('Choose a file:').
 	' ('.sprintf(__('Maximum size %s'),files::size(DC_MAX_UPLOAD_SIZE)).') '.
@@ -550,7 +557,7 @@ if ($file->editable && $core_media_writable)
 	'<p><input type="submit" value="'.__('Send').'" />'.
 	form::hidden(array('id'),$id).
 	$core->formNonce().'</p>'.
-	'</fieldset></form>';
+	'</form>';
 
 	if ($file->del) {
 		echo

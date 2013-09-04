@@ -63,6 +63,13 @@ if (!$core->auth->user_prefs->dashboard->prefExists('quickentry')) {
 	$core->auth->user_prefs->dashboard->put('quickentry',false,'boolean');
 }
 
+// Handle folded/unfolded sections in admin from user preferences
+$ws = $core->auth->user_prefs->addWorkspace('toggles');
+if (!$core->auth->user_prefs->toggles->prefExists('unfolded_sections')) {
+	$core->auth->user_prefs->toggles->put('unfolded_sections','','string','Folded sections in admin',null,true);
+}
+
+
 # Dashboard icons
 $__dashboard_icons = new ArrayObject();
 
@@ -120,22 +127,7 @@ if (!$count) {
 # Latest news for dashboard
 $__dashboard_items = new ArrayObject(array(new ArrayObject,new ArrayObject));
 
-# Documentation links
 $dashboardItem = 0;
-if ($core->auth->user_prefs->dashboard->doclinks) {
-	if (!empty($__resources['doc']))
-	{
-		$doc_links = '<h3>'.__('Documentation and support').'</h3><ul>';
-	
-		foreach ($__resources['doc'] as $k => $v) {
-			$doc_links .= '<li><a href="'.$v.'" title="'.$k.' '.__('(external link)').'">'.$k.'</a></li>';
-		}
-	
-		$doc_links .= '</ul>';
-		$__dashboard_items[$dashboardItem][] = $doc_links;
-		$dashboardItem++;
-	}
-}
 
 if ($core->auth->user_prefs->dashboard->dcnews) {
 	try
@@ -179,6 +171,22 @@ if ($core->auth->user_prefs->dashboard->dcnews) {
 	catch (Exception $e) {}
 }
 
+# Documentation links
+if ($core->auth->user_prefs->dashboard->doclinks) {
+	if (!empty($__resources['doc']))
+	{
+		$doc_links = '<h3>'.__('Documentation and support').'</h3><ul>';
+	
+		foreach ($__resources['doc'] as $k => $v) {
+			$doc_links .= '<li><a href="'.$v.'" title="'.$k.' '.__('(external link)').'">'.$k.'</a></li>';
+		}
+	
+		$doc_links .= '</ul>';
+		$__dashboard_items[$dashboardItem][] = $doc_links;
+		$dashboardItem++;
+	}
+}
+
 $core->callBehavior('adminDashboardItems', $core, $__dashboard_items);
 
 # Dashboard content
@@ -192,10 +200,31 @@ dcPage::open(__('Dashboard'),
 	dcPage::jsToolBar().
 	dcPage::jsLoad('js/_index.js').
 	# --BEHAVIOR-- adminDashboardHeaders
-	$core->callBehavior('adminDashboardHeaders')
+	$core->callBehavior('adminDashboardHeaders'),
+	dcPage::breadcrumb(
+		array(
+		'<span class="page-title">'.__('Dashboard').' : '.html::escapeHTML($core->blog->name).'</span>' => ''
+		),
+		false)
 );
 
-echo '<h2>'.html::escapeHTML($core->blog->name).' &rsaquo; <span class="page-title">'.__('Dashboard').'</span></h2>';
+# Dotclear updates notifications
+if ($core->auth->isSuperAdmin() && is_readable(DC_DIGESTS))
+{
+	$updater = new dcUpdate(DC_UPDATE_URL,'dotclear',DC_UPDATE_VERSION,DC_TPL_CACHE.'/versions');
+	$new_v = $updater->check(DC_VERSION);
+	$version_info = $new_v ? $updater->getInfoURL() : '';
+
+	if ($updater->getNotify() && $new_v) {
+		echo
+		'<div class="dc-update"><h3>'.sprintf(__('Dotclear %s is available!'),$new_v).'</h3> '.
+		'<p><a class="button submit" href="update.php">'.sprintf(__('Upgrade now'),$new_v).'</a> '.
+		'<a href="update.php?hide_msg=1">'.__('Remind me later').'</a>'.
+		($version_info ? ' </p>'.
+		'<p><a href="'.$version_info.'" class="info">'.__('information about this version').'</a>' : '').'</p>'.
+		'</div>';
+	}
+}
 
 if ($core->auth->getInfo('user_default_blog') != $core->blog->id && $core->auth->blog_count > 1) {
 	echo
@@ -203,9 +232,9 @@ if ($core->auth->getInfo('user_default_blog') != $core->blog->id && $core->auth-
 }
 
 if ($core->blog->status == 0) {
-	echo '<p class="static-msg">'.__('This blog is offline').'</p>';
+	echo '<p class="static-msg">'.__('This blog is offline').'.</p>';
 } elseif ($core->blog->status == -1) {
-	echo '<p class="static-msg">'.__('This blog is removed').'</p>';
+	echo '<p class="static-msg">'.__('This blog is removed').'.</p>';
 }
 
 if (!defined('DC_ADMIN_URL') || !DC_ADMIN_URL) {
@@ -312,7 +341,7 @@ foreach ($__dashboard_items as $i)
 {	
 	if ($i->count() > 0)
 	{
-		$dashboardItems .= '<div>';
+		$dashboardItems .= '<div class="db-item">';
 		foreach ($i as $v) {
 			$dashboardItems .= $v;
 		}
@@ -346,30 +375,30 @@ if ($core->auth->user_prefs->dashboard->quickentry) {
 				}
 			}
 		} catch (Exception $e) { }
-		
+	
 		echo
 		'<div id="quick">'.
 		'<h3>'.__('Quick entry').'</h3>'.
-		'<form id="quick-entry" action="post.php" method="post">'.
-		'<fieldset><legend>'.__('New entry').'</legend>'.
-		'<p class="col"><label for="post_title" class="required"><abbr title="'.__('Required field').'">*</abbr> '.__('Title:').
+		'<form id="quick-entry" action="post.php" method="post" class="fieldset">'.
+		'<h4>'.__('New entry').'</h4>'.
+		'<p class="col"><label for="post_title" class="required"><abbr title="'.__('Required field').'">*</abbr> '.__('Title:').'</label>'.
 		form::field('post_title',20,255,'','maximal').
-		'</label></p>'.
+		'</p>'.
 		'<p class="area"><label class="required" '.
 		'for="post_content"><abbr title="'.__('Required field').'">*</abbr> '.__('Content:').'</label> '.
 		form::textarea('post_content',50,7).
 		'</p>'.
-		'<p><label for="cat_id" class="classic">'.__('Category:').' '.
-		form::combo('cat_id',$categories_combo).'</label></p>'.
+		'<p><label for="cat_id" class="classic">'.__('Category:').'</label> '.
+		form::combo('cat_id',$categories_combo).'</p>'.
 		($core->auth->check('categories', $core->blog->id)
 			? '<div>'.
-			'<p id="new_cat">'.__('Add a new category').'</p>'.
+			'<p id="new_cat" class="q-cat">'.__('Add a new category').'</p>'.
+			'<p class="q-cat"><label for="new_cat_title">'.__('Title:').'</label> '.
+			form::field('new_cat_title',30,255,'','').'</p>'.
+			'<p class="q-cat"><label for="new_cat_parent">'.__('Parent:').'</label> '.
+			form::combo('new_cat_parent',$categories_combo,'','').
+			'</p>'.
 			'<p class="form-note info clear">'.__('This category will be created when you will save your post.').'</p>'.
-			'<p><label for="new_cat_title">'.__('Title:').' '.
-			form::field('new_cat_title',30,255,'','maximal').'</label></p>'.
-			'<p><label for="new_cat_parent">'.__('Parent:').' '.
-			form::combo('new_cat_parent',$categories_combo,'','maximal').
-			'</label></p>'.
 			'</div>'
 			: '').
 		'<p><input type="submit" value="'.__('Save').'" name="save" /> '.
@@ -383,7 +412,6 @@ if ($core->auth->user_prefs->dashboard->quickentry) {
 		form::hidden('post_lang',$core->auth->getInfo('user_lang')).
 		form::hidden('post_notes','').
 		'</p>'.
-		'</fieldset>'.
 		'</form>'.
 		'</div>';
 	}

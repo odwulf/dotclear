@@ -134,7 +134,7 @@ $daInstaller->check(false,true);
 function infoMessages()
 {
 	$res = '';
-	$p_msg = '<p class="message">%s</p>';
+	$p_msg = '<p class="success">%s</p>';
 	$p_err = '<p class="error">%s</p>';
 	
 	# Plugins install message
@@ -162,7 +162,7 @@ function infoMessages()
 			$res .= '<div class="error">'.__('Following plugins have not been updated:').'<ul>'.$err.'</ul></div>';
 		}
 		else {
-			$res .= '<div class="static-msg">'.__('Following plugins have been updated:').'<ul>'.$upd.'</ul></div>';
+			$res .= '<div class="success">'.__('Following plugins have been updated:').'<ul>'.$upd.'</ul></div>';
 		}
 	}
 	# Themes update message
@@ -182,12 +182,12 @@ function infoMessages()
 			$res .= '<div class="error">'.__('Following themes have not been updated:').'<ul>'.$err.'</ul></div>';
 		}
 		else {
-			$res .= '<div class="static-msg">'.__('Following themes have been updated:').'<ul>'.$upd.'</ul></div>';
+			$res .= '<div class="success">'.__('Following themes have been updated:').'<ul>'.$upd.'</ul></div>';
 		}
 	}
 	# Plugins install settings messages
 	if (!empty($plugins_install['success'])) {
-		$res .= '<div class="static-msg">'.__('Following plugins have been installed:').'<ul>';
+		$res .= '<div class="success">'.__('Following plugins have been installed:').'<ul>';
 		foreach ($plugins_install['success'] as $k => $v) {
 			$res .= '<li>'.$k.'</li>';
 		}
@@ -254,9 +254,17 @@ echo
 	'<link rel="stylesheet" href="index.php?pf=daInstaller/style.css" type="text/css" />'.
 '</head>'.
 '<body>'.
-infoMessages().
-'<h2 class="page-title">'.__('DotAddict.org Installer').'</h2>'.
-'<p>'.__('Install and update your extensions live from DotAddict.org').'</p>';
+
+dcPage::breadcrumb(
+	array(
+		__('System') => '',
+		'<span class="page-title">'.__('DotAddict.org Installer').'</span>' => ''
+	)).
+
+infoMessages();
+
+echo
+'<p>'.__('Install and update your plugins live from DotAddict.org').'</p>';
 
 echo
 '<!-- Available updates -->'.
@@ -264,7 +272,7 @@ echo
 if ($u_p_nb > 0 || $u_t_nb > 0) {
 	echo
 	'<p><strong>'.__('Detected updates for your system').'</strong></p>'.
-	'<p class="form-note warn">'.
+	'<p class="warning">'.
 		__('Changes can be required after installation of updates. Click on a support link before to be aware about').
 	'</p>';
 }
@@ -289,22 +297,19 @@ echo
 '</div>'.
 '<!-- Search -->'.
 '<div class="multi-part" id="search" title="'.__('Search').'">'.
-	'<fieldset><legend>'.__('Search options').
-	'</legend>'.
-	'<form method="get" action="'.$p_url.'">'.
+	'<form method="get" action="'.$p_url.'" class="fieldset">'.
+	'<h3>'.__('Search').'</h3>'.
 	'<p>'.form::hidden('p','daInstaller').
-	'<label for="q" class="classic">'.__('Query:').'&nbsp; '.
-	form::field('q',30,255,html::escapeHTML($q)).
-	'</label> '.
-	'<label for="mode" class="classic">'.
+	'<label for="q" class="classic">'.__('Query:').'&nbsp;</label> '.
+	form::field('q',30,255,html::escapeHTML($q)).'</p>'.
+	'<p><label for="mode" class="classic">'.
 	form::radio(array('mode','mode'),'plugins',$mode == 'plugins').
 	' '.__('Plugins').'&nbsp;</label> '.
 	'<label for="mode2" class="classic">'.
-	form::radio(array('mode','mode2'),'themes',$mode == 'themes')
-	.' '.__('Themes').'&nbsp;</label> '.
-	'<input type="submit" value="'.__('Search').'" /></p>'.
-	'</form>'.
-	'</fieldset>';
+	form::radio(array('mode','mode2'),'themes',$mode == 'themes').
+	' '.__('Themes').'&nbsp;</label></p>'.
+	'<p><input type="submit" value="'.__('Search').'" /></p>'.
+	'</form>';
 if (!empty($q)) {
 	echo '<p><strong>'.sprintf(__('%u %s found'),$s_m_nb,__($mode)).'</strong></p>';
 	if ($s_m_nb > 0) {
