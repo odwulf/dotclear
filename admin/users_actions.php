@@ -130,11 +130,28 @@ if (!empty($_POST['action']) && !empty($_POST['users']))
 
 /* DISPLAY
 -------------------------------------------------------- */
+if (!empty($users) && empty($blogs) && $action == 'blogs') {
+	$breadcrumb = dcPage::breadcrumb(
+		array(
+			__('System') => '',
+			__('Users') => 'users.php',
+			'<span class="page-title">'.__('Permissions').'</span>' => ''
+		));
+} else {
+	$breadcrumb = dcPage::breadcrumb(
+		array(
+			__('System') => '',
+			__('Users') => 'users.php',
+			'<span class="page-title">'.__('Actions').'</span>' => ''
+		));
+}
+
 dcPage::open(
 	__('Users'),
 	dcPage::jsLoad('js/_users_actions.js').
 	# --BEHAVIOR-- adminUsersActionsHeaders
-	$core->callBehavior('adminUsersActionsHeaders')
+	$core->callBehavior('adminUsersActionsHeaders'),
+	$breadcrumb
 );
 
 if (!isset($action)) {
@@ -161,6 +178,8 @@ else
 	form::hidden(array('nb'),$_POST['nb']);
 }
 
+echo '<p><a class="back" href="'.html::escapeURL($redir).'">'.__('Back to user profile').'</a></p>';
+
 # --BEHAVIOR-- adminUsersActionsContent
 $core->callBehavior('adminUsersActionsContent',$core,$action,$hidden_fields);
 
@@ -176,8 +195,7 @@ if (!empty($users) && empty($blogs) && $action == 'blogs')
 		$user_list[] = '<a href="user.php?id='.$u.'">'.$u.'</a>';
 	}
 	
-	echo 
-	'<h2><a href="users.php">'.__('Users').'</a> &rsaquo; <span class="page-title">'.__('Permissions').'</span></h2>'.
+	echo
 	'<p>'.sprintf(
 		__('Choose one or more blogs to which you want to give permissions to users %s.'),
 		implode(', ',$user_list)
@@ -238,7 +256,6 @@ elseif (!empty($blogs) && !empty($users) && $action == 'perms')
 	}
 	
 	echo 
-	'<h2><a href="users.php">'.__('Users').'</a> &rsaquo; <span class="page-title">'.__('Permissions').'</span></h2>'.
 	'<p>'.sprintf(
 		__('You are about to change permissions on the following blogs for users %s.'),
 		implode(', ',$user_list)
@@ -247,7 +264,7 @@ elseif (!empty($blogs) && !empty($users) && $action == 'perms')
 	
 	foreach ($blogs as $b)
 	{
-		echo '<h3><a href="blog.php?id='.html::escapeHTML($b).'">'.html::escapeHTML($b).'</a>'.
+		echo '<h3>'.('Blog:').' <a href="blog.php?id='.html::escapeHTML($b).'">'.html::escapeHTML($b).'</a>'.
 		form::hidden(array('blogs[]'),$b).'</h3>';
 		
 		foreach ($core->auth->getPermissionsTypes() as $perm_id => $perm)
@@ -267,18 +284,17 @@ elseif (!empty($blogs) && !empty($users) && $action == 'perms')
 	}
 	
 	echo
-	'<fieldset><legend>'.__('Validate permissions').'</legend>'.
-	'<p><label for="your_pwd" class="required"><abbr title="'.__('Required field').'">*</abbr> '.__('Your password:').
-	form::password('your_pwd',20,255).'</label></p>'.
-	'</fieldset>'.
+	'<div class="fieldset">'.
+	'<h3>'.__('Validate permissions').'</h3>'.
+	'<p><label for="your_pwd">'.__('Your password:').'</label>'.
+	form::password('your_pwd',20,255).'</p>'.
 	'<p><input type="submit" accesskey="s" value="'.__('Save').'" />'.
 	$hidden_fields.
 	form::hidden(array('action'),'updateperm').
 	$core->formNonce().'</p>'.
+	'</div>'.
 	'</form>';
 }
-
-echo '<p><a class="back" href="'.html::escapeURL($redir).'">'.__('back').'</a></p>';
 
 dcPage::close();
 ?>

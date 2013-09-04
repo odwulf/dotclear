@@ -189,7 +189,7 @@ if ($can_install && !empty($_POST))
 		$core->auth->user_prefs->addWorkspace('dashboard');
 		$core->auth->user_prefs->dashboard->put('doclinks',true,'boolean','',null,true);
 		$core->auth->user_prefs->dashboard->put('dcnews',true,'boolean','',null,true);
-		$core->auth->user_prefs->dashboard->put('quickentry',false,'boolean','',null,true);
+		$core->auth->user_prefs->dashboard->put('quickentry',true,'boolean','',null,true);
 
 		# Add accessibility options
 		$core->auth->user_prefs->addWorkspace('accessibility');
@@ -306,12 +306,16 @@ echo
 '<h1>'.__('Dotclear installation').'</h1>'.
 '<div id="main">';
 
+if (!is_writable(DC_TPL_CACHE)) {
+	echo '<div class="error"><p>'.sprintf(__('Cache directory %s is not writable.'),DC_TPL_CACHE).'</p></div>';
+}
+
 if ($can_install && !empty($err)) {
 	echo '<div class="error"><p><strong>'.__('Errors:').'</strong></p>'.$err.'</div>';
 }
 
 if (!empty($_GET['wiz'])) {
-	echo '<p class="message">'.__('Configuration file has been successfully created.').'</p>';
+	echo '<p class="success">'.__('Configuration file has been successfully created.').'</p>';
 }
 
 if ($can_install && $step == 0)
@@ -323,12 +327,12 @@ if ($can_install && $step == 0)
 	
 	'<form action="index.php" method="post">'.
 	'<fieldset><legend>'.__('User information').'</legend>'.
-	'<p><label for="u_firstname">'.__('First Name:').' '.
-	form::field('u_firstname',30,255,html::escapeHTML($u_firstname)).'</label></p>'.
-	'<p><label for="u_name">'.__('Last Name:').' '.
-	form::field('u_name',30,255,html::escapeHTML($u_name)).'</label></p>'.
-	'<p><label for="u_email">'.__('Email:').' '.
-	form::field('u_email',30,255,html::escapeHTML($u_email)).'</label></p>'.
+	'<p><label for="u_firstname">'.__('First Name:').'</label> '.
+	form::field('u_firstname',30,255,html::escapeHTML($u_firstname)).'</p>'.
+	'<p><label for="u_name">'.__('Last Name:').'</label> '.
+	form::field('u_name',30,255,html::escapeHTML($u_name)).'</p>'.
+	'<p><label for="u_email">'.__('Email:').'</label> '.
+	form::field('u_email',30,255,html::escapeHTML($u_email)).'</p>'.
 	'</fieldset>'.
 	
 	'<fieldset><legend>'.__('Username and password').'</legend>'.
@@ -377,7 +381,7 @@ elseif ($can_install && $step == 1)
 	
 	$plugins_install_result.
 	
-	'<p>'.__('Dotclear has been successfully installed. Here is some useful information you should keep.').'</p>'.
+	'<p class="success">'.__('Dotclear has been successfully installed. Here is some useful information you should keep.').'</p>'.
 	
 	'<h3>'.__('Your account').'</h3>'.
 	'<ul>'.

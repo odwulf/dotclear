@@ -84,7 +84,7 @@ function settingLine($id,$s,$ns,$field_name,$strong_label)
 	$slabel = $strong_label ? '<strong>%s</strong>' : '%s';
 	
 	return
-	'<tr>'.
+	'<tr class="line">'.
 	'<td scope="row"><label for="s_'.$id.'">'.sprintf($slabel,html::escapeHTML($id)).'</label></td>'.
 	'<td>'.$field.'</td>'.
 	'<td>'.$s['type'].'</td>'.
@@ -96,12 +96,7 @@ function settingLine($id,$s,$ns,$field_name,$strong_label)
 <head>
   <title>about:config</title>
   <?php echo dcPage::jsPageTabs($part); ?>
-  <style type="text/css">
-  table.settings { border: 1px solid #999; margin-bottom: 2em; }
-  table.settings th { background: #f5f5f5; color: #444; padding-top: 0.3em; padding-bottom: 0.3em; }
-  p.anchor-nav {float: right; }
-  </style>
-	<script type="text/javascript">
+  <script type="text/javascript">
 	//<![CDATA[
 	$(function() {
 		$("#gs_submit").hide();
@@ -119,20 +114,26 @@ function settingLine($id,$s,$ns,$field_name,$strong_label)
 
 <body>
 <?php
+echo dcPage::breadcrumb(
+	array(
+		__('System') => '',
+		html::escapeHTML($core->blog->name) => '',
+		'<span class="page-title">'.__('about:config').'</span>' => ''
+	));
 if (!empty($_GET['upd'])) {
-	dcPage::message(__('Configuration successfully updated'));
+	dcPage::success(__('Configuration successfully updated'));
 }
 
 if (!empty($_GET['upda'])) {
-	dcPage::message(__('Settings definition successfully updated'));
+	dcPage::success(__('Settings definition successfully updated'));
 }
 ?>
-<h2><?php echo html::escapeHTML($core->blog->name); ?> &rsaquo; <span class="page-title">about:config</span></h2>
 
-<div id="local" class="multi-part" title="<?php echo __('blog settings'); ?>">
+<div id="local" class="multi-part" title="<?php echo sprintf(__('Settings for %s'),html::escapeHTML($core->blog->name)); ?>">
 
-<?php 
-$table_header = '<table class="settings" id="%s"><caption>%s</caption>'.
+
+<?php
+$table_header = '<table class="settings" id="%s"><caption class="as_h3">%s</caption>'.
 '<thead>'.
 '<tr>'."\n".
 '  <th class="nowrap">Setting ID</th>'."\n".
@@ -187,7 +188,7 @@ foreach ($settings as $ns => $s)
 </form>
 </div>
 
-<div id="global" class="multi-part" title="<?php echo __('global settings'); ?>">
+<div id="global" class="multi-part" title="<?php echo __('Global settings'); ?>">
 
 <?php
 $settings = array();
@@ -208,8 +209,8 @@ if (count($settings) > 0) {
 	echo 
 		'<form action="plugin.php" method="post">'.
 		'<p class="anchor-nav">'.
-		'<label for="gs_nav" class="classic">'.__('Goto:').'</label> '.form::combo('gs_nav',$ns_combo).
-		' <input type="submit" value="'.__('Ok').'" id="gs_submit" />'.
+		'<label for="gs_nav" class="classic">'.__('Goto:').'</label> '.form::combo('gs_nav',$ns_combo).' '.
+		'<input type="submit" value="'.__('Ok').'" id="gs_submit" />'.
 		'<input type="hidden" name="p" value="aboutConfig" />'.
 		$core->formNonce().'</p></form>';
 }

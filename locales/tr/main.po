@@ -216,7 +216,7 @@ msgid "I would like to prevent search engines and archivers from indexing or arc
 msgstr ""
 
 #, fuzzy
-msgid "That blog Id is already in use."
+msgid "This blog ID is already used."
 msgstr "Dotclear evvelce kurulmuş."
 
 msgid "Invalid language code"
@@ -459,7 +459,7 @@ msgid "Themes"
 msgstr "Temalar"
 
 #, php-format
-msgid "You are currently using \"%s\""
+msgid "You are currently using <strong>%s</strong>"
 msgstr "Şimdi \"%s\" kullanıyorsunuz."
 
 #, fuzzy
@@ -587,7 +587,7 @@ msgstr "Kategori sıralanımı başarılı."
 msgid "The category has been successfully moved."
 msgstr "Kategori silinimi başarılı."
 
-msgid "No category yet."
+msgid "No category so far."
 msgstr "Henüz kategori yok"
 
 msgid "Categories list"
@@ -760,7 +760,7 @@ msgstr "Sayfa başına ahkam"
 msgid "Comment author:"
 msgstr "Ahkamı yazan:"
 
-msgid "You have one spam comments."
+msgid "You have one spam comment."
 msgstr ""
 
 msgid "Show it."
@@ -1745,10 +1745,10 @@ msgstr "Seçilmiş yazılara yap:"
 msgid "This user does not exist"
 msgstr "Bu kullanıcı mevcut değil"
 
-msgid "Change category for entries"
+msgid "Change category for this selection"
 msgstr "Yazıların kategorisini değiştir"
 
-msgid "Change author for entries"
+msgid "Change author for this selection"
 msgstr "Yazıların yazarını değiştir"
 
 msgid "Author ID:"
@@ -2128,7 +2128,7 @@ msgstr "Seçim yok"
 msgid "select all"
 msgstr "hepsini seç"
 
-msgid "invert selection"
+msgid "Invert selection"
 msgstr "seçimi evir"
 
 msgid "view entry"
