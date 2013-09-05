@@ -25,7 +25,7 @@ class themeEditorBehaviors
 	public static function theme_editor_details($core,$id)
 	{
 		if ($id != 'default' && $core->auth->isSuperAdmin()) {
-			return '<p><a href="plugin.php?p=themeEditor" class="button">'.__('Theme Editor').'</a></p>';
+			return '<p><a href="plugin.php?p=themeEditor" class="button">'.__('Edit theme files').'</a></p>';
 		}
 	}
 
@@ -49,15 +49,11 @@ class themeEditorBehaviors
 		// Add fieldset for plugin options
 		$core->auth->user_prefs->addWorkspace('interface');
 
-		echo
-		'<fieldset><legend>'.__('Theme Editor').'</legend>'.
-		
+		echo		
 		'<p><label for="colorsyntax" class="classic">'.
-		form::checkbox('colorsyntax',1,$core->auth->user_prefs->interface->colorsyntax).' '.
-		__('Syntax color').'</label></p>'.
-
-		'<br class="clear" />'. //Opera sucks
-		'</fieldset>';
+		form::checkbox('colorsyntax',1,$core->auth->user_prefs->interface->colorsyntax).'</label>'.
+		__('Syntax color for theme editor').
+		'</p>';
 	}
 }
 ?>
