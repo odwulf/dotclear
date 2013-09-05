@@ -122,14 +122,22 @@ catch (Exception $e)
 
 if ($filter_gui !== false)
 {
-	echo '<h2>'.html::escapeHTML($core->blog->name).' &rsaquo; <a href="'.$p_url.'">'.$page_name.'</a>'.
-		' &rsaquo; <span class="page-title">'.sprintf(__('%s configuration'),$filter->name).'</span></h2>';
+	echo dcPage::breadcrumb(
+		array(
+			__('Plugins') => '',
+			$page_name => $p_url,
+			'<span class="page-title">'.sprintf(__('%s filter configuration'),$filter->name).'</span>' => ''
+		));
 
 	echo $filter_gui;
 }
 else
 {
-	echo '<h2>'.html::escapeHTML($core->blog->name).' &rsaquo; <span class="page-title">'.$page_name.'</span></h2>';
+	echo dcPage::breadcrumb(
+		array(
+			__('Plugins') => '',
+			'<span class="page-title">'.$page_name.'</span>' => ''
+		));
 
 	# Information
 	$spam_count = dcAntispam::countSpam($core);
@@ -138,10 +146,10 @@ else
 
 	echo
 	'<form action="'.$p_url.'" method="post" class="fieldset">'.
-	'<h3>'.__('Information').'</h3>';
+	'<h3>'.__('Informations').'</h3>';
 
 	if (!empty($_GET['del'])) {
-		dcPage::message(__('Spam comments have been successfully deleted.'));
+		dcPage::success(__('Spam comments have been successfully deleted.'));
 	}
 
 	echo
@@ -161,23 +169,23 @@ else
 	}
 	if ($moderationTTL != null && $moderationTTL >=0) {
 		echo '<p>'.sprintf(__('All spam comments older than %s day(s) will be automatically deleted.'), $moderationTTL).' '.
-		sprintf(__('You can modify this duration in the %s'),'<a href="blog_pref.php#antispam_moderation_ttl"> '.__('Blog preferences').'</a>').
-			'</p>';
+		sprintf(__('You can modify this duration in the %s'),'<a href="blog_pref.php#antispam_moderation_ttl"> '.__('Blog settings').'</a>').
+			'.</p>';
 	}
 	echo '</form>';
 
 
 	# Filters
 	echo
-	'<form action="'.$p_url.'" method="post" class="fieldset" id="filters-form">';
+	'<form action="'.$p_url.'" method="post" id="filters-list-form">';
 
 	if (!empty($_GET['upd'])) {
-		dcPage::message(__('Filters configuration has been successfully saved.'));
+		dcPage::success(__('Filters configuration has been successfully saved.'));
 	}
 
 	echo
 	'<table class="dragable">'.
-	'<caption>'.__('Available spam filters').'</caption>'.
+	'<caption class="as_h3">'.__('Available spam filters').'</caption>'.
 	'<thead><tr>'.
 	'<th>'.__('Order').'</th>'.
 	'<th>'.__('Active').'</th>'.

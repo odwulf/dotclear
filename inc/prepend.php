@@ -58,6 +58,7 @@ $__autoload['adminPostList']			= dirname(__FILE__).'/admin/lib.pager.php';
 $__autoload['adminPostMiniList']		= dirname(__FILE__).'/admin/lib.pager.php';
 $__autoload['adminCommentList']		= dirname(__FILE__).'/admin/lib.pager.php';
 $__autoload['adminUserList']			= dirname(__FILE__).'/admin/lib.pager.php';
+$__autoload['dcAdminCombos']			= dirname(__FILE__).'/admin/lib.admincombos.php';
 
 $__autoload['dcTemplate']			= dirname(__FILE__).'/public/class.dc.template.php';
 $__autoload['context']				= dirname(__FILE__).'/public/lib.tpl.context.php';
@@ -122,7 +123,7 @@ if (!defined('DC_DEBUG')) {
 
 # Constants
 define('DC_ROOT',path::real(dirname(__FILE__).'/..'));
-define('DC_VERSION','2.5.3-dev');
+define('DC_VERSION','2.6-dev');
 define('DC_DIGESTS',dirname(__FILE__).'/digests');
 define('DC_L10N_ROOT',dirname(__FILE__).'/../locales');
 define('DC_L10N_UPDATE_URL','http://services.dotclear.net/dc2.l10n/?version=%s');
@@ -219,7 +220,7 @@ $core->url->register('trackback','trackback','^trackback/(.+)$',array('dcUrlHand
 $core->url->register('rsd','rsd','^rsd$',array('dcUrlHandlers','rsd'));
 $core->url->register('xmlrpc','xmlrpc','^xmlrpc/(.+)$',array('dcUrlHandlers','xmlrpc'));
 
-$core->setPostType('post','post.php?id=%d',$core->url->getURLFor('post','%s'));
+$core->setPostType('post','post.php?id=%d',$core->url->getURLFor('post','%s'),'Posts');
 
 # Store upload_max_filesize in bytes
 $u_max_size = files::str2bytes(ini_get('upload_max_filesize'));

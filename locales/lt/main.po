@@ -192,7 +192,7 @@ msgstr "Noriu, kad paieškos sistemos ir archyvatoriai indeksuotų ir bet ne arc
 msgid "I would like to prevent search engines and archivers from indexing or archiving my blog's content."
 msgstr "Nenoriu, kad paieškos sistemos ir archyvatoriai indeksuotų ir archyvuotų mano blogo turinio."
 
-msgid "That blog Id is already in use."
+msgid "This blog ID is already used."
 msgstr "Šito blogo ID jau yra naudojamas."
 
 msgid "Invalid language code"
@@ -431,7 +431,7 @@ msgid "Themes"
 msgstr "Temos"
 
 #, php-format
-msgid "You are currently using \"%s\""
+msgid "You are currently using <strong>%s</strong>"
 msgstr "Šiuo metu jūs naudojate \"%s\""
 
 msgid "use selected theme"
@@ -553,7 +553,7 @@ msgstr "Kategorijos sėkmingai pertvarkytos."
 msgid "The category has been successfully moved."
 msgstr "Kategorija sėkmingai perkelta."
 
-msgid "No category yet."
+msgid "No category so far."
 msgstr "Kategorijos kolkas nėra."
 
 msgid "Categories list"
@@ -741,7 +741,7 @@ msgstr "Komentarų viename puslapyje"
 msgid "Comment author:"
 msgstr "Komentaro autorius:"
 
-msgid "You have one spam comments."
+msgid "You have one spam comment."
 msgstr "Turite vieną spamo komentarą."
 
 msgid "Show it."
@@ -1680,10 +1680,10 @@ msgstr "Pasirinktų įrašų veiksmas:"
 msgid "This user does not exist"
 msgstr "Šis dalyvis neegzistuoja"
 
-msgid "Change category for entries"
+msgid "Change category for this selection"
 msgstr "Keisti įrašų kategoriją"
 
-msgid "Change author for entries"
+msgid "Change author for this selection"
 msgstr "Keisti įrašų autorių"
 
 msgid "Author ID:"
@@ -1934,7 +1934,7 @@ msgstr "be pasirinkimo"
 msgid "select all"
 msgstr "pasirinkti viską"
 
-msgid "invert selection"
+msgid "Invert selection"
 msgstr "atvirkščias pasirinkimas"
 
 msgid "view entry"

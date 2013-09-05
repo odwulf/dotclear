@@ -52,11 +52,17 @@ $(function() {
 					) +
 				')</em>';
 			},
-			formatResult: function(tag) { 
-				return tag.result; 
+			formatResult: function(tag) {
+				return tag.result;
 			}
 		});
 	});
+
+	$('h5 .s-tags').toggleWithLegend($('.s-tags').not('label'),{
+		user_pref: 'post_tags',
+		legend_clik: true
+	});
+
 });
 
 // Toolbar button for tags

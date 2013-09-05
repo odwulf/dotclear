@@ -55,13 +55,10 @@ if (($default_tab != 'user-profile') && ($default_tab != 'user-options') && ($de
 	$default_tab = 'user-profile';
 }
 
-foreach ($core->getFormaters() as $v) {
-	$formaters_combo[$v] = $v;
-}
+# Formaters combo
+$formaters_combo = dcAdminCombos::getFormatersCombo();
 
-foreach ($core->blog->getAllPostStatus() as $k => $v) {
-	$status_combo[$v] = $k;
-}
+$status_combo = dcAdminCombos::getPostStatusescombo();
 
 $iconsets_combo = array(__('Default') => '');
 $iconsets_root = dirname(__FILE__).'/images/iconset/';
@@ -76,11 +73,7 @@ if (is_dir($iconsets_root) && is_readable($iconsets_root)) {
 }
 
 # Language codes
-$langs = l10n::getISOcodes(1,1);
-foreach ($langs as $k => $v) {
-	$lang_avail = $v == 'en' || is_dir(DC_L10N_ROOT.'/'.$v);
-	$lang_combo[] = new formSelectOption($k,$v,$lang_avail ? 'avail10n' : '');
-}
+$lang_combo = dcAdminCombos::getAdminLangsCombo();
 
 # Add or update user
 if (isset($_POST['user_name']))
@@ -360,123 +353,157 @@ dcPage::open($page_title,
 	dcPage::jsConfirmClose('user-form').
 	
 	# --BEHAVIOR-- adminPreferencesHeaders
-	$core->callBehavior('adminPreferencesHeaders')
+	$core->callBehavior('adminPreferencesHeaders'),
+
+	dcPage::breadcrumb(
+	array(
+		html::escapeHTML($core->auth->userID()) => '',
+		'<span class="page-title">'.$page_title.'</span>' => ''
+	))
 );
 
 if (!empty($_GET['upd'])) {
-	dcPage::message(__('Personal information has been successfully updated.'));
+	dcPage::success(__('Personal information has been successfully updated.'));
 }
 if (!empty($_GET['updated'])) {
-	dcPage::message(__('Personal options has been successfully updated.'));
+	dcPage::success(__('Personal options has been successfully updated.'));
 }
 if (!empty($_GET['append'])) {
-	dcPage::message(__('Favorites have been successfully added.'));
+	dcPage::success(__('Favorites have been successfully added.'));
 }
 if (!empty($_GET['neworder'])) {
-	dcPage::message(__('Favorites have been successfully updated.'));
+	dcPage::success(__('Favorites have been successfully updated.'));
 }
 if (!empty($_GET['removed'])) {
-	dcPage::message(__('Favorites have been successfully removed.'));
+	dcPage::success(__('Favorites have been successfully removed.'));
 }
 if (!empty($_GET['replaced'])) {
-	dcPage::message(__('Default favorites have been successfully updated.'));
+	dcPage::success(__('Default favorites have been successfully updated.'));
 }
-
-echo '<h2>'.html::escapeHTML($core->blog->name).' &rsaquo; <span class="page-title">'.$page_title.'</span></h2>';
 
 # User profile
 echo '<div class="multi-part" id="user-profile" title="'.__('My profile').'">';
 
 echo
+'<h3 class="hidden-if-js">'.__('My profile').'</h3>'.
 '<form action="preferences.php" method="post" id="user-form">'.
-'<fieldset><legend>'.__('My profile').'</legend>'.
-'<div class="two-cols">'.
-'<div class="col">'.
-'<p><label for="user_name">'.__('Last Name:').
-form::field('user_name',20,255,html::escapeHTML($user_name)).'</label></p>'.
 
-'<p><label for="user_firstname">'.__('First Name:').
-form::field('user_firstname',20,255,html::escapeHTML($user_firstname)).'</label></p>'.
+'<p><label for="user_name">'.__('Last Name:').'</label>'.
+form::field('user_name',20,255,html::escapeHTML($user_name)).'</p>'.
 
-'<p><label for="user_displayname">'.__('Display name:').
-form::field('user_displayname',20,255,html::escapeHTML($user_displayname)).'</label></p>'.
+'<p><label for="user_firstname">'.__('First Name:').'</label>'.
+form::field('user_firstname',20,255,html::escapeHTML($user_firstname)).'</p>'.
 
-'<p><label for="user_email">'.__('Email:').
-form::field('user_email',20,255,html::escapeHTML($user_email)).'</label></p>'.
+'<p><label for="user_displayname">'.__('Display name:').'</label>'.
+form::field('user_displayname',20,255,html::escapeHTML($user_displayname)).'</p>'.
 
-'<p><label for="user_url">'.__('URL:').
-form::field('user_url',30,255,html::escapeHTML($user_url)).'</label></p>'.
+'<p><label for="user_email">'.__('Email:').'</label>'.
+form::field('user_email',20,255,html::escapeHTML($user_email)).'</p>'.
 
-'</div>'.
+'<p><label for="user_url">'.__('URL:').'</label>'.
+form::field('user_url',30,255,html::escapeHTML($user_url)).'</p>'.
 
-'<div class="col">'.
+'<p><label for="user_lang">'.__('Language for my interface:').'</label>'.
+form::combo('user_lang',$lang_combo,$user_lang,'l10n').'</p>'.
 
-'<p><label for="user_lang">'.__('User language:').
-form::combo('user_lang',$lang_combo,$user_lang,'l10n').'</label></p>'.
+'<p><label for="user_tz">'.__('My timezone:').'</label>'.
+form::combo('user_tz',dt::getZones(true,true),$user_tz).'</p>';
 
-'<p><label for="user_tz">'.__('User timezone:').
-form::combo('user_tz',dt::getZones(true,true),$user_tz).'</label></p>'.
-
-'</div>'.
-'</div>'.
-'<br class="clear" />'. //Opera sucks
-'</fieldset>';
 
 if ($core->auth->allowPassChange())
 {
 	echo
-	'<fieldset>'.
-	'<legend>'.__('Change your password').'</legend>'.
+	'<h4 class="vertical-separator">'.__('Change my password').'</h4>'.
 	
 	'<div class="pw-table">'.
 	'<p class="pw-cell"><label for="new_pwd">'.__('New password:').'</label>'.
 	form::password('new_pwd',20,255,'','','',false,' data-indicator="pwindicator" ').'</p>'.
-    '<div id="pwindicator">'.
-    '    <div class="bar"></div>'.
-    '    <p class="label no-margin"></p>'.
-    '</div>'.
-    '</div>'.
+	'<div id="pwindicator">'.
+	'    <div class="bar"></div>'.
+	'    <p class="label no-margin"></p>'.
+	'</div>'.
+	'</div>'.
 	
-	'<p><label for="new_pwd_c">'.__('Confirm password:').'</label>'.
+	'<p><label for="new_pwd_c">'.__('Confirm new password:').'</label>'.
 	form::password('new_pwd_c',20,255).'</p>'.
-	'</fieldset>'.
 	
-	'<p>'.__('If you have changed this user email or password you must provide your current password to save these modifications.').'</p>'.
-	'<p><label for="cur_pwd">'.__('Your password:').'</label>'.
-	form::password('cur_pwd',20,255).'</p>';
+	'<p><label for="cur_pwd">'.__('Your current password:').'</label>'.
+	form::password('cur_pwd',20,255).'</p>'.
+	'<p class="form-note warn">'.
+	__('If you have changed your email or password you must provide your current password to save these modifications.').
+	'</p>';
 }
 
 echo
-'<p class="clear">'.
+'<p class="clear vertical-separator">'.
 $core->formNonce().
-'<input type="submit" accesskey="s" value="'.__('Save').'" /></p>'.
-'</form>';
+'<input type="submit" accesskey="s" value="'.__('Update my profile').'" /></p>'.
+'</form>'.
 
-echo '</div>';
+'</div>';
 
 # User options : some from actual user profile, dashboard modules, ...
 echo '<div class="multi-part" id="user-options" title="'.__('My options').'">';
 
 echo
 '<form action="preferences.php" method="post" id="opts-forms">'.
-'<fieldset><legend>'.__('My options').'</legend>'.
+'<h3 class="hidden-if-js">'.__('My options').'</h3>';
 
-'<p><label for="user_post_format">'.__('Preferred format:').
-form::combo('user_post_format',$formaters_combo,$user_options['post_format']).'</label></p>'.
+echo
+'<div class="two-cols">'.
 
-'<p><label for="user_post_status">'.__('Default entry status:').
-form::combo('user_post_status',$status_combo,$user_post_status).'</label></p>'.
-
-'<p><label for="user_edit_size">'.__('Entry edit field height:').
-form::field('user_edit_size',5,4,(integer) $user_options['edit_size']).'</label></p>'.
-
-'<p><label for="user_wysiwyg" class="classic">'.
-form::checkbox('user_wysiwyg',1,$user_options['enable_wysiwyg']).' '.
-__('Enable WYSIWYG mode').'</label></p>'.
+'<div class="col">'.
+'<h4>'.__('Interface').'</h4>'.
 
 '<p><label for="user_ui_enhanceduploader" class="classic">'.
 form::checkbox('user_ui_enhanceduploader',1,$user_ui_enhanceduploader).' '.
-__('Activate enhanced uploader in media manager').'</label></p>'.
+__('Activate enhanced uploader in media manager').'</label></p>';
+
+if ($core->auth->isSuperAdmin()) {
+	echo
+	'<p><label for="user_ui_hide_std_favicon" class="classic">'.
+	form::checkbox('user_ui_hide_std_favicon',1,$user_ui_hide_std_favicon).' '.
+	__('Do not use standard favicon').'</label></p>'.
+	'<p class="clear form-note warn">'.__('This will be applied for all users').'.'.
+	'</p>';//Opera sucks;
+}
+
+echo
+'<h5>'.__('Accessibility').'</h5>'.
+
+'<p><label for="user_acc_nodragdrop" class="classic">'.
+form::checkbox('user_acc_nodragdrop',1,$user_acc_nodragdrop).' '.
+__('Disable javascript powered drag and drop for ordering items').'</label></p>'.
+
+'<p class="clear form-note">'.__('If checked, numeric fields will allow to type the elements\' ordering number.').'</p>';
+
+echo
+'<h4 class="border-top">'.__('Edition').'</h4>'.
+
+'<p><label for="user_post_format">'.__('Preferred format:').'</label>'.
+form::combo('user_post_format',$formaters_combo,$user_options['post_format']).'</p>'.
+
+'<p><label for="user_post_status">'.__('Default entry status:').'</label>'.
+form::combo('user_post_status',$status_combo,$user_post_status).'</p>'.
+
+'<p><label for="user_edit_size">'.__('Entry edit field height:').'</label>'.
+form::field('user_edit_size',5,4,(integer) $user_options['edit_size']).'</p>'.
+
+'<p><label for="user_wysiwyg" class="classic">'.
+form::checkbox('user_wysiwyg',1,$user_options['enable_wysiwyg']).' '.
+__('Enable WYSIWYG mode').'</label></p>';
+
+echo
+'<h4 class="border-top">'.__('Other options').'</h4>';
+
+# --BEHAVIOR-- adminPreferencesForm
+$core->callBehavior('adminPreferencesForm',$core);
+
+echo
+'</div>'.
+
+'<div class="col">'.
+'<h4>'.__('Dashboard and menu').'</h4>'.
 
 '<p><label for="user_ui_nofavmenu" class="classic">'.
 form::checkbox('user_ui_nofavmenu',1,$user_ui_nofavmenu).' '.
@@ -484,36 +511,14 @@ __('Hide My favorites menu').'</label></p>';
 
 if (count($iconsets_combo) > 1) {
 	echo 
-		'<p><label for="user_ui_iconset">'.__('Iconset:').
-		form::combo('user_ui_iconset',$iconsets_combo,$user_ui_iconset).'</label></p>';
+		'<p><label for="user_ui_iconset" class="classic">'.__('Iconset:').'</label> '.
+		form::combo('user_ui_iconset',$iconsets_combo,$user_ui_iconset).'</p>';
 } else {
 	form::hidden('user_ui_iconset','');
 }
 
-if ($core->auth->isSuperAdmin()) {
-	echo
-	'<p><label for="user_ui_hide_std_favicon" class="classic">'.
-	form::checkbox('user_ui_hide_std_favicon',1,$user_ui_hide_std_favicon).' '.
-	__('Do not use standard favicon').'</label></p>'.
-	'<p class="clear form-note info">'.__('This will be applied for all users').'</p>';
-}
-
-echo 
-'<br class="clear" />'. //Opera sucks
-'</fieldset>';
-
 echo
-'<fieldset><legend>'.__('Accessibility options').'</legend>'.
-
-'<p><label for="user_acc_nodragdrop" class="classic">'.
-form::checkbox('user_acc_nodragdrop',1,$user_acc_nodragdrop).' '.
-__('Disable javascript powered drag and drop for ordering items').'</label></p>'.
-
-'<p class="clear form-note info">'.__('Numeric fields will allow to type the elements\' ordering number.').'</p>'.
-'</fieldset>';
-
-echo
-'<fieldset><legend>'.__('Dashboard modules').'</legend>'.
+'<h5>'.('Dashboard modules').'</h5>'.
 
 '<p><label for="user_dm_doclinks" class="classic">'.
 form::checkbox('user_dm_doclinks',1,$user_dm_doclinks).' '.
@@ -525,18 +530,17 @@ __('Display Dotclear news').'</label></p>'.
 
 '<p><label for="user_dm_quickentry" class="classic">'.
 form::checkbox('user_dm_quickentry',1,$user_dm_quickentry).' '.
-__('Display quick entry form').'</label></p>'.
-
-'<br class="clear" />'. //Opera sucks
-'</fieldset>';
-
-# --BEHAVIOR-- adminPreferencesForm
-$core->callBehavior('adminPreferencesForm',$core);
+__('Display quick entry form').'</label><br class="clear" />'. //Opera sucks
+'</p>';
 
 echo
-'<p class="clear">'.
+'</div>'.
+'</div>';
+
+echo
+'<p class="clear border-top">'.
 $core->formNonce().
-'<input type="submit" accesskey="s" value="'.__('Save').'" /></p>'.
+'<input type="submit" accesskey="s" value="'.__('Save my options').'" /></p>'.
 '</form>';
 
 echo '</div>';
@@ -546,8 +550,9 @@ echo '<div class="multi-part" id="user-favorites" title="'.__('My favorites').'"
 $ws = $core->auth->user_prefs->addWorkspace('favorites');
 echo '<form action="preferences.php" method="post" id="favs-form">';
 echo '<div class="two-cols">';
+
 echo '<div class="col70">';
-echo '<fieldset id="my-favs"><legend>'.__('My favorites').'</legend>';
+echo '<div id="my-favs" class="fieldset"><h3>'.__('My favorites').'</h3>';
 
 $count = 0;
 foreach ($ws->dumpPrefs() as $k => $v) {
@@ -591,10 +596,10 @@ if ($count > 0) {
 	'<p>'.__('Currently no personal favorites.').'</p>';
 }
 
-echo '</fieldset>';
+echo '</div>';
 
 echo '<div id="default-favs"><h3>'.__('Default favorites').'</h3>';
-echo '<p class="form-note info clear">'.__('Those favorites are displayed when My Favorites list is empty.').'</p>';
+echo '<p>'.__('Those favorites are displayed when My Favorites list is empty.').'</p>';
 $count = 0;
 foreach ($ws->dumpPrefs() as $k => $v) {
 	// Global favorites only
@@ -611,9 +616,11 @@ foreach ($ws->dumpPrefs() as $k => $v) {
 if ($count > 0) echo '</ul>';
 echo '</div>';
 echo '</div>';
-echo '<div class="col30" id="available-favs">';
+
+
+echo '<div class="col30 fieldset" id="available-favs">';
 # Available favorites
-echo '<fieldset><legend>'.__('Available favorites').'</legend>';
+echo '<h3>'.__('Available favorites').'</h3>';
 $count = 0;
 $array = $_fav;
 function cmp($a,$b) {
@@ -639,8 +646,9 @@ echo
 '<p>'.
 $core->formNonce().
 '<input type="submit" name="appendaction" value="'.__('Add to my favorites').'" /></p>';
-echo '</fieldset>';
 echo '</div>';
+
+
 echo '</div>'; # Two-cols
 echo '</form>';
 echo '</div>'; # user-favorites
