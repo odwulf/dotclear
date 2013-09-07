@@ -50,20 +50,42 @@ if (!$can_publish) {
 }
 
 # Getting categories
-$categories_combo = dcAdminCombos::getCategoriesCombo(
-	$core->blog->getCategories(array('post_type'=>'post'))
-);
+$categories_combo = array('&nbsp;' => '');
+try {
+	$categories = $core->blog->getCategories(array('post_type'=>'post'));
+	while ($categories->fetch()) {
+		$categories_combo[] = new formSelectOption(
+			str_repeat('&nbsp;&nbsp;',$categories->level-1).($categories->level-1 == 0 ? '' : '&bull; ').html::escapeHTML($categories->cat_title),
+			$categories->cat_id
+	);
+	}
+} catch (Exception $e) { }
 
-$status_combo = dcAdminCombos::getPostStatusesCombo();
-
+# Status combo
+foreach ($core->blog->getAllPostStatus() as $k => $v) {
+	$status_combo[$v] = (string) $k;
+}
 $img_status_pattern = '<img class="img_select_option" alt="%1$s" title="%1$s" src="images/%2$s" />';
 
 # Formaters combo
-$formaters_combo = dcAdminCombos::getFormatersCombo();
+foreach ($core->getFormaters() as $v) {
+	$formaters_combo[$v] = $v;
+}
 
 # Languages combo
 $rs = $core->blog->getLangs(array('order'=>'asc'));
-$lang_combo = dcAdminCombos::getLangsCombo($rs,true);
+$all_langs = l10n::getISOcodes(0,1);
+$lang_combo = array('' => '', __('Most used') => array(), __('Available') => l10n::getISOcodes(1,1));
+while ($rs->fetch()) {
+	if (isset($all_langs[$rs->post_lang])) {
+		$lang_combo[__('Most used')][$all_langs[$rs->post_lang]] = $rs->post_lang;
+		unset($lang_combo[__('Available')][$all_langs[$rs->post_lang]]);
+	} else {
+		$lang_combo[__('Most used')][$rs->post_lang] = $rs->post_lang;
+	}
+}
+unset($all_langs);
+unset($rs);
 
 # Validation flag
 $bad_dt = false;
@@ -282,9 +304,19 @@ if (!empty($_POST) && !empty($_POST['save']) && $can_edit_post && !$bad_dt)
 }
 
 # Getting categories
-$categories_combo = dcAdminCombos::getCategoriesCombo(
-	$core->blog->getCategories(array('post_type'=>'post'))
-);
+$categories_combo = array(__('(No cat)') => '');
+try {
+	$categories = $core->blog->getCategories(array('post_type'=>'post'));
+	if (!$categories->isEmpty()) {
+		while ($categories->fetch()) {
+			$catparents_combo[] = $categories_combo[] = new formSelectOption(
+				str_repeat('&nbsp;&nbsp;',$categories->level-1).($categories->level-1 == 0 ? '' : '&bull; ').html::escapeHTML($categories->cat_title),
+				$categories->cat_id
+			);
+		}
+	}
+} catch (Exception $e) { }
+
 /* DISPLAY
 -------------------------------------------------------- */
 $default_tab = 'edit-entry';
@@ -412,9 +444,9 @@ if ($can_edit_post)
 					'<h5 id="label_format"><label for="post_format" class="ib">'.__('Text formating').'</label></h5>'.
 					'<p>'.form::combo('post_format',$formaters_combo,$post_format,'maximal').
 					'</p>'.
-					'<p>'.($post_id && $post_format != 'xhtml' ? 
-					'<a id="convert-xhtml" class="button" href="post.php?id='.$post_id.'&amp;xconv=1">'.
-					__('Convert to XHTML').'</a>' : '').'</p></div>')),
+					'<p class="format_control control_wiki">'.
+					'<a id="convert-xhtml" class="button maximal '.($post_id && $post_format != 'wiki' ? 'hide' : '').'" href="post.php?id='.$post_id.'&amp;xconv=1">'.
+					__('Convert to XHTML').'</a></p></div>')),
 		'metas-box' => array(
 			'title' => __('Ordering'),
 			'items' => array(
@@ -484,19 +516,19 @@ if ($can_edit_post)
 			'</p>',
 		
 		"post_excerpt" =>
-			'<p class="area" id="excerpt-area"><label for="post_excerpt">'.__('Excerpt:').' <span class="form-note">'.
+			'<p class="area" id="excerpt-area"><label for="post_excerpt">'.__('Excerpt:').'<span class="form-note">'.
 			__('Introduction to the post.').'</span></label> '.
 			form::textarea('post_excerpt',50,5,html::escapeHTML($post_excerpt)).
 			'</p>',
 		
 		"post_content" =>
-			'<p class="area"><label class="required" '.
+			'<p class="area" id="content-area"><label class="required" '.
 			'for="post_content"><abbr title="'.__('Required field').'">*</abbr> '.__('Content:').'</label> '.
 			form::textarea('post_content',50,$core->auth->getOption('edit_size'),html::escapeHTML($post_content)).
 			'</p>',
 		
 		"post_notes" =>
-			'<p class="area" id="notes-area"><label for="post_notes">'.__('Personal notes:').' <span class="form-note">'.
+			'<p class="area" id="notes-area"><label for="post_notes">'.__('Personal notes:').'<span class="form-note">'.
 			__('Unpublished notes.').'</span></label>'.
 			form::textarea('post_notes',50,5,html::escapeHTML($post_notes)).
 			'</p>'
@@ -547,7 +579,7 @@ if ($can_edit_post)
 	echo '<div id="entry-sidebar">';
 	
 	foreach ($sidebar_items as $id => $c) {
-		echo '<div id="'.$id.'" class="sb-box">'.
+		echo '<div id="'.$id.'" class="box">'.
 			'<h4>'.$c['title'].'</h4>';
 		foreach ($c['items'] as $e_name=>$e_content) {
 			echo $e_content;
@@ -600,14 +632,14 @@ if ($post_id)
 	}
 	
 	echo
-	'<div id="comments" class="clear multi-part" title="'.__('Comments').'">';
+	'<div id="comments" class="multi-part" title="'.__('Comments').'">';
 		
 	# --BEHAVIOR-- adminCommentsActionsCombo
 	$core->callBehavior('adminCommentsActionsCombo',array(&$combo_action));
 	
 	$has_action = !empty($combo_action) && (!$trackbacks->isEmpty() || !$comments->isEmpty());
 	echo 
-	'<p class="top-add"><a class="button add" href="#comment-form">'.__('Add a comment').'</a></p>';
+	'<p class="top-add"><a class="button add onblog_link" href="#comment-form">'.__('Add a comment').'</a></p>';
 	
 	if ($has_action) {
 		echo '<form action="comments_actions.php" id="form-comments" method="post">';
