@@ -210,7 +210,7 @@ msgstr "Zoekmachines mogen mijn blog indexeren, maar niet archiveren."
 msgid "I would like to prevent search engines and archivers from indexing or archiving my blog's content."
 msgstr "Zoekmachines mogen mijn blog niet indexeren en archiveren."
 
-msgid "That blog Id is already in use."
+msgid "This blog ID is already used."
 msgstr ""
 
 msgid "Invalid language code"
@@ -453,7 +453,7 @@ msgid "Themes"
 msgstr "Thema's"
 
 #, php-format
-msgid "You are currently using \"%s\""
+msgid "You are currently using <strong>%s</strong>"
 msgstr "Je gebruikt nu \"%s\""
 
 #, fuzzy
@@ -580,7 +580,7 @@ msgstr ""
 msgid "The category has been successfully moved."
 msgstr ""
 
-msgid "No category yet."
+msgid "No category so far."
 msgstr ""
 
 msgid "Categories list"
@@ -752,7 +752,7 @@ msgstr ""
 msgid "Comment author:"
 msgstr ""
 
-msgid "You have one spam comments."
+msgid "You have one spam comment."
 msgstr ""
 
 msgid "Show it."
@@ -1714,10 +1714,10 @@ msgstr ""
 msgid "This user does not exist"
 msgstr ""
 
-msgid "Change category for entries"
+msgid "Change category for this selection"
 msgstr ""
 
-msgid "Change author for entries"
+msgid "Change author for this selection"
 msgstr ""
 
 msgid "Author ID:"
@@ -2086,7 +2086,7 @@ msgstr ""
 msgid "select all"
 msgstr ""
 
-msgid "invert selection"
+msgid "Invert selection"
 msgstr ""
 
 msgid "view entry"

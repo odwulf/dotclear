@@ -845,7 +845,7 @@ msgid "Import a single blog"
 msgstr "단일 블로그 가져오기"
 
 #, php-format
-msgid "This will import a single blog backup as new content in the current blog: %s."
+msgid "This will import a single blog backup as new content in the current blog: <strong>%s</strong>."
 msgstr "이 과정은, 백업된 단일 블로그 내용을 현재 블로그 (%s) 의 새 내용으로 가져옵니다."
 
 msgid "Upload a backup file"
@@ -1078,16 +1078,16 @@ msgstr "페이지가 성공적으로 생성되었습니다."
 msgid "Go to this page on the site"
 msgstr ""
 
-msgid "Page status:"
+msgid "Page status"
 msgstr "페이지 공개상태 :"
 
-msgid "Page position:"
+msgid "Page position"
 msgstr "페이지 위치 :"
 
-msgid "Page lang:"
+msgid "Page lang"
 msgstr "페이지 언어 :"
 
-msgid "Page password:"
+msgid "Page password"
 msgstr "페이지 비밀번호 :"
 
 msgid "Warning: If you set the URL manually, it may conflict with another page."
@@ -1269,7 +1269,7 @@ msgstr "선택된 링크들 삭제"
 msgid "Are you sure you want to remove selected menu items?"
 msgstr "선택된 링크들을 삭제하시려는 게 확실합니까 ?"
 
-msgid "Currently no menu items"
+msgid "No menu items so far."
 msgstr ""
 
 msgid "Tags:"
@@ -1582,7 +1582,7 @@ msgstr "위젯 없음."
 msgid "Widgets may be used to add various blocks of content to be displayed on your public pages. To add a widget, drag it from the Available widgets list on the left to one of the sidebars on the right of this page. You can order your widgets in a sidebar by dragging them up or down. You must update sidebars to apply your changes."
 msgstr ""
 
-msgid "Once included in a sidebar, widgets have configuration options that you can reach by clicking on the + sign next to their name."
+msgid "Once included in a sidebar, widgets have configuration options that you can reach by clicking on the arrow next to their name."
 msgstr ""
 
 msgid "Reset sidebars to get back to default widgets installation."

@@ -840,7 +840,7 @@ msgid "Import a single blog"
 msgstr "Импортировать один блог"
 
 #, php-format
-msgid "This will import a single blog backup as new content in the current blog: %s."
+msgid "This will import a single blog backup as new content in the current blog: <strong>%s</strong>."
 msgstr "Это импортирует резервный файл одного блога как новое содержимое в текущий блог: %s."
 
 msgid "Upload a backup file"
@@ -1063,16 +1063,16 @@ msgstr "Страница успешно создана."
 msgid "Go to this page on the site"
 msgstr ""
 
-msgid "Page status:"
+msgid "Page status"
 msgstr "Статус страницы:"
 
-msgid "Page position:"
+msgid "Page position"
 msgstr "Позиция страницы:"
 
-msgid "Page lang:"
+msgid "Page lang"
 msgstr "Язык страницы:"
 
-msgid "Page password:"
+msgid "Page password"
 msgstr "Пароль страницы:"
 
 msgid "Warning: If you set the URL manually, it may conflict with another page."
@@ -1255,7 +1255,7 @@ msgstr "Удалить выбранные ссылки"
 msgid "Are you sure you want to remove selected menu items?"
 msgstr "Вы уверены, что хотите удалить выбранные ссылки?"
 
-msgid "Currently no menu items"
+msgid "No menu items so far."
 msgstr ""
 
 msgid "Tags:"
@@ -1564,7 +1564,7 @@ msgstr "Нет виджета."
 msgid "Widgets may be used to add various blocks of content to be displayed on your public pages. To add a widget, drag it from the Available widgets list on the left to one of the sidebars on the right of this page. You can order your widgets in a sidebar by dragging them up or down. You must update sidebars to apply your changes."
 msgstr ""
 
-msgid "Once included in a sidebar, widgets have configuration options that you can reach by clicking on the + sign next to their name."
+msgid "Once included in a sidebar, widgets have configuration options that you can reach by clicking on the arrow next to their name."
 msgstr ""
 
 msgid "Reset sidebars to get back to default widgets installation."

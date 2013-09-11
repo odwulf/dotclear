@@ -63,6 +63,8 @@ class dcCore
 		# define weak_locks for mysql
 		if ($this->con instanceof mysqlConnection) {
 			mysqlConnection::$weak_locks = true;
+		} elseif ($this->con instanceof mysqliConnection) {
+			mysqliConnection::$weak_locks = true;
 		}
 		
 		# define searchpath for postgresql
@@ -344,11 +346,12 @@ class dcCore
 		return $escaped ? html::escapeURL($url) : $url;
 	}
 	
-	public function setPostType($type,$admin_url,$public_url)
+	public function setPostType($type,$admin_url,$public_url,$label='')
 	{
 		$this->post_types[$type] = array(
 			'admin_url' => $admin_url,
-			'public_url' => $public_url
+			'public_url' => $public_url,
+			'label' => ($label != '' ? $label : $type)
 		);
 	}
 	
@@ -816,7 +819,7 @@ class dcCore
 	{
 		$strReq =
 		'SELECT U.user_id AS user_id, user_super, user_name, user_firstname, '.
-		'user_displayname, permissions '.
+		'user_displayname, user_email, permissions '.
 		'FROM '.$this->prefix.'user U '.
 		'JOIN '.$this->prefix.'permissions P ON U.user_id = P.user_id '.
 		"WHERE blog_id = '".$this->con->escape($id)."' ";
@@ -825,7 +828,7 @@ class dcCore
 			$strReq .=
 			'UNION '.
 			'SELECT U.user_id AS user_id, user_super, user_name, user_firstname, '.
-			"user_displayname, NULL AS permissions ".
+			"user_displayname, user_email, NULL AS permissions ".
 			'FROM '.$this->prefix.'user U '.
 			'WHERE user_super = 1 ';
 		}
@@ -840,6 +843,7 @@ class dcCore
 				'name' => $rs->user_name,
 				'firstname' => $rs->user_firstname,
 				'displayname' => $rs->user_displayname,
+				'email' => $rs->user_email,
 				'super' => (boolean) $rs->user_super,
 				'p' => $this->auth->parsePermissions($rs->permissions)
 			);

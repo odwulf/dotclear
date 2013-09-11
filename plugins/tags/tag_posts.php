@@ -97,7 +97,7 @@ $core->callBehavior('adminPostsActionsCombo',array(&$combo_action));
   <script type="text/javascript" src="js/_posts_list.js"></script>
   <script type="text/javascript">
   //<![CDATA[
-  dotclear.msg.confirm_tag_delete = '<?php echo html::escapeJS(sprintf(__('Are you sure you want to remove this %s?'),'tag')) ?>';
+  dotclear.msg.confirm_tag_delete = '<?php echo html::escapeJS(sprintf(__('Are you sure you want to remove tag: “%s”?'),html::escapeHTML($tag))) ?>';
   $(function() {
     $('#tag_delete').submit(function() {
       return window.confirm(dotclear.msg.confirm_tag_delete);
@@ -108,23 +108,30 @@ $core->callBehavior('adminPostsActionsCombo',array(&$combo_action));
 </head>
 <body>
 
-<h2><?php echo html::escapeHTML($core->blog->name); ?> &rsaquo;
-<span class="page-title"><?php echo __('Edit tag').' &ldquo;'.html::escapeHTML($tag).'&rdquo;'; ?></span></h2>
+<?php
+echo dcPage::breadcrumb(
+	array(
+		html::escapeHTML($core->blog->name) => '',
+		__('Tags') => $p_url.'&amp;m=tags',
+		'<span class="page-title">'.__('Tag').' &ldquo;'.html::escapeHTML($tag).'&rdquo;'.'</span>' => ''
+	));
+?>
 
 <?php
 if (!empty($_GET['renamed'])) {
-	dcPage::message(__('Tag has been successfully renamed'));
+	dcPage::success(__('Tag has been successfully renamed'));
 }
 
-echo '<p><a href="'.$p_url.'&amp;m=tags">'.__('Back to tags list').'</a></p>';
+echo '<p><a class="back" href="'.$p_url.'&amp;m=tags">'.__('Back to tags list').'</a></p>';
 
 if (!$core->error->flag())
 {
 	if (!$posts->isEmpty())
 	{
 		echo
+		'<div class="fieldset">'.
 		'<form action="'.$this_url.'" method="post">'.
-		'<div class="fieldset"><h3>'.__('Actions for this tag').'</h3>'.
+		'<h3>'.__('Actions').'</h3>'.
 		'<p><label for="new_tag_id">'.__('Edit tag name:').'</label>'.
 		form::field('new_tag_id',20,255,html::escapeHTML($tag)).
 		'<input type="submit" value="'.__('Rename').'" />'.
@@ -134,8 +141,8 @@ if (!$core->error->flag())
 		if (!$posts->isEmpty() && $core->auth->check('contentadmin',$core->blog->id)) {
 			echo
 			'<form id="tag_delete" action="'.$this_url.'" method="post">'.
-			'<p class="no-margin">'.__('Delete this tag:').
-			'</p><p><input type="submit" class="delete" name="delete" value="'.__('Delete').'" />'.
+			'<p>'.__('Delete this tag:').' '.
+			'<input type="submit" class="delete" name="delete" value="'.__('Delete').'" />'.
 			$core->formNonce().
 			'</p></form>';
 		}
@@ -143,7 +150,7 @@ if (!$core->error->flag())
 	}
 	
 	# Show posts
-	echo '<h3>'.__('List of entries with this tag').'</h3>';
+	echo '<h3>'.sprintf(__('List of entries with the tag “%s”'),html::escapeHTML($tag)).'</h3>';
 	$post_list->display($page,$nb_per_page,
 	'<form action="posts_actions.php" method="post" id="form-entries">'.
 	
@@ -154,7 +161,7 @@ if (!$core->error->flag())
 	
 	'<p class="col right"><label for="action" class="classic">'.__('Selected entries action:').'</label> '.
 	form::combo('action',$combo_action).
-	'<input type="submit" value="'.__('ok').'" /></p>'.
+	'<input type="submit" value="'.__('OK').'" /></p>'.
 	form::hidden('post_type','').
 	form::hidden('redir',$p_url.'&amp;m=tag_posts&amp;tag='.
 		str_replace('%','%%',rawurlencode($tag)).'&amp;page='.$page).

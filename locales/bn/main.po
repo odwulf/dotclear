@@ -214,7 +214,7 @@ msgid "I would like to prevent search engines and archivers from indexing or arc
 msgstr ""
 
 #, fuzzy
-msgid "That blog Id is already in use."
+msgid "This blog ID is already used."
 msgstr "Dotclear ইতিমধ্যেই ইন্সটল করা আছে।"
 
 msgid "Invalid language code"
@@ -458,7 +458,7 @@ msgid "Themes"
 msgstr "থিমসমূহ"
 
 #, php-format
-msgid "You are currently using \"%s\""
+msgid "You are currently using <strong>%s</strong>"
 msgstr "আপনি বর্তমানে ব্যবহার করছেন \"%s\""
 
 #, fuzzy
@@ -585,7 +585,7 @@ msgstr "ক্যাটাগরিটি সফলভাবে পুনর্�
 msgid "The category has been successfully moved."
 msgstr "ক্যাটাগরিটি সফলভাবে সরানো হয়েছে।"
 
-msgid "No category yet."
+msgid "No category so far."
 msgstr "কোনো ক্যাটাগরি নেই।"
 
 msgid "Categories list"
@@ -758,7 +758,7 @@ msgstr "প্রতি পেজে মন্তব্য"
 msgid "Comment author:"
 msgstr "মন্তব্যের লেখক:"
 
-msgid "You have one spam comments."
+msgid "You have one spam comment."
 msgstr "আপনার একটি স্প্যাম মন্তব্য আছে।"
 
 msgid "Show it."
@@ -1739,10 +1739,10 @@ msgstr ""
 msgid "This user does not exist"
 msgstr "এধরণের কোনো ইউজার নেই"
 
-msgid "Change category for entries"
+msgid "Change category for this selection"
 msgstr ""
 
-msgid "Change author for entries"
+msgid "Change author for this selection"
 msgstr ""
 
 msgid "Author ID:"
@@ -2121,7 +2121,7 @@ msgstr ""
 msgid "select all"
 msgstr "সব সিলেক্ট করুন"
 
-msgid "invert selection"
+msgid "Invert selection"
 msgstr ""
 
 msgid "view entry"
