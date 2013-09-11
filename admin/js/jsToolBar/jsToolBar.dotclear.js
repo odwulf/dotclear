@@ -115,6 +115,7 @@ jsToolBar.prototype.elements.link.fncall.wysiwyg = function() {
 	var a = this.iwin.document.createElement('a');
 	a.href = data.href;
 	if (data.hreflang) a.setAttribute('hreflang',data.hreflang);
+	if (data.title) a.setAttribute('title',data.title);
 	a.appendChild(n);
 	this.insertNode(a);
 };
@@ -375,4 +376,11 @@ jsToolBar.prototype.elements.post_link.fn.wysiwyg = function() {
 };
 
 // Last space element
-jsToolBar.prototype.elements.space3 = {type: 'space'};
+jsToolBar.prototype.elements.space3 = {
+	type:'space', 
+	format:{
+		wysiwyg:true,
+		wiki:true,
+		xhtml:true
+	}
+};

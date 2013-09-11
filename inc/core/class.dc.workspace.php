@@ -3,7 +3,7 @@
 #
 # This file is part of Dotclear 2.
 #
-# Copyright (c) 2003-2011 Olivier Meunier & Association Dotclear
+# Copyright (c) 2003-2013 Olivier Meunier & Association Dotclear
 # Licensed under the GPL version 2.0 license.
 # See LICENSE file or
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
@@ -261,6 +261,36 @@ class dcWorkspace
 			
 			$cur->insert();
 		}
+	}
+
+	/**
+	Rename an existing pref in a Workspace
+
+	@param 	$oldId 	<b>string</b> 	Current pref name
+	@param 	$newId 	<b>string</b> 	New pref name
+	@return 	<b>boolean</b>
+	*/
+	public function rename($oldId,$newId)
+	{
+		if (!$this->ws) {
+			throw new Exception(__('No workspace specified'));
+		}
+		
+		if (!array_key_exists($oldId,$this->prefs) || array_key_exists($newId,$this->prefs)) {
+			return false;
+		}
+
+		// Rename the pref in the prefs array
+		$this->prefs[$newId] = $this->prefs[$oldId];
+		unset($this->prefs[$oldId]);
+
+		// Rename the pref in the database
+		$strReq = 'UPDATE '.$this->table.
+			" SET pref_id = '".$this->con->escape($newId)."' ".
+			" WHERE pref_ws = '".$this->con->escape($this->ws)."' ".
+			" AND pref_id = '".$this->con->escape($oldId)."' ";
+		$this->con->execute($strReq);
+		return true;
 	}
 	
 	/**

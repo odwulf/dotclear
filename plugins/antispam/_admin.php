@@ -3,7 +3,7 @@
 #
 # This file is part of Antispam, a plugin for Dotclear 2.
 #
-# Copyright (c) 2003-2011 Olivier Meunier & Association Dotclear
+# Copyright (c) 2003-2013 Olivier Meunier & Association Dotclear
 # Licensed under the GPL version 2.0 license.
 # See LICENSE file or
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
@@ -48,20 +48,31 @@ function antispamDashboardFavsIcon($core,$name,$icon)
 if (!DC_ANTISPAM_CONF_SUPER || $core->auth->isSuperAdmin()) {
 	$core->addBehavior('adminBlogPreferencesForm',array('antispamBehaviors','adminBlogPreferencesForm'));
 	$core->addBehavior('adminBeforeBlogSettingsUpdate',array('antispamBehaviors','adminBeforeBlogSettingsUpdate'));
+	$core->addBehavior('adminCommentsSpamForm',array('antispamBehaviors','adminCommentsSpamForm'));
 }
 
 class antispamBehaviors
 {
+	public static function adminCommentsSpamForm($core)
+	{
+		$ttl = $core->blog->settings->antispam->antispam_moderation_ttl;
+		if ($ttl != null && $ttl >=0) {
+			echo '<p>'.sprintf(__('All spam comments older than %s day(s) will be automatically deleted.'), $ttl).' '.
+			sprintf(__('You can modify this duration in the %s'),'<a href="blog_pref.php#antispam_moderation_ttl"> '.__('Blog settings').'</a>').
+			'.</p>';
+		}
+	}
+
 	public static function adminBlogPreferencesForm($core,$settings)
 	{
 		$ttl = $settings->antispam->antispam_moderation_ttl;
 		echo
-		'<fieldset><legend>Antispam</legend>'.
+		'<div class="fieldset"><h4>Antispam</h4>'.
 		'<p><label for="antispam_moderation_ttl" class="classic">'.__('Delete junk comments older than').' '.
 		form::field('antispam_moderation_ttl', 3, 3, $ttl).
 		' '.__('days').
 		'</label></p>'.
-		'</fieldset>';
+		'</div>';
 	}
 	
 	public static function adminBeforeBlogSettingsUpdate($settings)

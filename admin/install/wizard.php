@@ -3,7 +3,7 @@
 #
 # This file is part of Dotclear 2.
 #
-# Copyright (c) 2003-2011 Olivier Meunier & Association Dotclear
+# Copyright (c) 2003-2013 Olivier Meunier & Association Dotclear
 # Licensed under the GPL version 2.0 license.
 # See LICENSE file or
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
@@ -45,7 +45,16 @@ if (is_file(DC_RC_PATH)) {
 	http::redirect('index.php');
 }
 
-$DBDRIVER = !empty($_POST['DBDRIVER']) ? $_POST['DBDRIVER'] : 'mysql';
+if (!is_writable(dirname(DC_RC_PATH))) {
+	$err = '<p>'.sprintf(__('Path <strong>%s</strong> is not writable.'),path::real(dirname(DC_RC_PATH))).'</p>'.
+	'<p>'.__('Dotclear installation wizard could not create configuration file for you. '.
+		'You must change folder right or create the <strong>config.php</strong> '.
+		'file manually, please refer to '.
+		'<a href="http://dotclear.org/documentation/2.0/admin/install">'.
+		'the documentation</a> to learn how to do this.').'</p>';
+}
+
+$DBDRIVER = !empty($_POST['DBDRIVER']) ? $_POST['DBDRIVER'] : (function_exists('mysqli_connect') ? 'mysqli' : 'mysql');
 $DBHOST = !empty($_POST['DBHOST']) ? $_POST['DBHOST'] : '';
 $DBNAME = !empty($_POST['DBNAME']) ? $_POST['DBNAME'] : '';
 $DBUSER = !empty($_POST['DBUSER']) ? $_POST['DBUSER'] : '';
@@ -168,20 +177,20 @@ echo
 '<p>'.__('Please provide the following information needed to create your configuration file.').'</p>'.
 
 '<form action="wizard.php" method="post">'.
-'<p><label class="required" for="DBDRIVER"><abbr title="'.__('Required field').'">*</abbr> '.__('Database type:').' '.
-form::combo('DBDRIVER',array('MySQL'=>'mysql','PostgreSQL'=>'pgsql'),$DBDRIVER).'</label></p>'.
-'<p><label for="DBHOST">'.__('Database Host Name:').' '.
-form::field('DBHOST',30,255,html::escapeHTML($DBHOST)).'</label></p>'.
-'<p><label for="DBNAME">'.__('Database Name:').' '.
-form::field('DBNAME',30,255,html::escapeHTML($DBNAME)).'</label></p>'.
-'<p><label for="DBUSER">'.__('Database User Name:').' '.
-form::field('DBUSER',30,255,html::escapeHTML($DBUSER)).'</label></p>'.
-'<p><label for="DBPASSWORD">'.__('Database Password:').' '.
-form::password('DBPASSWORD',30,255).'</label></p>'.
-'<p><label for="DBPREFIX" class="required"><abbr title="'.__('Required field').'">*</abbr> '.__('Database Tables Prefix:').' '.
-form::field('DBPREFIX',30,255,html::escapeHTML($DBPREFIX)).'</label></p>'.
+'<p><label class="required" for="DBDRIVER"><abbr title="'.__('Required field').'">*</abbr> '.__('Database type:').'</label> '.
+form::combo('DBDRIVER',array(__('MySQL (deprecated)')=>'mysql',__('MySQLi')=>'mysqli',__('PostgreSQL')=>'pgsql'),$DBDRIVER).'</p>'.
+'<p><label for="DBHOST">'.__('Database Host Name:').'</label> '.
+form::field('DBHOST',30,255,html::escapeHTML($DBHOST)).'</p>'.
+'<p><label for="DBNAME">'.__('Database Name:').'</label> '.
+form::field('DBNAME',30,255,html::escapeHTML($DBNAME)).'</p>'.
+'<p><label for="DBUSER">'.__('Database User Name:').'</label> '.
+form::field('DBUSER',30,255,html::escapeHTML($DBUSER)).'</p>'.
+'<p><label for="DBPASSWORD">'.__('Database Password:').'</label> '.
+form::password('DBPASSWORD',30,255).'</p>'.
+'<p><label for="DBPREFIX" class="required"><abbr title="'.__('Required field').'">*</abbr> '.__('Database Tables Prefix:').'</label> '.
+form::field('DBPREFIX',30,255,html::escapeHTML($DBPREFIX)).'</p>'.
 
-'<p><input type="submit" value="'.__('Save').'" /></p>'.
+'<p><input type="submit" value="'.__('Continue').'" /></p>'.
 '</form>';
 ?>
 </div>

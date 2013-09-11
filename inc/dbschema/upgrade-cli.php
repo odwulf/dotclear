@@ -4,7 +4,7 @@
 #
 # This file is part of Dotclear 2.
 #
-# Copyright (c) 2003-2011 Olivier Meunier & Association Dotclear
+# Copyright (c) 2003-2013 Olivier Meunier & Association Dotclear
 # Licensed under the GPL version 2.0 license.
 # See LICENSE file or
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
@@ -35,7 +35,7 @@ try
 	echo "Starting upgrade process\n";
 	$core->con->begin();
 	try {
-		$changes = dotclearUpgrade(&$core);
+		$changes = dotclearUpgrade($core);
 	} catch (Exception $e) {
 		$core->con->rollback();
 		throw $e;

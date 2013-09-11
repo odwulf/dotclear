@@ -3,7 +3,7 @@
 #
 # This file is part of Dotclear 2.
 #
-# Copyright (c) 2003-2011 Olivier Meunier & Association Dotclear
+# Copyright (c) 2003-2013 Olivier Meunier & Association Dotclear
 # Licensed under the GPL version 2.0 license.
 # See LICENSE file or
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
@@ -162,83 +162,54 @@ try {
 ?>
 <html>
 <head>
-  <title>Blogroll</title>
-  <?php echo dcPage::jsToolMan(); ?>
+  <title><?php echo __('Blogroll'); ?></title>
   <?php echo dcPage::jsConfirmClose('links-form','add-link-form','add-category-form'); ?>
   <?php 
-	$core->auth->user_prefs->addWorkspace('accessibility'); 
-	$user_dm_nodragdrop = $core->auth->user_prefs->accessibility->nodragdrop;
+	$core->auth->user_prefs->addWorkspace('accessibility');
+	if (!$core->auth->user_prefs->accessibility->nodragdrop) {
+	echo
+		dcPage::jsLoad('js/jquery/jquery-ui.custom.js').
+		dcPage::jsLoad('index.php?pf=blogroll/blogroll.js');
+	}
   ?>
-  <?php if (!$user_dm_nodragdrop) : ?>
-  <script type="text/javascript">
-  //<![CDATA[
-  
-  var dragsort = ToolMan.dragsort();
-  $(function() {
-  	dragsort.makeTableSortable($("#links-list").get(0),
-  	dotclear.sortable.setHandle,dotclear.sortable.saveOrder);
-	
-	$('.checkboxes-helpers').each(function() {
-		dotclear.checkboxesHelpers(this);
-	});
-  });
-  
-  dotclear.sortable = {
-	  setHandle: function(item) {
-		var handle = $(item).find('td.handle').get(0);
-		while (handle.firstChild) {
-			handle.removeChild(handle.firstChild);
-		}
-		
-		item.toolManDragGroup.setHandle(handle);
-		handle.className = handle.className+' handler';
-	  },
-	  
-	  saveOrder: function(item) {
-		var group = item.toolManDragGroup;
-		var order = document.getElementById('links_order');
-		group.register('dragend', function() {
-			order.value = '';
-			items = item.parentNode.getElementsByTagName('tr');
-			
-			for (var i=0; i<items.length; i++) {
-				order.value += items[i].id.substr(2)+',';
-			}
-		});
-	  }
-  };
-  //]]>
-  </script>
-  <?php endif; ?>
   <?php echo dcPage::jsPageTabs($default_tab); ?>
 </head>
 
 <body>
-<h2><?php echo html::escapeHTML($core->blog->name); ?> &rsaquo; <span class="page-title">Blogroll</span></h2>
+<?php
+	echo dcPage::breadcrumb(
+		array(
+			html::escapeHTML($core->blog->name) => '',
+			'<span class="page-title">'.__('Blogroll').'</span>' => ''
+		));
+?>
 
 <?php
 if (!empty($_GET['neworder'])) {
-	echo '<p class="message">'.__('Items order has been successfully updated').'</p>';
+	dcPage::success(__('Items order has been successfully updated'));
 }
 
 if (!empty($_GET['removed'])) {
-		echo '<p class="message">'.__('Items have been successfully removed.').'</p>';
+	dcPage::success(__('Items have been successfully removed.'));
 }
 
 if (!empty($_GET['addlink'])) {
-		echo '<p class="message">'.__('Link has been successfully created.').'</p>';
+	dcPage::success(__('Link has been successfully created.'));
 }
 
 if (!empty($_GET['addcat'])) {
-		echo '<p class="message">'.__('category has been successfully created.').'</p>';
+	dcPage::success(__('category has been successfully created.'));
 }
 
 if (!empty($_GET['importlinks'])) {
-		echo '<p class="message">'.__('links have been successfully imported.').'</p>';
+	dcPage::success(__('links have been successfully imported.'));
 }
 ?>
 
 <div class="multi-part" title="<?php echo __('Blogroll'); ?>">
+
+<?php if (!$rs->isEmpty()) { ?>
+
 <form action="plugin.php" method="post" id="links-form">
 <table class="maximal dragable">
 <thead>
@@ -257,7 +228,7 @@ while ($rs->fetch())
 	
 	echo
 	'<tr class="line" id="l_'.$rs->link_id.'">'.
-	'<td class="handle minimal">'.form::field(array('order['.$rs->link_id.']'),2,5,$position,'','',false,'title="'.__('position').'"').'</td>'.
+	'<td class="handle minimal">'.form::field(array('order['.$rs->link_id.']'),2,5,$position,'position','',false,'title="'.__('position').'"').'</td>'.
 	'<td class="minimal">'.form::checkbox(array('remove[]'),$rs->link_id,'','','',false,'title="'.__('select this link').'"').'</td>';
 	
 	
@@ -282,65 +253,66 @@ while ($rs->fetch())
 ?>
 </tbody>
 </table>
+
+<div class="two-cols">
+<p class="col">
 <?php
-	if (!$rs->isEmpty()) {
-		echo
-		'<div class="two-cols">'.
-		'<p class="col">'.form::hidden('links_order','').
-		form::hidden(array('p'),'blogroll').
-		$core->formNonce().
-		'<input type="submit" name="saveorder" value="'.__('Save order').'" /></p>'.
-		
-		'<p class="col right"><input type="submit" class="delete" name="removeaction"'.
-		' value="'.__('Delete selected links').'" '.
-		'onclick="return window.confirm(\''.html::escapeJS(
-			__('Are you sure you want to delete selected links?')).'\');" /></p>'.
-		'</div>';
-	} else {
-		echo
-		'<div><p>'.__('The link list is empty.').'</p></div>';
-	}
+	echo 
+	form::hidden('links_order','').
+	form::hidden(array('p'),'blogroll').
+	$core->formNonce();
 ?>
+<input type="submit" name="saveorder" value="<?php echo __('Save order'); ?>" /></p>
+<p class="col right"><input type="submit" class="delete" name="removeaction"
+	 value="<?php echo __('Delete selected links'); ?>" 
+	 onclick="return window.confirm('
+	 <?php echo html::escapeJS(__('Are you sure you want to delete selected links?')); ?>');" /></p>
+</div>
 </form>
+
+<?php
+} else {
+	echo '<div><p>'.__('The link list is empty.').'</p></div>';
+}
+?>
+
 </div>
 
 <?php
 echo
 '<div class="multi-part clear" id="add-link" title="'.__('Add a link').'">'.
 '<form action="plugin.php" method="post" id="add-link-form">'.
-'<fieldset class="two-cols"><legend>'.__('Add a new link').'</legend>'.
-'<p class="col"><label for="link_title" class="required"><abbr title="'.__('Required field').'">*</abbr> '.__('Title:').' '.
+'<h3>'.__('Add a new link').'</h3>'.
+'<p class="col"><label for="link_title" class="required"><abbr title="'.__('Required field').'">*</abbr> '.__('Title:').'</label> '.
 form::field('link_title',30,255,$link_title).
-'</label></p>'.
+'</p>'.
 
-'<p class="col"><label for="link_href" class="required"><abbr title="'.__('Required field').'">*</abbr> '.__('URL:').' '.
+'<p class="col"><label for="link_href" class="required"><abbr title="'.__('Required field').'">*</abbr> '.__('URL:').'</label> '.
 form::field('link_href',30,255,$link_href).
-'</label></p>'.
+'</p>'.
 
-'<p class="col"><label for="link_desc">'.__('Description:').' '.
+'<p class="col"><label for="link_desc">'.__('Description:').'</label> '.
 form::field('link_desc',30,255,$link_desc).
-'</label></p>'.
+'</p>'.
 
-'<p class="col"><label for="link_lang">'.__('Language:').' '.
+'<p class="col"><label for="link_lang">'.__('Language:').'</label> '.
 form::field('link_lang',5,5,$link_lang).
-'</label></p>'.
+'</p>'.
 '<p>'.form::hidden(array('p'),'blogroll').
 $core->formNonce().
 '<input type="submit" name="add_link" value="'.__('Save').'" /></p>'.
-'</fieldset>'.
 '</form>'.
 '</div>';
 
 echo
 '<div class="multi-part" id="add-cat" title="'.__('Add a category').'">'.
 '<form action="plugin.php" method="post" id="add-category-form">'.
-'<fieldset><legend>'.__('Add a new category').'</legend>'.
-'<p><label for="cat_title" class=" classic required"><abbr title="'.__('Required field').'">*</abbr> '.__('Title:').' '.
-form::field('cat_title',30,255,$cat_title).'</label> '.
+'<h3>'.__('Add a new category').'</h3>'.
+'<p><label for="cat_title" class=" classic required"><abbr title="'.__('Required field').'">*</abbr> '.__('Title:').'</label> '.
+form::field('cat_title',30,255,$cat_title).' '.
 form::hidden(array('p'),'blogroll').
 $core->formNonce().
 '<input type="submit" name="add_cat" value="'.__('Save').'" /></p>'.
-'</fieldset>'.
 '</form>'.
 '</div>';
 
@@ -349,19 +321,18 @@ echo
 if (!isset($imported)) {
 	echo
 	'<form action="plugin.php" method="post" id="import-links-form" enctype="multipart/form-data">'.
-	'<fieldset><legend>'.__('Import links').'</legend>'.
-	'<p><label for="links_file" class=" classic required"><abbr title="'.__('Required field').'">*</abbr> '.__('OPML or XBEL File:').' '.
-	'<input type="file" id="links_file" name="links_file" /></label></p>'.
+	'<h3>'.__('Import links').'</h3>'.
+	'<p><label for="links_file" class=" classic required"><abbr title="'.__('Required field').'">*</abbr> '.__('OPML or XBEL File:').'</label> '.
+	'<input type="file" id="links_file" name="links_file" /></p>'.
 	'<p>'.form::hidden(array('p'),'blogroll').
 	$core->formNonce().
-	'<input type="submit" name="import_links" value="'.__('import').'" /></p>'.
-	'</fieldset>'.
+	'<input type="submit" name="import_links" value="'.__('Import').'" /></p>'.
 	'</form>';
 }
 else {
 	echo
 	'<form action="plugin.php" method="post" id="import-links-form">'.
-	'<fieldset><legend>'.__('Import links').'</legend>';
+	'<h3>'.__('Import links').'</h3>';
 	if (empty($imported)) {
 		echo '<p>'.__('Nothing to import').'</p>';
 	}
@@ -397,12 +368,11 @@ else {
 		'<p class="col right">'.
 		form::hidden(array('p'),'blogroll').
 		$core->formNonce().
-		'<input type="submit" name="cancel_import" value="'.__('cancel').'" />&nbsp;'.
-		'<input type="submit" name="import_links_do" value="'.__('import').'" /></p>'.
+		'<input type="submit" name="cancel_import" value="'.__('Cancel').'" />&nbsp;'.
+		'<input type="submit" name="import_links_do" value="'.__('Import').'" /></p>'.
 		'</div>';
 	}
 	echo
-	'</fieldset>'.
 	'</form>';
 }
 echo '</div>';

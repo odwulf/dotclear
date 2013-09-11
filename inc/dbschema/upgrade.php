@@ -3,7 +3,7 @@
 #
 # This file is part of Dotclear 2.
 #
-# Copyright (c) 2003-2011 Olivier Meunier & Association Dotclear
+# Copyright (c) 2003-2013 Olivier Meunier & Association Dotclear
 # Licensed under the GPL version 2.0 license.
 # See LICENSE file or
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
@@ -151,28 +151,18 @@ function dotclearUpgrade($core)
 				$init_fav['new_post'] = array('new_post','New entry','post.php',
 					'images/menu/edit.png','images/menu/edit-b.png',
 					'usage,contentadmin',null,'menu-new-post');
-				$init_fav['posts'] = array('posts','Entries','posts.php',
-					'images/menu/entries.png','images/menu/entries-b.png',
-					'usage,contentadmin',null,null);
-				$init_fav['comments'] = array('comments','Comments','comments.php',
-					'images/menu/comments.png','images/menu/comments-b.png',
-					'usage,contentadmin',null,null);
-				$init_fav['prefs'] = array('prefs','My preferences','preferences.php',
-					'images/menu/user-pref.png','images/menu/user-pref-b.png',
-					'*',null,null);
-				$init_fav['blog_pref'] = array('blog_pref','Blog settings','blog_pref.php',
-					'images/menu/blog-pref.png','images/menu/blog-pref-b.png',
+				$init_fav['newpage'] = array('newpage','New page','plugin.php?p=pages&amp;act=page',
+					'index.php?pf=pages/icon-np.png','index.php?pf=pages/icon-np-big.png',
+					'contentadmin,pages',null,null);
+				$init_fav['media'] = array('media','Media manager','media.php',
+					'images/menu/media.png','images/menu/media-b.png',
+					'media,media_admin',null,null);
+				$init_fav['widgets'] = array('widgets','Presentation widgets','plugin.php?p=widgets',
+					'index.php?pf=widgets/icon.png','index.php?pf=widgets/icon-big.png',
 					'admin',null,null);
 				$init_fav['blog_theme'] = array('blog_theme','Blog appearance','blog_theme.php',
 					'images/menu/themes.png','images/menu/blog-theme-b.png',
 					'admin',null,null);
-
-				$init_fav['pages'] = array('pages','Pages','plugin.php?p=pages',
-					'index.php?pf=pages/icon.png','index.php?pf=pages/icon-big.png',
-					'contentadmin,pages',null,null);
-				$init_fav['blogroll'] = array('blogroll','Blogroll','plugin.php?p=blogroll',
-					'index.php?pf=blogroll/icon-small.png','index.php?pf=blogroll/icon.png',
-					'usage,contentadmin',null,null);
 
 				$count = 0;
 				foreach ($init_fav as $k => $f) {
@@ -294,7 +284,61 @@ function dotclearUpgrade($core)
 				# Remove unecessary file
 				@unlink(DC_ROOT.'/'.'inc/libs/clearbricks/.hgignore');
 			}
-			
+
+			if (version_compare($version,'2.4.0','<='))
+			{
+				# setup media_exclusion
+				$strReq = 'UPDATE '.$core->prefix.'setting '.
+						"SET setting_value = '/\\.php\$/i' ".
+						"WHERE setting_id = 'media_exclusion' ".
+						"AND setting_value = '' ";
+				$core->con->execute($strReq);
+			}
+
+			if (version_compare($version,'2.5','<='))
+			{
+				# Try to disable daInstaller plugin if it has been installed outside the default plugins directory
+				$path = explode(PATH_SEPARATOR,DC_PLUGINS_ROOT);
+				$default = path::real(dirname(__FILE__).'/../../plugins/');
+				foreach ($path as $root)
+				{
+					if (!is_dir($root) || !is_readable($root)) {
+						continue;
+					}
+					if (substr($root,-1) != '/') {
+						$root .= '/';
+					}
+					if (($p = @dir($root)) === false) {
+						continue;
+					}
+					if(path::real($root) == $default) {
+						continue;
+					}
+					if (($d = @dir($root.'daInstaller')) === false) {
+						continue;
+					}
+					$f = $root.'/daInstaller/_disabled';
+					if (!file_exists($f))
+					{
+						@file_put_contents($f,'');
+					}
+				}
+			}
+
+			if (version_compare($version,'2.5.1','<='))
+			{
+				// Flash enhanced upload no longer needed
+				@unlink(DC_ROOT.'/'.'inc/swf/swfupload.swf');
+			}
+
+			if (version_compare($version,'2.6','<='))
+			{
+				// README has been replaced by README.md and CONTRIBUTING.md
+				@unlink(DC_ROOT.'/'.'README');
+
+				// trackbacks are now merged into posts
+				@unlink(DC_ROOT.'/'.'admin/trackbacks.php');
+			}
 			
 			$core->setVersion('core',DC_VERSION);
 			$core->blogDefaults();

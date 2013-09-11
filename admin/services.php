@@ -3,7 +3,7 @@
 #
 # This file is part of Dotclear 2.
 #
-# Copyright (c) 2003-2011 Olivier Meunier & Association Dotclear
+# Copyright (c) 2003-2013 Olivier Meunier & Association Dotclear
 # Licensed under the GPL version 2.0 license.
 # See LICENSE file or
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
@@ -25,6 +25,7 @@ $core->rest->addFunction('getMeta',array('dcRestMethods','getMeta'));
 $core->rest->addFunction('delMeta',array('dcRestMethods','delMeta'));
 $core->rest->addFunction('setPostMeta',array('dcRestMethods','setPostMeta'));
 $core->rest->addFunction('searchMeta',array('dcRestMethods','searchMeta'));
+$core->rest->addFunction('setSectionFold',array('dcRestMethods','setSectionFold'));
 
 $core->rest->serve();
 
@@ -140,6 +141,24 @@ class dcRestMethods
 	
 	public static function quickPost($core,$get,$post)
 	{
+		# Create category
+		if (!empty($post['new_cat_title']) && $core->auth->check('categories', $core->blog->id)) {
+		
+			$cur_cat = $core->con->openCursor($core->prefix.'category');
+			$cur_cat->cat_title = $post['new_cat_title'];
+			$cur_cat->cat_url = '';
+			
+			$parent_cat = !empty($post['new_cat_parent']) ? $post['new_cat_parent'] : '';
+			
+			# --BEHAVIOR-- adminBeforeCategoryCreate
+			$core->callBehavior('adminBeforeCategoryCreate', $cur_cat);
+			
+			$post['cat_id'] = $core->blog->addCategory($cur_cat, (integer) $parent_cat);
+			
+			# --BEHAVIOR-- adminAfterCategoryCreate
+			$core->callBehavior('adminAfterCategoryCreate', $cur_cat, $post['cat_id']);
+		}
+		
 		$cur = $core->con->openCursor($core->prefix.'post');
 		
 		$cur->post_title = !empty($post['post_title']) ? $post['post_title'] : '';
@@ -219,8 +238,10 @@ class dcRestMethods
 			throw new Exception('Permission denied');
 		}
 		
-		$core->media = new dcMedia($core);
-		$file = $core->media->getFile($id);
+		try {
+			$core->media = new dcMedia($core);
+			$file = $core->media->getFile($id);
+		} catch (Exception $e) {}
 		
 		if ($file === null || $file->type != 'application/zip' || !$file->editable) {
 			throw new Exception('Not a valid file');
@@ -391,5 +412,36 @@ class dcRestMethods
 		
 		return $rsp;
 	}
+	
+	public static function setSectionFold($core,$get,$post)
+	{
+		if (empty($post['section'])) {
+			throw new Exception('No section name');
+		}
+		if ($core->auth->user_prefs->toggles === null) {
+			$core->auth->user_prefs->addWorkspace('toggles');
+		}
+		$section = $post['section'];
+		$status = isset($post['value']) && ($post['value'] != 0);
+		if ($core->auth->user_prefs->toggles->prefExists('unfolded_sections')) {
+			$toggles = explode(',',trim($core->auth->user_prefs->toggles->unfolded_sections));
+		} else {
+			$toggles = array();
+		}
+		$k = array_search($section,$toggles);
+		if ($status) { // true == Fold section ==> remove it from unfolded list
+			if ($k !== false) {
+				unset($toggles[$k]);
+			} 
+		} else { // false == unfold section ==> add it to unfolded list
+			if ($k === false) {
+				$toggles[]=$section;
+			}; 
+		}
+		$core->auth->user_prefs->toggles->put('unfolded_sections',join(',',$toggles));
+		return true;
+	}
+		
+	
 }
 ?>

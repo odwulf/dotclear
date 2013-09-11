@@ -3,7 +3,7 @@
 #
 # This file is part of Dotclear 2.
 #
-# Copyright (c) 2003-2011 Olivier Meunier & Association Dotclear
+# Copyright (c) 2003-2013 Olivier Meunier & Association Dotclear
 # Licensed under the GPL version 2.0 license.
 # See LICENSE file or
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
@@ -29,6 +29,7 @@ class dcMedia extends filemanager
 	protected $file_handler = array();	///< <b>array</b> Array of callbacks
 	
 	public $thumb_tp = '%s/.%s_%s.jpg';	///< <b>string</b> Thumbnail file pattern
+	public $thumb_tp_alpha = '%s/.%s_%s.png'; ///< <b>string</b> Thumbnail file pattern (with alpha layer)
 	
 	/**
 	<b>array</b> Tubmnail sizes:
@@ -72,7 +73,12 @@ class dcMedia extends filemanager
 		}
 		
 		if (!is_dir($root)) {
-			throw new Exception(sprintf(__('Directory %s does not exist.'),$root));
+			# Check public directory
+			if ( $core->auth->isSuperAdmin() ) {
+				throw new Exception(__("There is no writable directory /public/ at the location set in about:config \"public_path\". You must create this directory with sufficient rights (or change this setting)."));
+			} else {
+				throw new Exception(__("There is no writable root directory for the media manager. You should contact your administrator."));
+			}
 		}
 		
 		$this->type = $type;
@@ -297,16 +303,29 @@ class dcMedia extends filemanager
 			# Thumbnails
 			$f->media_thumb = array();
 			$p = path::info($f->relname);
-			$thumb = sprintf($this->thumb_tp,$this->root.'/'.$p['dirname'],$p['base'],'%s');
-			$thumb_url = sprintf($this->thumb_tp,$this->root_url.$p['dirname'],$p['base'],'%s');
+
+			$alpha = ($p['extension'] == 'png') || ($p['extension'] == 'PNG');
+
+			$thumb = sprintf(($alpha ? $this->thumb_tp_alpha : $this->thumb_tp),$this->root.'/'.$p['dirname'],$p['base'],'%s');
+			$thumb_url = sprintf(($alpha ? $this->thumb_tp_alpha : $this->thumb_tp),$this->root_url.$p['dirname'],$p['base'],'%s');
 			
 			# Cleaner URLs
 			$thumb_url = preg_replace('#\./#','/',$thumb_url);
 			$thumb_url = preg_replace('#(?<!:)/+#','/',$thumb_url);
+
+			if ($alpha) {
+				$thumb_alt = sprintf($this->thumb_tp,$this->root.'/'.$p['dirname'],$p['base'],'%s');
+				$thumb_url_alt = sprintf($this->thumb_tp,$this->root_url.$p['dirname'],$p['base'],'%s');
+				# Cleaner URLs
+				$thumb_url_alt = preg_replace('#\./#','/',$thumb_url_alt);
+				$thumb_url_alt = preg_replace('#(?<!:)/+#','/',$thumb_url_alt);
+			}
 			
 			foreach ($this->thumb_sizes as $suffix => $s) {
 				if (file_exists(sprintf($thumb,$suffix))) {
 					$f->media_thumb[$suffix] = sprintf($thumb_url,$suffix);
+				} elseif ($alpha && file_exists(sprintf($thumb_alt,$suffix))) {
+					$f->media_thumb[$suffix] = sprintf($thumb_url_alt,$suffix);
 				}
 			}
 			
@@ -820,6 +839,31 @@ class dcMedia extends filemanager
 		
 		$this->callFileHandler(files::getMimeType($media_file),'remove',$f);
 	}
+
+	/**
+	* Root directories
+	*
+	* Returns an array of directory under {@link $root} directory.
+	*
+	* @uses fileItem
+	* @return array
+	*/
+	public function getDBDirs()
+	{
+		$media_dir = $this->relpwd ? $this->relpwd : '.';
+		
+		$strReq =
+		'SELECT distinct media_dir '.
+		'FROM '.$this->table.' '.
+		"WHERE media_path = '".$this->path."'";
+		$rs = $this->con->select($strReq);
+		while ($rs->fetch()) {
+			if (is_dir($this->root.'/'.$rs->media_dir))
+				$dir[] = ($rs->media_dir == '.' ? '' : $rs->media_dir);
+		}
+		
+		return $dir;
+	}
 	
 	/**
 	Extract zip file in current location
@@ -829,6 +873,7 @@ class dcMedia extends filemanager
 	public function inflateZipFile($f,$create_dir=true)
 	{
 		$zip = new fileUnzip($f->file);
+		$zip->setExcludePattern($this->exclude_pattern);
 		$zip->getList(false,'#(^|/)(__MACOSX|\.svn|\.DS_Store|\.directory|Thumbs\.db)(/|$)#');
 		
 		if ($create_dir)
@@ -893,7 +938,8 @@ class dcMedia extends filemanager
 		}
 		
 		$p = path::info($file);
-		$thumb = sprintf($this->thumb_tp,$p['dirname'],$p['base'],'%s');
+		$alpha = ($p['extension'] == 'png') || ($p['extension'] == 'PNG');
+		$thumb = sprintf(($alpha ? $this->thumb_tp_alpha : $this->thumb_tp),$p['dirname'],$p['base'],'%s');
 		
 		try
 		{
@@ -910,8 +956,10 @@ class dcMedia extends filemanager
 				if (!file_exists($thumb_file) && $s[0] > 0 &&
 					($suffix == 'sq' || $w > $s[0] || $h > $s[0]))
 				{
+					$rate = ($s[0] < 100 ? 95 : ($s[0] < 600 ? 90 : 85));
 					$img->resize($s[0],$s[0],$s[1]);
-					$img->output('jpeg',$thumb_file,80);
+					$img->output(($alpha ? 'png' : 'jpeg'),$thumb_file,$rate);
+					$img->loadImage($file);
 				}
 			}
 			$img->close();
@@ -924,15 +972,17 @@ class dcMedia extends filemanager
 		}
 	}
 	
-	protected function imageThumbUpdate(&$file,&$newFile)
+	protected function imageThumbUpdate($file,$newFile)
 	{
 		if ($file->relname != $newFile->relname)
 		{
 			$p = path::info($file->relname);
-			$thumb_old = sprintf($this->thumb_tp,$p['dirname'],$p['base'],'%s');
+			$alpha = ($p['extension'] == 'png') || ($p['extension'] == 'PNG');
+			$thumb_old = sprintf(($alpha ? $this->thumb_tp_alpha : $this->thumb_tp),$p['dirname'],$p['base'],'%s');
 			
 			$p = path::info($newFile->relname);
-			$thumb_new = sprintf($this->thumb_tp,$p['dirname'],$p['base'],'%s');
+			$alpha = ($p['extension'] == 'png') || ($p['extension'] == 'PNG');
+			$thumb_new = sprintf(($alpha ? $this->thumb_tp_alpha : $this->thumb_tp),$p['dirname'],$p['base'],'%s');
 			
 			foreach ($this->thumb_sizes as $suffix => $s) {
 				try {
@@ -945,7 +995,8 @@ class dcMedia extends filemanager
 	protected function imageThumbRemove($f)
 	{
 		$p = path::info($f);
-		$thumb = sprintf($this->thumb_tp,'',$p['base'],'%s');
+		$alpha = ($p['extension'] == 'png') || ($p['extension'] == 'PNG');
+		$thumb = sprintf(($alpha ? $this->thumb_tp_alpha : $this->thumb_tp),'',$p['base'],'%s');
 		
 		foreach ($this->thumb_sizes as $suffix => $s) {
 			try {

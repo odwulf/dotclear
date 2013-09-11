@@ -3,7 +3,7 @@
 #
 # This file is part of Dotclear 2.
 #
-# Copyright (c) 2003-2011 Olivier Meunier & Association Dotclear
+# Copyright (c) 2003-2013 Olivier Meunier & Association Dotclear
 # Licensed under the GPL version 2.0 license.
 # See LICENSE file or
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
@@ -84,7 +84,14 @@ if ($is_writable)
 				throw new Exception(__('You don\'t have permissions to deactivate this plugin.'));
 			}
 			
+			# --BEHAVIOR-- pluginBeforeDeactivate
+			$core->callBehavior('pluginsBeforeDeactivate', $plugin);
+				
 			$core->plugins->deactivateModule($plugin_id);
+
+			# --BEHAVIOR-- pluginAfterDeactivate
+			$core->callBehavior('pluginsAfterDeactivate', $plugin);
+				
 			http::redirect('plugins.php');
 		}
 		catch (Exception $e)
@@ -101,7 +108,15 @@ if ($is_writable)
 			if (!isset($p[$plugin_id])) {
 				throw new Exception(__('No such plugin.'));
 			}
+
+			# --BEHAVIOR-- pluginBeforeActivate
+			$core->callBehavior('pluginsBeforeActivate', $plugin_id);
+			
 			$core->plugins->activateModule($plugin_id);
+
+			# --BEHAVIOR-- pluginAfterActivate
+			$core->callBehavior('pluginsAfterActivate', $plugin_id);
+			
 			http::redirect('plugins.php');
 		}
 		catch (Exception $e)
@@ -149,8 +164,15 @@ if ($is_writable)
 				
 				unset($client);
 			}
-			
+
+			# --BEHAVIOR-- pluginBeforeAdd
+			$core->callBehavior('pluginsBeforeAdd', $plugin_id);
+						
 			$ret_code = $core->plugins->installPackage($dest,$core->plugins);
+
+			# --BEHAVIOR-- pluginAfterAdd
+			$core->callBehavior('pluginsAfterAdd', $plugin_id);
+			
 			http::redirect('plugins.php?added='.$ret_code);
 		}
 		catch (Exception $e)
@@ -168,20 +190,19 @@ $plugins_install = $core->plugins->installModules();
 -------------------------------------------------------- */
 dcPage::open(__('Plugins management'),
 	dcPage::jsLoad('js/_plugins.js').
-	dcPage::jsPageTabs($default_tab)
+	dcPage::jsPageTabs($default_tab),
+	dcPage::breadcrumb(
+		array(
+			__('System') => '',
+			'<span class="page-title">'.__('Plugins management').'</span>' => ''
+		))
 );
 
-echo
-'<h2 class="page-title">'.__('Plugins management').'</h2>';
-
 if (!empty($_GET['removed'])) {
-	echo
-	'<p class="message">'.__('Plugin has been successfully deleted.').'</p>';
+	dcPage::success(__('Plugin has been successfully deleted.'));
 }
 if (!empty($_GET['added'])) {
-	echo	'<p class="message">'.
-	($_GET['added'] == 2 ? __('Plugin has been successfully upgraded') : __('Plugin has been successfully installed.')).
-	'</p>';
+	dcPage::success(($_GET['added'] == 2 ? __('Plugin has been successfully upgraded') : __('Plugin has been successfully installed.')));
 }
 
 # Plugins install messages
@@ -206,14 +227,18 @@ if (!empty($plugins_install['failure']))
 echo '<p>'.__('Plugins add new functionalities to Dotclear. '.
 'Here you can activate or deactivate installed plugins.').'</p>';
 
-echo '<p><strong>'.sprintf(__('You can find additional plugins for your blog on %s.'),
-'<a href="http://plugins.dotaddict.org/dc2/">Dotaddict</a>').'</strong> ';
+echo (!$core->plugins->moduleExists('daInstaller') ?
+	sprintf('<p><strong>'.__('You can find additional plugins for your blog on %s.').'</strong></p>',
+		'<a href="http://plugins.dotaddict.org/dc2/">Dotaddict</a>') :
+	sprintf('<p><strong>'.__('You can find additional plugins for your blog on %s or using the %s.').'</strong></p>',
+		'<a href="http://plugins.dotaddict.org/dc2/">Dotaddict</a>',
+		'<a href="plugin.php?p=daInstaller">'.__('DotAddict.org Installer').'</a>'));
 
 if ($is_writable) {
-	echo __('To install or upgrade a plugin you generally just need to upload it '.
+	echo '<p>'.__('To install or upgrade a plugin you generally just need to upload it '.
 	'in "Install or upgrade a plugin" section.');
 } else {
-	echo __('To install or upgrade a plugin you just need to extract it in your plugins directory.');
+	echo '<p>'.__('To install or upgrade a plugin you just need to extract it in your plugins directory.');
 }
 echo '</p>';
 
@@ -233,17 +258,23 @@ if (!empty($p_available))
 	'<th class="nowrap">'.__('Action').'</th>'.
 	'</tr>';
 	
+	$distrib_plugins = array('aboutConfig','akismet','antispam','attachments','blogroll','blowupConfig','daInstaller',
+		'fairTrackbacks','importExport','maintenance','pages','pings','simpleMenu','tags','themeEditor','userPref','widgets');
+	$distrib_img = '<img src="images/dotclear_pw.png"'.
+		' alt="'.__('Plugin from official distribution').'" title="'.__('Plugin from official distribution').'" />';
+
 	foreach ($p_available as $k => $v)
 	{
 		$is_deletable = $is_writable && preg_match('!^'.$p_path_pat.'!',$v['root']);
 		$is_deactivable = $v['root_writable'];
+		$is_distrib = in_array($k, $distrib_plugins);
 		
 		echo
 		'<tr class="line wide">'.
 		'<td class="minimal nowrap"><strong>'.html::escapeHTML($k).'</strong></td>'.
 		'<td class="minimal">'.html::escapeHTML($v['version']).'</td>'.
-		'<td class="maximal"><strong>'.html::escapeHTML($v['name']).'</strong> '.
-		'<br />'.html::escapeHTML($v['desc']).'</td>'.
+		'<td class="maximal'.($is_distrib ? ' distrib' : '').'"><strong>'.html::escapeHTML(__($v['name'])).'</strong> '.
+		'<br />'.html::escapeHTML(__($v['desc'])).($is_distrib ? ' '.$distrib_img : '').'</td>'.
 		'<td class="nowrap action">';
 		
 		if ($is_deletable || $is_deactivable)
@@ -322,30 +353,27 @@ if ($is_writable)
 	
 	# 'Upload plugin' form
 	echo
-	'<form method="post" action="plugins.php" id="uploadpkg" enctype="multipart/form-data">'.
-	'<fieldset>'.
-	'<legend>'.__('Upload a zip file').'</legend>'.
-	'<p class="field"><label for="pkg_file" class="classic required"><abbr title="'.__('Required field').'">*</abbr> '.__('Plugin zip file:').' '.
-	'<input type="file" id="pkg_file" name="pkg_file" /></label></p>'.
-	'<p class="field"><label for="your_pwd1" class="classic required"><abbr title="'.__('Required field').'">*</abbr> '.__('Your password:').' '.
-	form::password(array('your_pwd','your_pwd1'),20,255).'</label></p>'.
-	'<input type="submit" name="upload_pkg" value="'.__('Upload plugin').'" />'.
+	'<form method="post" action="plugins.php" id="uploadpkg" enctype="multipart/form-data" class="fieldset">'.
+	'<h3>'.__('Upload a zip file').'</h3>'.
+	'<p class="field"><label for="pkg_file" class="classic required"><abbr title="'.__('Required field').'">*</abbr> '.__('Plugin zip file:').'</label> '.
+	'<input type="file" id="pkg_file" name="pkg_file" /></p>'.
+	'<p class="field"><label for="your_pwd1" class="classic required"><abbr title="'.__('Required field').'">*</abbr> '.__('Your password:').'</label> '.
+	form::password(array('your_pwd','your_pwd1'),20,255).'</p>'.
+	'<p><input type="submit" name="upload_pkg" value="'.__('Upload plugin').'" />'.
 	$core->formNonce().
-	'</fieldset>'.
+	'</p>'.
 	'</form>';
 	
 	# 'Fetch plugin' form
 	echo
-	'<form method="post" action="plugins.php" id="fetchpkg">'.
-	'<fieldset>'.
-	'<legend>'.__('Download a zip file').'</legend>'.
-	'<p class="field"><label for="pkg_url" class="classic required"><abbr title="'.__('Required field').'">*</abbr> '.__('Plugin zip file URL:').' '.
-	form::field(array('pkg_url','pkg_url'),40,255).'</label></p>'.
-	'<p class="field"><label for="your_pwd2" class="classic required"><abbr title="'.__('Required field').'">*</abbr> '.__('Your password:').' '.
-	form::password(array('your_pwd','your_pwd2'),20,255).'</label></p>'.
-	'<input type="submit" name="fetch_pkg" value="'.__('Download plugin').'" />'.
-	$core->formNonce().
-	'</fieldset>'.
+	'<form method="post" action="plugins.php" id="fetchpkg" class="fieldset">'.
+	'<h3>'.__('Download a zip file').'</h3>'.
+	'<p class="field"><label for="pkg_url" class="classic required"><abbr title="'.__('Required field').'">*</abbr> '.__('Plugin zip file URL:').'</label> '.
+	form::field(array('pkg_url','pkg_url'),40,255).'</p>'.
+	'<p class="field"><label for="your_pwd2" class="classic required"><abbr title="'.__('Required field').'">*</abbr> '.__('Your password:').'</label> '.
+	form::password(array('your_pwd','your_pwd2'),20,255).'</p>'.
+	'<p><input type="submit" name="fetch_pkg" value="'.__('Download plugin').'" />'.
+	$core->formNonce().'</p>'.
 	'</form>';
 }
 else

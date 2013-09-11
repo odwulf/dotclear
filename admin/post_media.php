@@ -3,7 +3,7 @@
 #
 # This file is part of Dotclear 2.
 #
-# Copyright (c) 2003-2011 Olivier Meunier & Association Dotclear
+# Copyright (c) 2003-2013 Olivier Meunier & Association Dotclear
 # Licensed under the GPL version 2.0 license.
 # See LICENSE file or
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
@@ -25,14 +25,14 @@ if ($rs->isEmpty()) {
 	exit;
 }
 
-if ($post_id && $media_id && !empty($_POST['attach']))
-{
-	$core->media = new dcMedia($core);
-	$core->media->addPostMedia($post_id,$media_id);
-	http::redirect($core->getPostAdminURL($rs->post_type,$post_id,false));
-}
-
 try {
+	if ($post_id && $media_id && !empty($_POST['attach']))
+	{
+		$core->media = new dcMedia($core);
+		$core->media->addPostMedia($post_id,$media_id);
+		http::redirect($core->getPostAdminURL($rs->post_type,$post_id,false));
+	}
+
 	$core->media = new dcMedia($core);
 	$f = $core->media->getPostMedia($post_id,$media_id);
 	if (empty($f)) {
@@ -65,8 +65,8 @@ if (($post_id && $media_id) || $core->error->flag())
 		echo
 		'<form action="post_media.php" method="post">'.
 		'<p>'.__('Are you sure you want to remove this attachment?').'</p>'.
-		'<p><input type="submit" class="reset" value="'.__('cancel').'" /> '.
-		' &nbsp; <input type="submit" class="delete" name="remove" value="'.__('yes').'" />'.
+		'<p><input type="submit" class="reset" value="'.__('Cancel').'" /> '.
+		' &nbsp; <input type="submit" class="delete" name="remove" value="'.__('Yes').'" />'.
 		form::hidden('post_id',$post_id).
 		form::hidden('media_id',$media_id).
 		$core->formNonce().'</p>'.

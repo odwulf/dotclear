@@ -3,7 +3,7 @@
 #
 # This file is part of Dotclear 2.
 #
-# Copyright (c) 2003-2011 Olivier Meunier & Association Dotclear
+# Copyright (c) 2003-2013 Olivier Meunier & Association Dotclear
 # Licensed under the GPL version 2.0 license.
 # See LICENSE file or
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
@@ -15,12 +15,45 @@ if (!isset($__resources['help']['themeEditor'])) {
 	$__resources['help']['themeEditor'] = dirname(__FILE__).'/help.html';
 }
 
-$core->addBehavior('adminCurrentThemeDetails','theme_editor_details');
+$core->addBehavior('adminCurrentThemeDetails', array('themeEditorBehaviors','theme_editor_details'));
 
-function theme_editor_details($core,$id)
+$core->addBehavior('adminBeforeUserOptionsUpdate',array('themeEditorBehaviors','adminBeforeUserUpdate'));
+$core->addBehavior('adminPreferencesForm',array('themeEditorBehaviors','adminPreferencesForm'));
+
+class themeEditorBehaviors
 {
-	if ($id != 'default' && $core->auth->isSuperAdmin()) {
-		return '<p><a href="plugin.php?p=themeEditor" class="button">'.__('Theme Editor').'</a></p>';
+	public static function theme_editor_details($core,$id)
+	{
+		if ($id != 'default' && $core->auth->isSuperAdmin()) {
+			return '<p><a href="plugin.php?p=themeEditor" class="button">'.__('Edit theme files').'</a></p>';
+		}
+	}
+
+	public static function adminBeforeUserUpdate($cur,$userID)
+	{
+		global $core;
+
+		// Get and store user's prefs for plugin options
+		$core->auth->user_prefs->addWorkspace('interface');
+		try {
+			$core->auth->user_prefs->interface->put('colorsyntax',!empty($_POST['colorsyntax']),'boolean');
+		} 
+		catch (Exception $e)
+		{
+			$core->error->add($e->getMessage());
+		}
+	}
+	
+	public static function adminPreferencesForm($core)
+	{
+		// Add fieldset for plugin options
+		$core->auth->user_prefs->addWorkspace('interface');
+
+		echo		
+		'<p><label for="colorsyntax" class="classic">'.
+		form::checkbox('colorsyntax',1,$core->auth->user_prefs->interface->colorsyntax).'</label>'.
+		__('Syntax color for theme editor').
+		'</p>';
 	}
 }
 ?>

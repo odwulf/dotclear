@@ -3,7 +3,7 @@
 #
 # This file is part of Dotclear 2.
 #
-# Copyright (c) 2003-2011 Olivier Meunier & Association Dotclear
+# Copyright (c) 2003-2013 Olivier Meunier & Association Dotclear
 # Licensed under the GPL version 2.0 license.
 # See LICENSE file or
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
@@ -22,17 +22,20 @@ PLUGINS="
 aboutConfig
 akismet
 antispam
+attachments
 blogroll
 blowupConfig
+daInstaller
 fairTrackbacks
 importExport
 maintenance
 pages
 pings
+simpleMenu
 tags
 themeEditor
-widgets
 userPref
+widgets
 "
 
 PO_LANG=$1
@@ -56,6 +59,7 @@ extract_strings()
 	-L PHP -k__ \
 	--no-wrap \
 	--foreign-user \
+	--from-code=UTF-8 \
 	"$@"
 }
 
@@ -69,6 +73,7 @@ extract_html_strings()
 	-L PHP -k__ \
 	--no-wrap \
 	--foreign-user \
+	--from-code=UTF-8 \
 	"$@"
 }
 update_po()
@@ -167,7 +172,7 @@ else
 	echo '<?php' >$PO_MODULE/__html_tpl_dummy.php 
 	find $PO_MODULE -name '*.html' -exec grep -o '{{tpl:lang [^}]*}}' {} \; | sed 's/{{tpl:lang \(.*\)}}$/__\("\1")/' | sort -u \
 		>> $PO_MODULE/__html_tpl_dummy.php
-	sed -i 's/\$/\\\$/g' $PO_MODULE/__html_tpl_dummy.php 
+	sed -i "" 's/\$/\\\$/g' $PO_MODULE/__html_tpl_dummy.php 
 	
 	find $PO_MODULE -name '*.php' -print | \
 		extract_strings \

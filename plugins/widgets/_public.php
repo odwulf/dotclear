@@ -3,7 +3,7 @@
 #
 # This file is part of Dotclear 2.
 #
-# Copyright (c) 2003-2011 Olivier Meunier & Association Dotclear
+# Copyright (c) 2003-2013 Olivier Meunier & Association Dotclear
 # Licensed under the GPL version 2.0 license.
 # See LICENSE file or
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
@@ -21,20 +21,28 @@ class publicWidgets
 {
 	public static function tplWidgets($attr)
 	{
-		$type = isset($attr['type']) ? $attr['type'] : 'nav';
-		
+		$type = isset($attr['type']) ? $attr['type'] : '';
+
 		# widgets to disable
 		$disable = isset($attr['disable']) ? trim($attr['disable']) : '';
 		
-		return
-		'<?php '.
-		"publicWidgets::widgetsHandler('".addslashes($type)."','".addslashes($disable)."'); ".
-		' ?>';
+		if ($type == '') {
+			$res = "publicWidgets::widgetsHandler('nav','".addslashes($disable)."');"."\n".
+				"   publicWidgets::widgetsHandler('extra','".addslashes($disable)."');"."\n".
+				"   publicWidgets::widgetsHandler('custom','".addslashes($disable)."');"."\n";
+		} else {
+			if (!in_array($type, array('nav','extra','custom'))) {
+				$type = 'nav';
+			}
+			$res = "publicWidgets::widgetsHandler('".addslashes($type)."','".addslashes($disable)."');";
+		}
+		return '<?php '.$res.' ?>';
 	}
 	
 	public static function widgetsHandler($type,$disable='')
 	{
 		$wtype = 'widgets_'.$type;
+		$GLOBALS['core']->blog->settings->addNameSpace('widgets');
 		$widgets = $GLOBALS['core']->blog->settings->widgets->{$wtype};
 		
 		if (!$widgets) { // If widgets value is empty, get defaults

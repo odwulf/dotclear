@@ -3,7 +3,7 @@
 #
 # This file is part of Dotclear 2.
 #
-# Copyright (c) 2003-2011 Olivier Meunier & Association Dotclear
+# Copyright (c) 2003-2013 Olivier Meunier & Association Dotclear
 # Licensed under the GPL version 2.0 license.
 # See LICENSE file or
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
@@ -14,7 +14,7 @@ require dirname(__FILE__).'/../inc/admin/prepend.php';
 
 dcPage::check('usage,contentadmin');
 
-$q = !empty($_GET['q']) ? $_GET['q'] : null;
+$q = !empty($_GET['q']) ? $_GET['q'] : (!empty($_GET['qx']) ? $_GET['qx'] : null);
 $qtype = !empty($_GET['qtype']) ? $_GET['qtype'] : 'p';
 if ($qtype != 'c' && $qtype != 'p') {
 	$qtype = 'p';
@@ -69,17 +69,22 @@ if ($q)
 }
 
 
-dcPage::open(__('Search'),$starting_scripts);
+dcPage::open(__('Search'),$starting_scripts,
+	dcPage::breadcrumb(
+		array(
+			html::escapeHTML($core->blog->name) => '',
+			'<span class="page-title">'.__('Search').'</span>' => ''
+		))
+);
 
 echo
-'<h2>'.html::escapeHTML($core->blog->name).' &rsaquo; <span class="page-title">'.__('Search').'</span></h2>'.
 '<form action="search.php" method="get">'.
-'<fieldset><legend>'.__('Search options').'</legend>'.
-'<p><label for="q" class="classic">'.__('Query:').' '.form::field('q',30,255,html::escapeHTML($q)).'</label> '.
-'<label for="qtype1" class="classic">'.form::radio(array('qtype','qtype1'),'p',$qtype == 'p').' '.__('search entries').'</label> '.
-'<label for="qtype2" class="classic">'.form::radio(array('qtype','qtype2'),'c',$qtype == 'c').' '.__('search comments').'</label> '.
-' <input type="submit" value="'.__('ok').'" /></p>'.
-'</fieldset>'.
+'<div class="fieldset"><h3>'.__('Search options').'</h3>'.
+'<p><label for="q">'.__('Query:').' </label>'.form::field('q',30,255,html::escapeHTML($q)).'</p>'.
+'<p><label for="qtype1" class="classic">'.form::radio(array('qtype','qtype1'),'p',$qtype == 'p').' '.__('Search in entries').'</label> '.
+'<label for="qtype2" class="classic">'.form::radio(array('qtype','qtype2'),'c',$qtype == 'c').' '.__('Search in comments').'</label></p>'.
+'<p><input type="submit" value="'.__('Search').'" /></p>'.
+'</div>'.
 '</form>';
 
 if ($q && !$core->error->flag())
@@ -104,7 +109,7 @@ if ($q && !$core->error->flag())
 		}
 		if ($core->auth->check('delete,contentadmin',$core->blog->id))
 		{
-			$combo_action[__('delete')] = 'delete';
+			$combo_action[__('Delete')] = 'delete';
 		}
 		
 		# --BEHAVIOR-- adminPostsActionsCombo
@@ -147,7 +152,7 @@ if ($q && !$core->error->flag())
 		}
 		if ($core->auth->check('delete,contentadmin',$core->blog->id))
 		{
-			$combo_action[__('delete')] = 'delete';
+			$combo_action[__('Delete')] = 'delete';
 		}
 		
 		if ($counter->f(0) > 0) {

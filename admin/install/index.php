@@ -3,7 +3,7 @@
 #
 # This file is part of Dotclear 2.
 #
-# Copyright (c) 2003-2011 Olivier Meunier & Association Dotclear
+# Copyright (c) 2003-2013 Olivier Meunier & Association Dotclear
 # Licensed under the GPL version 2.0 license.
 # See LICENSE file or
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
@@ -197,7 +197,7 @@ if ($can_install && !empty($_POST))
 
 		# Add user interface options
 		$core->auth->user_prefs->addWorkspace('interface');
-		$core->auth->user_prefs->interface->put('enhanceduploader',false,'boolean','',null,true);
+		$core->auth->user_prefs->interface->put('enhanceduploader',true,'boolean','',null,true);
 
 		# Add default favorites
 		$core->auth->user_prefs->addWorkspace('favorites');
@@ -207,28 +207,18 @@ if ($can_install && !empty($_POST))
 		$init_fav['new_post'] = array('new_post','New entry','post.php',
 			'images/menu/edit.png','images/menu/edit-b.png',
 			'usage,contentadmin',null,'menu-new-post');
-		$init_fav['posts'] = array('posts','Entries','posts.php',
-			'images/menu/entries.png','images/menu/entries-b.png',
-			'usage,contentadmin',null,null);
-		$init_fav['comments'] = array('comments','Comments','comments.php',
-			'images/menu/comments.png','images/menu/comments-b.png',
-			'usage,contentadmin',null,null);
-		$init_fav['prefs'] = array('prefs','My preferences','preferences.php',
-			'images/menu/user-pref.png','images/menu/user-pref-b.png',
-			'*',null,null);
-		$init_fav['blog_pref'] = array('blog_pref','Blog settings','blog_pref.php',
-			'images/menu/blog-pref.png','images/menu/blog-pref-b.png',
+		$init_fav['newpage'] = array('newpage','New page','plugin.php?p=pages&amp;act=page',
+			'index.php?pf=pages/icon-np.png','index.php?pf=pages/icon-np-big.png',
+			'contentadmin,pages',null,null);
+		$init_fav['media'] = array('media','Media manager','media.php',
+			'images/menu/media.png','images/menu/media-b.png',
+			'media,media_admin',null,null);
+		$init_fav['widgets'] = array('widgets','Presentation widgets','plugin.php?p=widgets',
+			'index.php?pf=widgets/icon.png','index.php?pf=widgets/icon-big.png',
 			'admin',null,null);
 		$init_fav['blog_theme'] = array('blog_theme','Blog appearance','blog_theme.php',
 			'images/menu/themes.png','images/menu/blog-theme-b.png',
 			'admin',null,null);
-
-		$init_fav['pages'] = array('pages','Pages','plugin.php?p=pages',
-			'index.php?pf=pages/icon.png','index.php?pf=pages/icon-big.png',
-			'contentadmin,pages',null,null);
-		$init_fav['blogroll'] = array('blogroll','Blogroll','plugin.php?p=blogroll',
-			'index.php?pf=blogroll/icon-small.png','index.php?pf=blogroll/icon.png',
-			'usage,contentadmin',null,null);
 
 		$count = 0;
 		foreach ($init_fav as $k => $f) {
@@ -266,6 +256,7 @@ xml:lang="en" lang="en">
 	<link rel="stylesheet" href="../style/install.css" type="text/css" media="screen" /> 
 
   <script type="text/javascript" src="../js/jquery/jquery.js"></script>
+  <?php echo dcPage::jsLoad('../js/jquery/jquery.pwstrength.js'); ?>
   <script type="text/javascript">
   //<![CDATA[
   $(function() {
@@ -277,6 +268,13 @@ xml:lang="en" lang="en">
     $('#u_login').keyup(function() {
       $(this).val(this.value.replace(login_re,''));
     });
+    
+	<?php echo "\$('#u_pwd').pwstrength({texts: ['".
+				sprintf(__('Password strength: %s'),__('very weak'))."', '".
+				sprintf(__('Password strength: %s'),__('weak'))."', '".
+				sprintf(__('Password strength: %s'),__('mediocre'))."', '".
+				sprintf(__('Password strength: %s'),__('strong'))."', '".
+				sprintf(__('Password strength: %s'),__('very strong'))."']});\n"; ?>
     
     $('#u_login').parent().after($('<input type="hidden" name="u_date" value="' + Date().toLocaleString() + '" />'));
     
@@ -307,7 +305,7 @@ if ($can_install && !empty($err)) {
 }
 
 if (!empty($_GET['wiz'])) {
-	echo '<p class="message">'.__('Configuration file has been successfully created.').'</p>';
+	echo '<p class="success">'.__('Configuration file has been successfully created.').'</p>';
 }
 
 if ($can_install && $step == 0)
@@ -319,24 +317,32 @@ if ($can_install && $step == 0)
 	
 	'<form action="index.php" method="post">'.
 	'<fieldset><legend>'.__('User information').'</legend>'.
-	'<p><label for="u_firstname">'.__('First Name:').' '.
-	form::field('u_firstname',30,255,html::escapeHTML($u_firstname)).'</label></p>'.
-	'<p><label for="u_name">'.__('Last Name:').' '.
-	form::field('u_name',30,255,html::escapeHTML($u_name)).'</label></p>'.
-	'<p><label for="u_email">'.__('Email:').' '.
-	form::field('u_email',30,255,html::escapeHTML($u_email)).'</label></p>'.
+	'<p><label for="u_firstname">'.__('First Name:').'</label> '.
+	form::field('u_firstname',30,255,html::escapeHTML($u_firstname)).'</p>'.
+	'<p><label for="u_name">'.__('Last Name:').'</label> '.
+	form::field('u_name',30,255,html::escapeHTML($u_name)).'</p>'.
+	'<p><label for="u_email">'.__('Email:').'</label> '.
+	form::field('u_email',30,255,html::escapeHTML($u_email)).'</p>'.
 	'</fieldset>'.
 	
 	'<fieldset><legend>'.__('Username and password').'</legend>'.
 	'<p><label for="u_login" class="required"><abbr title="'.__('Required field').'">*</abbr> '.__('Username:').' '.
 	form::field('u_login',30,32,html::escapeHTML($u_login)).'</label></p>'.
-	'<p><label for="u_pwd" class="required"><abbr title="'.__('Required field').'">*</abbr> '.__('Password:').' '.
-	form::password('u_pwd',30,255).'</label></p>'.
+	'<div class="pw-table">'.
+		'<p class="pw-cell">'.
+			'<label for="u_pwd" class="required"><abbr title="'.__('Required field').'">*</abbr> '.__('New password:').'</label>'.
+			form::password('u_pwd',30,255,'','','',false,' data-indicator="pwindicator" ').
+		'</p>'.
+		'<div id="pwindicator">'.
+		'    <div class="bar"></div>'.
+		'    <p class="label no-margin"></p>'.
+		'</div>'.
+	'</div>'.
 	'<p><label for="u_pwd2" class="required"><abbr title="'.__('Required field').'">*</abbr> '.__('Confirm password:').' '.
 	form::password('u_pwd2',30,255).'</label></p>'.
 	'</fieldset>'.
 	
-	'<p><input type="submit" value="'.__('save').'" /></p>'.
+	'<p><input type="submit" value="'.__('Save').'" /></p>'.
 	'</form>';
 }
 elseif ($can_install && $step == 1)
@@ -365,7 +371,7 @@ elseif ($can_install && $step == 1)
 	
 	$plugins_install_result.
 	
-	'<p>'.__('Dotclear has been successfully installed. Here is some useful information you should keep.').'</p>'.
+	'<p class="success">'.__('Dotclear has been successfully installed. Here is some useful information you should keep.').'</p>'.
 	
 	'<h3>'.__('Your account').'</h3>'.
 	'<ul>'.

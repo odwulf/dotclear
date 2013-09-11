@@ -62,12 +62,15 @@ jQuery.fn.toggleWithLegend = function(target,s) {
 		img_on_alt: dotclear.img_plus_alt,
 		img_off_src: dotclear.img_minus_src,
 		img_off_alt: dotclear.img_minus_alt,
+		unfolded_sections: dotclear.unfolded_sections,
 		hide: true,
 		speed: 0,
 		legend_click: false,
 		fn: false, // A function called on first display,
-		cookie: false,
-		reverse_cookie: false // Reverse cookie behavior
+		user_pref: false,
+		reverse_user_pref: false, // Reverse cookie behavior
+		user_pref:false,
+		reverse_user_pref: false
 	};
 	var p = jQuery.extend(defaults,s);
 
@@ -77,17 +80,21 @@ jQuery.fn.toggleWithLegend = function(target,s) {
 	if (p.cookie && jQuery.cookie(p.cookie)) {
 		p.hide = p.reverse_cookie;
 	}
-
+	
+	var set_user_pref = p.hide ^ p.reverse_user_pref;
+	if (p.user_pref && p.unfolded_sections !== undefined && (p.user_pref in p.unfolded_sections)) {
+		p.hide = p.reverse_user_pref;
+	}
 	var toggle = function(i,speed) {
 		speed = speed || 0;
 		if (p.hide) {
 			$(i).get(0).src = p.img_on_src;
 			$(i).get(0).alt = p.img_on_alt;
-			target.hide(speed, positionFooter);
+			target.hide(speed);
 		} else {
 			$(i).get(0).src = p.img_off_src;
 			$(i).get(0).alt = p.img_off_alt;
-			target.show(speed, positionFooter);
+			target.show(speed);
 			if (p.fn) {
 				p.fn.apply(target);
 				p.fn = false;
@@ -101,7 +108,6 @@ jQuery.fn.toggleWithLegend = function(target,s) {
 				jQuery.cookie(p.cookie,1,{expires: 30});
 			}
 		}
-
 		p.hide = !p.hide;
 	};
 
@@ -120,8 +126,23 @@ jQuery.fn.toggleWithLegend = function(target,s) {
 		var ctarget = p.legend_click ? this : a;
 
 		$(ctarget).css('cursor','pointer');
+		if (p.legend_click) {
+			$(ctarget).find('label').css('cursor','pointer');
+		}
 		$(ctarget).click(function() {
-			toggle(i,p.speed, positionFooter);
+			if (p.user_pref && set_user_pref) {
+				if (p.hide ^ p.reverse_user_pref) {
+					jQuery.post('services.php', 
+						{'f':'setSectionFold','section':p.user_pref,'value':1,xd_check: dotclear.nonce},
+						function(data) {});
+				} else {
+					jQuery.post('services.php', 
+						{'f':'setSectionFold','section':p.user_pref,'value':0,xd_check: dotclear.nonce},
+						function(data) {});
+				}
+				jQuery.cookie(p.user_pref,'',{expires: -1});
+			}
+			toggle(i,p.speed);
 			return false;
 		});
 
@@ -152,14 +173,15 @@ jQuery.fn.helpViewer = function() {
 				select.show();
 			}
 		}
+		$('p#help-button span').text($('#content').hasClass('with-help') ? dotclear.msg.help_hide : dotclear.msg.help);
 		sizeBox();
 		return false;
 	};
 
 	var sizeBox = function() {
 		This.css('height','auto');
-		if ($('body').height() > This.height()) {
-			This.css('height',$('body').height() + 'px');
+		if ($('#main').height() > This.height()) {
+			This.css('height',$('#main').height() + 'px');
 		}
 	};
 
@@ -171,7 +193,7 @@ jQuery.fn.helpViewer = function() {
 		o.prepend(' ').prepend(i);
 		o.click(function() {
 			$(this).nextAll().each(function() {
-				if ($(this).is('h3')) {
+				if ($(this).is('h4')) {
 					return false;
 				}
 				$(this).toggle();
@@ -191,11 +213,11 @@ jQuery.fn.helpViewer = function() {
 	this.addClass('help-box');
 	this.find('>hr').remove();
 
-	this.find('h3').each(function() { textToggler($(this)); });
-	this.find('h3:first').nextAll('*:not(h3)').hide();
+	this.find('h4').each(function() { textToggler($(this)); });
+	this.find('h4:first').nextAll('*:not(h4)').hide();
 	sizeBox();
 
-	var img = $('<span id="help-button">'+dotclear.msg.help+'</span>');
+	var img = $('<p id="help-button"><span>'+dotclear.msg.help+'</span></p>');
 	var select = $();
 	img.click(function() { return toggle(); });
 
@@ -221,7 +243,8 @@ var dotclear = {
 				imgE.src = 'images/locker.png';
 				imgE.style.position = 'absolute';
 				imgE.style.top = '1.7em';
-				imgE.style.left = ($(this).width()+4)+'px';
+				imgE.style.left = ($(this).width()+12)+'px';
+				imgE.alt=dotclear.msg.click_to_unlock;
 				$(imgE).css('cursor','pointer');
 
 				$(imgE).click(function() {
@@ -240,6 +263,9 @@ var dotclear = {
 	},
 
 	checkboxesHelpers: function(e) {
+		$(e).append(document.createTextNode(dotclear.msg.to_select));
+		$(e).append(document.createTextNode(' '));
+
 		var a = document.createElement('a');
 		a.href='#';
 		$(a).append(document.createTextNode(dotclear.msg.select_all));
@@ -249,7 +275,7 @@ var dotclear = {
 		};
 		$(e).append(a);
 
-		$(e).append(document.createTextNode(' - '));
+		$(e).append(document.createTextNode(' | '));
 
 		a = document.createElement('a');
 		a.href='#';
@@ -315,34 +341,19 @@ var dotclear = {
 	}
 };
 
-/* Sticky footer
--------------------------------------------------------- */
-function positionFooter() {
-	$("#wrapper").css({ overflow: "auto" });
-	var page_height = $("#top").height() + $("#wrapper").height() - $("#footer").height();
-	if( page_height < $(window).height() ){
-		// calcul de la largeur
-		var page_width = $(document).width() - 30;
-		$("#footer").css({
-			position: "absolute",
-			bottom: "10px",
-			width: page_width+"px",
-			padding: ".75em 0",
-			marginbottom: "0"
-		});
-	} else {
-		$("#footer").css({
-			position: "static",
-			padding: ".75em 0",
-			width: "auto"
-		});
-	}
-
-}
-
 /* On document ready
 -------------------------------------------------------- */
 $(function() {
+	// remove class no-js from html tag; cf style/default.css for examples
+	$('body').removeClass('no-js');
+	$('body').addClass('with-js');
+
+	$('#wrapper').contents().each(function() {
+		if (this.nodeType==8) {
+			$('#footer a').attr('title', $('#footer a').attr('title') + this.data );
+		}
+	});
+
 	// Blog switcher
 	$('#switchblog').change(function() {
 		this.form.submit();
@@ -355,38 +366,34 @@ $(function() {
 		speed: 100
 	}
 	$('#blog-menu h3:first').toggleWithLegend($('#blog-menu ul:first'),
-		$.extend({cookie:'dc_blog_menu'},menu_settings)
+		$.extend({user_pref:'dc_blog_menu'},menu_settings)
 	);
 	$('#system-menu h3:first').toggleWithLegend($('#system-menu ul:first'),
-		$.extend({cookie:'dc_system_menu'},menu_settings)
+		$.extend({user_pref:'dc_system_menu'},menu_settings)
 	);
 	$('#plugins-menu h3:first').toggleWithLegend($('#plugins-menu ul:first'),
-		$.extend({cookie:'dc_plugins_menu'},menu_settings)
+		$.extend({user_pref:'dc_plugins_menu'},menu_settings)
 	);
 	$('#favorites-menu h3:first').toggleWithLegend($('#favorites-menu ul:first'),
-		$.extend({cookie:'dc_favorites_menu',hide:false,reverse_cookie:true},menu_settings)
+		$.extend({user_pref:'dc_favorites_menu',hide:false,reverse_user_pref:true},menu_settings)
 	);
 
 	$('#help').helpViewer();
 
-	$('.message').backgroundFade({sColor:'#cccccc',eColor:'#666666',steps:20});
-	$('.error').backgroundFade({sColor:'#f5e5e5',eColor:'#e5bfbf',steps:20});
+	$('.message').backgroundFade({sColor:'#cccccc',eColor:'#676e78',steps:20});
+	$('.error').backgroundFade({sColor:'#ffdec8',eColor:'#ffbaba',steps:20});
+	$('.success').backgroundFade({sColor:'#9BCA1C',eColor:'#bee74b',steps:20});
 
 	$('form:has(input[type=password][name=your_pwd])').submit(function() {
 		var e = this.elements['your_pwd'];
 		if (e.value == '') {
 			e.focus();
-			$(e).backgroundFade({sColor:'#ffffff',eColor:'#ff9999',steps:50},function() {
-				$(this).backgroundFade({sColor:'#ff9999',eColor:'#ffffff'});
+			$(e).backgroundFade({sColor:'#ffffff',eColor:'#ffbaba',steps:50},function() {
+				$(this).backgroundFade({sColor:'#ffbaba',eColor:'#ffffff'});
 			});
 			return false;
 		}
 		return true;
 	});
-
-
-	// Sticky footer
-	positionFooter();
-	$(window).resize(positionFooter);
 });
 

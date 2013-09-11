@@ -3,7 +3,7 @@
 #
 # This file is part of Dotclear 2.
 #
-# Copyright (c) 2003-2011 Olivier Meunier & Association Dotclear
+# Copyright (c) 2003-2013 Olivier Meunier & Association Dotclear
 # Licensed under the GPL version 2.0 license.
 # See LICENSE file or
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
@@ -66,31 +66,39 @@ if (!empty($_REQUEST['id']))
 }
 else
 {
-	dcPage::open(__('New blog'),dcPage::jsConfirmClose('blog-form'));
+	dcPage::open(__('New blog'),dcPage::jsConfirmClose('blog-form'),
+		dcPage::breadcrumb(
+			array(
+				__('System') => '',
+				__('Blogs') => 'blogs.php',
+				'<span class="page-title">'.__('New blog').'</span>' => ''
+			))
+	);
 	
 	echo
-	'<h2><a href="blogs.php">'.__('Blogs').'</a> &rsaquo; <span class="page-title">'.__('New blog').'</span></h2>'.
-	
 	'<form action="blog.php" method="post" id="blog-form">'.
 	
-	'<fieldset><legend>'.__('Blog details').'</legend>'.
-	$core->formNonce().
-	'<p><label class="required"><abbr title="'.__('Required field').'">*</abbr> '.__('Blog ID:').' '.
-	form::field('blog_id',30,32,html::escapeHTML($blog_id)).'</label></p>'.
-	'<p class="form-note">'.__('At least 2 characters using letters, numbers or symbols.').'</p> '.
-	'<p class="form-note warn">'.__('Please note that changing your blog ID may require changes in your public index.php file.').'</p>'.
+	'<div>'.$core->formNonce().'</div>'.
+	'<p><label class="required" for="blog_id"><abbr title="'.__('Required field').'">*</abbr> '.__('Blog ID:').'</label> '.
+	form::field('blog_id',30,32,html::escapeHTML($blog_id)).'</p>'.
+	'<p class="form-note">'.__('At least 2 characters using letters, numbers or symbols.').'</p> ';
+
+	if ($blog_id) {
+		echo
+		'<p class="form-note warn">'.__('Please note that changing your blog ID may require changes in your public index.php file.').'</p>';
+	}
 	
-	'<p><label class="required"><abbr title="'.__('Required field').'">*</abbr> '.__('Blog name:').' '.
-	form::field('blog_name',30,255,html::escapeHTML($blog_name)).'</label></p>'.
+	echo
+	'<p><label class="required" for="blog_name"><abbr title="'.__('Required field').'">*</abbr> '.__('Blog name:').'</label> '.
+	form::field('blog_name',30,255,html::escapeHTML($blog_name)).'</p>'.
 	
-	'<p><label class="required"><abbr title="'.__('Required field').'">*</abbr> '.__('Blog URL:').' '.
-	form::field('blog_url',30,255,html::escapeHTML($blog_url)).'</label></p>'.
+	'<p><label class="required" for="blog_url"><abbr title="'.__('Required field').'">*</abbr> '.__('Blog URL:').'</label> '.
+	form::field('blog_url',30,255,html::escapeHTML($blog_url)).'</p>'.
 	
 	'<p class="area"><label for="blog_desc">'.__('Blog description:').'</label> '.
 	form::textarea('blog_desc',60,5,html::escapeHTML($blog_desc)).'</p>'.
-	'</fieldset>'.
 	
-	'<p><input type="submit" accesskey="s" value="'.__('Save').'" /></p>'.
+	'<p><input type="submit" accesskey="s" value="'.__('Create').'" /></p>'.
 	'</form>';
 
 	dcPage::close();

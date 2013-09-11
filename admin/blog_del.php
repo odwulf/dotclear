@@ -3,7 +3,7 @@
 #
 # This file is part of Dotclear 2.
 #
-# Copyright (c) 2003-2011 Olivier Meunier & Association Dotclear
+# Copyright (c) 2003-2013 Olivier Meunier & Association Dotclear
 # Licensed under the GPL version 2.0 license.
 # See LICENSE file or
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
@@ -48,22 +48,28 @@ if (!$core->error->flag() && $blog_id && !empty($_POST['del']))
 	}
 }
 
-dcPage::open('Delete a blog');
+dcPage::open(__('Delete a blog'),'',
+	dcPage::breadcrumb(
+		array(
+			__('System') => '',
+			__('Blogs') => 'blogs.php',
+			'<span class="page-title">'.__('Delete a blog').'</span>' => ''
+		))
+);
 
 if (!$core->error->flag())
 {
 	echo
-	'<h2 class="page-title">'.__('Delete a blog').'</h2>'.
-	'<p class="message">'.__('Warning').'</p>'.
+	'<div class="warning-msg"><p><strong>'.__('Warning').'</strong></p>'.
 	'<p>'.sprintf(__('You are about to delete the blog %s. Every entry, comment and category will be deleted.'),
-	'<strong>'.$blog_id.' ('.$blog_name.')</strong>').'</p>'.
+	'<strong>'.$blog_id.' ('.$blog_name.')</strong>').'</p></div>'.
 	'<p>'.__('Please give your password to confirm the blog deletion.').'</p>';
 	
 	echo
 	'<form action="blog_del.php" method="post">'.
 	'<div>'.$core->formNonce().'</div>'.
-	'<p><label for="pwd">'.__('Your password:').' '.
-	form::password('pwd',20,255).'</label></p>'.
+	'<p><label for="pwd">'.__('Your password:').'</label> '.
+	form::password('pwd',20,255).'</p>'.
 	'<p><input type="submit" class="delete" name="del" value="'.__('Delete this blog').'" />'.
 	form::hidden('blog_id',$blog_id).'</p>'.
 	'</form>';

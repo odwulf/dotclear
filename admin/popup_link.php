@@ -3,7 +3,7 @@
 #
 # This file is part of Dotclear 2.
 #
-# Copyright (c) 2003-2011 Olivier Meunier & Association Dotclear
+# Copyright (c) 2003-2013 Olivier Meunier & Association Dotclear
 # Licensed under the GPL version 2.0 license.
 # See LICENSE file or
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
@@ -24,33 +24,22 @@ echo '<h2 class="page-title">'.__('Add a link').'</h2>';
 
 # Languages combo
 $rs = $core->blog->getLangs(array('order'=>'asc'));
-$all_langs = l10n::getISOcodes(0,1);
-$lang_combo = array('' => '', __('Most used') => array(), __('Available') => l10n::getISOcodes(1,1));
-while ($rs->fetch()) {
-	if (isset($all_langs[$rs->post_lang])) {
-		$lang_combo[__('Most used')][$all_langs[$rs->post_lang]] = $rs->post_lang;
-		unset($lang_combo[__('Available')][$all_langs[$rs->post_lang]]);
-	} else {
-		$lang_combo[__('Most used')][$rs->post_lang] = $rs->post_lang;
-	}
-}
-unset($all_langs);
-unset($rs);
+$lang_combo = dcAdminCombos::getLangsCombo($rs,true);
 
 echo
 '<form id="link-insert-form" action="#" method="get">'.
-'<p><label class="required"><abbr title="'.__('Required field').'">*</abbr> '.__('Link URL:').' '.
-form::field('href',35,512,html::escapeHTML($href)).'</label></p>'.
-'<p><label>'.__('Link title:').' '. 
-form::field('title',35,512,html::escapeHTML($title)).'</label></p>'. 
-'<p><label>'.__('Link language:').' '.
+'<p><label class="required" for="href"><abbr title="'.__('Required field').'">*</abbr> '.__('Link URL:').'</label> '.
+form::field('href',35,512,html::escapeHTML($href)).'</p>'.
+'<p><label for="title">'.__('Link title:').'</label> '. 
+form::field('title',35,512,html::escapeHTML($title)).'</p>'. 
+'<p><label for="hreflang">'.__('Link language:').'</label> '.
 form::combo('hreflang',$lang_combo,$hreflang).
-'</label></p>'.
+'</p>'.
 
 '</form>'.
 
-'<p><a class="button reset" href="#" id="link-insert-cancel">'.__('cancel').'</a> - '.
-'<strong><a class="button" href="#" id="link-insert-ok">'.__('insert').'</a></strong></p>'."\n".
+'<p><a class="button reset" href="#" id="link-insert-cancel">'.__('Cancel').'</a> - '.
+'<strong><a class="button" href="#" id="link-insert-ok">'.__('Insert').'</a></strong></p>'."\n".
 
 '<script type="text/javascript">'."\n".
 '//<![CDATA['."\n".

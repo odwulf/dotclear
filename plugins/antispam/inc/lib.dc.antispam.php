@@ -3,7 +3,7 @@
 #
 # This file is part of Antispam, a plugin for Dotclear 2.
 #
-# Copyright (c) 2003-2011 Olivier Meunier & Association Dotclear
+# Copyright (c) 2003-2013 Olivier Meunier & Association Dotclear
 # Licensed under the GPL version 2.0 license.
 # See LICENSE file or
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
@@ -74,7 +74,7 @@ class dcAntispam
 	{
 		if (($count = self::countSpam($core)) > 0) {
 			$str = ($count > 1) ? __('(including %d spam comments)') : __('(including %d spam comment)');
-			$icons['comments'][0] .= '</a> <br /><a href="comments.php?status=-2"><span>'.sprintf($str,$count).'</span>';
+			$icons['comments'][0] .= '</span></a> <br /><a href="comments.php?status=-2"><span>'.sprintf($str,$count);
 		}
 	}
 	
@@ -82,7 +82,7 @@ class dcAntispam
 	{
 		if (($count = self::countSpam($core)) > 0) {
 			$str = ($count > 1) ? __('(including %d spam comments)') : __('(including %d spam comment)');
-			return '</a> <br /><a href="comments.php?status=-2"><span>'.sprintf($str,$count).'</span>';
+			return '</span></a> <br /><a href="comments.php?status=-2"><span>'.sprintf($str,$count);
 		} else {
 			return '';
 		}
@@ -159,6 +159,12 @@ class dcAntispam
 		}
 		
 		if (crypt::hmac(DC_MASTER_KEY,$rs->user_pwd) != $pwd) {
+			return false;
+		}
+		
+		$permissions = $core->getBlogPermissions($core->blog->id);
+		
+		if ( empty($permissions[$rs->user_id]) ) {
 			return false;
 		}
 		

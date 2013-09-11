@@ -3,7 +3,7 @@
 #
 # This file is part of Antispam, a plugin for Dotclear 2.
 #
-# Copyright (c) 2003-2011 Olivier Meunier & Association Dotclear
+# Copyright (c) 2003-2013 Olivier Meunier & Association Dotclear
 # Licensed under the GPL version 2.0 license.
 # See LICENSE file or
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
@@ -43,21 +43,15 @@ class dcFilterIpLookup extends dcSpamFilter
 			return;
 		}
 
-		$match = array();
-
 		$bls = $this->getServers();
 		$bls = preg_split('/\s*,\s*/',$bls);
 
-		foreach ($bls as $bl)
-		{
+		foreach ($bls as $bl) {
 			if ($this->dnsblLookup($ip,$bl)) {
-				$match[] = $bl;
+				// Pass by reference $status to contain matching DNSBL
+				$status = $bl;
+				return true;
 			}
-		}
-
-		if (!empty($match)) {
-			$status = substr(implode(', ',$match),0,128);
-			return true;
 		}
 	}
 
@@ -81,13 +75,13 @@ class dcFilterIpLookup extends dcSpamFilter
 		$res = '';
 
 		$res .=
-		'<form action="'.html::escapeURL($url).'" method="post">'.
-		'<fieldset><legend>' . __('IP Lookup servers') . '</legend>'.
-		'<p><label for="bls">'.__('Add here a coma separated list of servers.').
+		'<form action="'.html::escapeURL($url).'" method="post" class="fieldset">'.
+		'<h3>' . __('IP Lookup servers') . '</h3>'.
+		'<p><label for="bls">'.__('Add here a coma separated list of servers.').'</label>'.
 		form::textarea('bls',40,3,html::escapeHTML($bls),'maximal').
-		'<input type="submit" value="'.__('Save').'" /></label></p>'.
+		'</p>'.
+		'<p><input type="submit" value="'.__('Save').'" />'.
 		$this->core->formNonce().'</p>'.
-		'</fieldset>'.
 		'</form>';
 
 		return $res;

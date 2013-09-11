@@ -10,7 +10,7 @@ config:
 	mkdir -p ./$(DC)
 	
 	## Copy needed folders and files
-	cp -pRf ./admin ./inc ./themes ./index.php ./CHANGELOG ./CREDITS ./LICENSE ./README ./$(DC)/
+	cp -pRf ./admin ./inc ./themes ./index.php ./CHANGELOG ./CREDITS ./LICENSE ./README.md ./CONTRIBUTING.md ./$(DC)/
 	
 	## Locales directory
 	mkdir -p ./$(DC)/locales
@@ -40,12 +40,14 @@ config:
 	./plugins/attachments \
 	./plugins/blogroll \
 	./plugins/blowupConfig \
+	./plugins/daInstaller \
 	./plugins/fairTrackbacks \
 	./plugins/importExport \
 	./plugins/maintenance \
 	./plugins/tags \
 	./plugins/pages \
 	./plugins/pings \
+	./plugins/simpleMenu \
 	./plugins/themeEditor \
 	./plugins/userPref \
 	./plugins/widgets \
@@ -63,9 +65,10 @@ config:
 	
 	## Pack javascript files
 	find $(DC)/admin/js/*.js -exec ./build-tools/min-js.php \{\} \;
+	find $(DC)/admin/js/ie7/*.js -exec ./build-tools/min-js.php \{\} \;
 	find $(DC)/admin/js/jquery/*.js -exec ./build-tools/min-js.php \{\} \;
 	find $(DC)/admin/js/jsToolBar/*.js -exec ./build-tools/min-js.php \{\} \;
-	find $(DC)/admin/js/tool-man/*.js -exec ./build-tools/min-js.php \{\} \;
+	find $(DC)/admin/js/jsUpload/*.js -exec ./build-tools/min-js.php \{\} \;
 	find $(DC)/plugins -name '*.js' -exec ./build-tools/min-js.php \{\} \;
 	find $(DC)/themes/default/js/*.js -exec ./build-tools/min-js.php \{\} \;
 	
@@ -83,7 +86,7 @@ config:
 dist: config dist-tgz dist-zip dist-l10n
 
 deb:
-	cp ./README debian/README
+	cp ./README.md debian/README
 	dpkg-buildpackage -rfakeroot
 
 dist-tgz:

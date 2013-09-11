@@ -3,7 +3,7 @@
 #
 # This file is part of Antispam, a plugin for Dotclear 2.
 #
-# Copyright (c) 2003-2011 Olivier Meunier & Association Dotclear
+# Copyright (c) 2003-2013 Olivier Meunier & Association Dotclear
 # Licensed under the GPL version 2.0 license.
 # See LICENSE file or
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
@@ -135,9 +135,9 @@ class dcFilterAkismet extends dcSpamFilter
 		}
 		
 		$res =
-		'<form action="'.html::escapeURL($url).'" method="post">'.
-		'<p><label for="ak_key" class="classic">'.__('Akismet API key:').' '.
-		form::field('ak_key',12,128,$ak_key).'</label>';
+		'<form action="'.html::escapeURL($url).'" method="post" class="fieldset">'.
+		'<p><label for="ak_key" class="classic">'.__('Akismet API key:').'</label> '.
+		form::field('ak_key',12,128,$ak_key);
 		
 		if ($ak_verified !== null) {
 			if ($ak_verified) {
@@ -150,7 +150,7 @@ class dcFilterAkismet extends dcSpamFilter
 		$res .= '</p>';
 		
 		$res .=
-		'<p><a href="http://wordpress.com/api-keys/">'.__('Get your own API key').'</a></p>'.
+		'<p><a href="http://akismet.com/">'.__('Get your own API key').'</a></p>'.
 		'<p><input type="submit" value="'.__('Save').'" />'.
 		$this->core->formNonce().'</p>'.
 		'</form>';

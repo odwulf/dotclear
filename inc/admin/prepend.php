@@ -3,12 +3,14 @@
 #
 # This file is part of Dotclear 2.
 #
-# Copyright (c) 2003-2011 Olivier Meunier & Association Dotclear
+# Copyright (c) 2003-2013 Olivier Meunier & Association Dotclear
 # Licensed under the GPL version 2.0 license.
 # See LICENSE file or
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
 #
 # -- END LICENSE BLOCK -----------------------------------------
+
+define('DC_CONTEXT_ADMIN',true);
 
 require_once dirname(__FILE__).'/../prepend.php';
 
@@ -18,8 +20,6 @@ header('Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-ch
 
 // HTTP/1.0
 header("Pragma: no-cache");
-
-define('DC_CONTEXT_ADMIN',true);
 
 function dc_valid_fav($url) {
 	global $core;
@@ -36,7 +36,7 @@ function dc_valid_fav($url) {
 
 function dc_prepare_url($url) {
 
-	$u = str_replace(array('?','&amp;'),array('\?','&'),$url);
+	$u = str_replace(array('?','&amp;','/'),array('\?','&','\\/'),$url);
 	return (!strpos($u,'\?') ? 
 		'/'.$u.'$/' :
 		(!strpos($u,'&') ? 
@@ -54,7 +54,32 @@ function dc_load_locales() {
 		l10n::set(dirname(__FILE__).'/../../locales/en/date');
 	}
 	l10n::set(dirname(__FILE__).'/../../locales/'.$_lang.'/main');
+	l10n::set(dirname(__FILE__).'/../../locales/'.$_lang.'/public');
 	l10n::set(dirname(__FILE__).'/../../locales/'.$_lang.'/plugins');
+}
+
+function dc_admin_icon_url($img)
+{
+	global $core;
+	
+	$core->auth->user_prefs->addWorkspace('interface');
+	$user_ui_iconset = @$core->auth->user_prefs->interface->iconset;
+	if (($user_ui_iconset) && ($img)) {
+		$icon = false;
+		if ((preg_match('/^images\/menu\/(.+)$/',$img,$m)) || 
+			(preg_match('/^index\.php\?pf=(.+)$/',$img,$m))) {
+			if ($m[1]) {
+				$icon = path::real(dirname(__FILE__).'/../../admin/images/iconset/'.$user_ui_iconset.'/'.$m[1],false);
+				if ($icon !== false) {
+					$allow_types = array('png','jpg','jpeg','gif');
+					if (is_file($icon) && is_readable($icon) && in_array(files::getExtension($icon),$allow_types)) {
+						return DC_ADMIN_URL.'images/iconset/'.$user_ui_iconset.'/'.$m[1];
+					}
+				}
+			}
+		}
+	}
+	return $img;
 }
 
 if (defined('DC_AUTH_SESS_ID') && defined('DC_AUTH_SESS_UID'))
@@ -191,6 +216,9 @@ if ($core->auth->userID() && $core->blog !== null)
 	}
 	unset($hfiles,$locales_root);
 
+	$core->auth->user_prefs->addWorkspace('interface');
+	$user_ui_nofavmenu = $core->auth->user_prefs->interface->nofavmenu;
+
 	# Standard favorites
 	$_fav = new ArrayObject();
 
@@ -232,7 +260,7 @@ if ($core->auth->userID() && $core->blog !== null)
 	$_fav['users'] = new ArrayObject(array('users','Users','users.php',
 		'images/menu/users.png','images/menu/users-b.png',
 		null,null,null));
-	$_fav['plugins'] = new ArrayObject(array('plugins','Plugins','plugins.php',
+	$_fav['plugins'] = new ArrayObject(array('plugins','Plugins management','plugins.php',
 		'images/menu/plugins.png','images/menu/plugins-b.png',
 		null,null,null));
 	$_fav['langs'] = new ArrayObject(array('langs','Languages','langs.php',
@@ -245,7 +273,8 @@ if ($core->auth->userID() && $core->blog !== null)
 	
 	# Menus creation
 	$_menu['Dashboard'] = new dcMenu('dashboard-menu',null);
-	$_menu['Favorites'] = new dcMenu('favorites-menu','My favorites');
+	if (!$user_ui_nofavmenu)
+		$_menu['Favorites'] = new dcMenu('favorites-menu','My favorites');
 	$_menu['Blog'] = new dcMenu('blog-menu','Blog');
 	$_menu['System'] = new dcMenu('system-menu','System');
 	$_menu['Plugins'] = new dcMenu('plugins-menu','Plugins');
@@ -258,10 +287,11 @@ if ($core->auth->userID() && $core->blog !== null)
 	
 	# Set menu titles
 	
-	$_menu['System']->title = __('System');
+	$_menu['System']->title = __('System settings');
 	$_menu['Blog']->title = __('Blog');
 	$_menu['Plugins']->title = __('Plugins');
-	$_menu['Favorites']->title = __('My favorites');
+	if (!$user_ui_nofavmenu)
+		$_menu['Favorites']->title = __('My favorites');
 
 /*	
 	if (!preg_match('/index.php$/',$_SERVER['REQUEST_URI'])) {
@@ -295,13 +325,13 @@ if ($core->auth->userID() && $core->blog !== null)
 		preg_match('/post.php$/',$_SERVER['REQUEST_URI']),
 		$core->auth->check('usage,contentadmin',$core->blog->id),'menu-new-post');
 	
-	$_menu['System']->prependItem(__('Updates'),'update.php','images/menu/update.png',
+	$_menu['System']->prependItem(__('Update'),'update.php','images/menu/update.png',
 		preg_match('/update.php(\?.*)?$/',$_SERVER['REQUEST_URI']),
 		$core->auth->isSuperAdmin() && is_readable(DC_DIGESTS));
 	$_menu['System']->prependItem(__('Languages'),'langs.php','images/menu/langs.png',
 		preg_match('/langs.php(\?.*)?$/',$_SERVER['REQUEST_URI']),
 		$core->auth->isSuperAdmin());
-	$_menu['System']->prependItem(__('Plugins'),'plugins.php','images/menu/plugins.png',
+	$_menu['System']->prependItem(__('Plugins management'),'plugins.php','images/menu/plugins.png',
 		preg_match('/plugins.php(\?.*)?$/',$_SERVER['REQUEST_URI']),
 		$core->auth->isSuperAdmin());
 	$_menu['System']->prependItem(__('Users'),'users.php','images/menu/users.png',
@@ -312,38 +342,44 @@ if ($core->auth->userID() && $core->blog !== null)
 		$core->auth->isSuperAdmin() ||
 		$core->auth->check('usage,contentadmin',$core->blog->id) && $core->auth->blog_count > 1);
 
-	// Set favorites menu
-	$ws = $core->auth->user_prefs->addWorkspace('favorites');
-	$count = 0;
-	foreach ($ws->dumpPrefs() as $k => $v) {
-		// User favorites only
-		if (!$v['global']) {
-			$fav = unserialize($v['value']);
-			if (dc_valid_fav($fav['url'])) {
-				$count++;
-				$_menu['Favorites']->addItem(__($fav['title']),$fav['url'],$fav['small-icon'],
-					preg_match(dc_prepare_url($fav['url']),$_SERVER['REQUEST_URI']),
-					(($fav['permissions'] == '*') || $core->auth->check($fav['permissions'],$core->blog->id)),$fav['id'],$fav['class']);
+	if (!$user_ui_nofavmenu) {
+		// Set favorites menu
+		$ws = $core->auth->user_prefs->addWorkspace('favorites');
+		$count = 0;
+		foreach ($ws->dumpPrefs() as $k => $v) {
+			// User favorites only
+			if (!$v['global']) {
+				$fav = unserialize($v['value']);
+				if (dc_valid_fav($fav['url'])) {
+					$count++;
+					$_menu['Favorites']->addItem(__($fav['title']),$fav['url'],$fav['small-icon'],
+						preg_match(dc_prepare_url($fav['url']),$_SERVER['REQUEST_URI']),
+						(($fav['permissions'] == '*') || $core->auth->check($fav['permissions'],$core->blog->id)),$fav['id'],$fav['class']);
+				}
+			}
+		}	
+		if (!$count) {
+			// Global favorites if any
+			foreach ($ws->dumpPrefs() as $k => $v) {
+				$fav = unserialize($v['value']);
+				if (dc_valid_fav($fav['url'])) {
+					$count++;
+					$_menu['Favorites']->addItem(__($fav['title']),$fav['url'],$fav['small-icon'],
+						preg_match(dc_prepare_url($fav['url']),$_SERVER['REQUEST_URI']),
+						(($fav['permissions'] == '*') || $core->auth->check($fav['permissions'],$core->blog->id)),$fav['id'],$fav['class']);
+				}
 			}
 		}
-	}	
-	if (!$count) {
-		// Global favorites if any
-		foreach ($ws->dumpPrefs() as $k => $v) {
-			$fav = unserialize($v['value']);
-			if (dc_valid_fav($fav['url'])) {
-				$count++;
-				$_menu['Favorites']->addItem(__($fav['title']),$fav['url'],$fav['small-icon'],
-					preg_match(dc_prepare_url($fav['url']),$_SERVER['REQUEST_URI']),
-					(($fav['permissions'] == '*') || $core->auth->check($fav['permissions'],$core->blog->id)),$fav['id'],$fav['class']);
-			}
+		if (!$count) {
+			// No user or global favorites, add "new entry" fav
+			$_menu['Favorites']->addItem(__('New entry'),'post.php','images/menu/edit.png',
+				preg_match('/post.php$/',$_SERVER['REQUEST_URI']),
+				$core->auth->check('usage,contentadmin',$core->blog->id),'menu-new-post',null);
 		}
 	}
-	if (!$count) {
-		// No user or global favorites, add "new entry" fav
-		$_menu['Favorites']->addItem(__('New entry'),'post.php','images/menu/edit.png',
-			preg_match('/post.php$/',$_SERVER['REQUEST_URI']),
-			$core->auth->check('usage,contentadmin',$core->blog->id),'menu-new-post',null);
+	
+	if (empty($core->blog->settings->system->jquery_migrate_mute)) {
+		$core->blog->settings->system->put('jquery_migrate_mute', true, 'boolean', 'Mute warnings for jquery migrate plugin ?', false);
 	}
 }
 ?>

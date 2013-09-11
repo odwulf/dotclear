@@ -3,7 +3,7 @@
 #
 # This file is part of Dotclear 2.
 #
-# Copyright (c) 2003-2011 Olivier Meunier & Association Dotclear
+# Copyright (c) 2003-2013 Olivier Meunier & Association Dotclear
 # Licensed under the GPL version 2.0 license.
 # See LICENSE file or
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
@@ -32,21 +32,21 @@ if (defined('DC_BLOG_ID')) {
 			,DC_DEBUG ?
 				__('The following error was encountered while trying to read the database:').'</p><ul><li>'.$e->getMessage().'</li></ul>' :
 				__('Something went wrong while trying to read the database.')
-			,20);
+			,620);
 	}
 }
 
 if ($core->blog->id == null) {
 	__error(__('Blog is not defined.')
 		,__('Did you change your Blog ID?')
-		,30);
+		,630);
 }
 
 if ((boolean)!$core->blog->status) {
 	$core->unsetBlog();
 	__error(__('Blog is offline.')
 		,__('This blog is offline. Please try again later.')
-		,70);
+		,670);
 }
 
 # Loading media
@@ -61,7 +61,7 @@ try {
 } catch (Exception $e) {
 	__error(__('Can\'t create template files.')
 		,$e->getMessage()
-		,40);
+		,640);
 }
 
 # Loading locales
@@ -106,11 +106,17 @@ if (!$core->themes->moduleExists($__theme)) {
 		,__('This either means you removed your default theme or set a wrong theme '.
 		'path in your blog configuration. Please check theme_path value in '.
 		'about:config module or reinstall default theme. ('.$__theme.')')
-		,50);
+		,650);
 }
 
 # Loading _public.php file for selected theme
 $core->themes->loadNsFile($__theme,'public');
+
+# Loading translations for selected theme
+if ($__parent_theme) {
+	$core->themes->loadModuleL10N($__parent_theme,$_lang,'main');
+}
+$core->themes->loadModuleL10N($__theme,$_lang,'main');
 
 # --BEHAVIOR-- publicPrepend
 $core->callBehavior('publicPrepend',$core);
@@ -145,6 +151,6 @@ try {
 } catch (Exception $e) {
 	__error($e->getMessage()
 		,__('Something went wrong while loading template file for your blog.')
-		,60);
+		,660);
 }
 ?>

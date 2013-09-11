@@ -1,9 +1,9 @@
 <?php
 # -- BEGIN LICENSE BLOCK ---------------------------------------
 #
-# This file is part of Dotclear 2.
+# This file is part of importExport, a plugin for DotClear2.
 #
-# Copyright (c) 2003-2011 Olivier Meunier & Association Dotclear
+# Copyright (c) 2003-2012 Olivier Meunier & Association Dotclear
 # Licensed under the GPL version 2.0 license.
 # See LICENSE file or
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
@@ -18,9 +18,9 @@ class dcImportFeed extends dcIeModule
 	
 	public function setInfo()
 	{
-		$this->type = 'i';
-		$this->name = __('Feed import');
-		$this->description = __('Imports a feed as new entries.');
+		$this->type = 'import';
+		$this->name = __('RSS or Atom feed import');
+		$this->description = __('Add a feed content to the blog.');
 	}
 	
 	public function process($do)
@@ -76,22 +76,21 @@ class dcImportFeed extends dcIeModule
 	public function gui()
 	{
 		if ($this->status) {
-			echo '<p class="message">'.__('Content successfully imported.').'</p>';
+			dcPage::success(__('Content successfully imported.'));
 		}
 		
 		echo
-		'<h3>'.__('Import from a feed').'</h3>'.
-		'<p>'.sprintf(__('This will import a feed (RSS or Atom) a as new content in the current blog: %s.'),
-		'<strong>'.html::escapeHTML($this->core->blog->name).'</strong>').'</p>'.
 		'<form action="'.$this->getURL(true).'" method="post">'.
+		'<p>'.sprintf(__('Add a feed content to the current blog: <strong>%s</strong>.'),html::escapeHTML($this->core->blog->name)).'</p>'.
 		
-		'<fieldset>'.
+		'<p><label for="feed_url">'.__('Feed URL:').'</label>'.
+		form::field('feed_url',50,300,html::escapeHTML($this->feed_url)).'</p>'.
+		
+		'<p>'.
 		$this->core->formNonce().
 		form::hidden(array('do'),1).
-		'<p><label for="feed_url">'.__('Feed URL:').' '.
-		form::field('feed_url',40,300,html::escapeHTML($this->feed_url)).'</label></p>'.
-		'<p><input type="submit" value="'.__('Send').'" /></p>'.
-		'</fieldset>'.
+		'<input type="submit" value="'.__('Import').'" /></p>'.
+		
 		'</form>';
 	}
 }

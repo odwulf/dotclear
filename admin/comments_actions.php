@@ -3,7 +3,7 @@
 #
 # This file is part of Dotclear 2.
 #
-# Copyright (c) 2003-2011 Olivier Meunier & Association Dotclear
+# Copyright (c) 2003-2013 Olivier Meunier & Association Dotclear
 # Licensed under the GPL version 2.0 license.
 # See LICENSE file or
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
@@ -51,6 +51,11 @@ if (!empty($_POST['action']) && !empty($_POST['comments']))
 	
 	$co = $core->blog->getComments($params);
 	
+	$co_ids = array();
+	while ($co->fetch())	{
+		$co_ids[] = $co->comment_id;
+	}
+	
 	# --BEHAVIOR-- adminCommentsActions
 	$core->callBehavior('adminCommentsActions',$core,$co,$action,$redir);
 	
@@ -63,13 +68,10 @@ if (!empty($_POST['action']) && !empty($_POST['comments']))
 			default : $status = 1; break;
 		}
 		
-		while ($co->fetch())
-		{
-			try {
-				$core->blog->updCommentStatus($co->comment_id,$status);
-			} catch (Exception $e) {
-				$core->error->add($e->getMessage());
-			}
+		try {
+			$core->blog->updCommentsStatus($co_ids,$status);
+		} catch (Exception $e) {
+			$core->error->add($e->getMessage());
 		}
 		
 		if (!$core->error->flag()) {
@@ -78,16 +80,20 @@ if (!empty($_POST['action']) && !empty($_POST['comments']))
 	}
 	elseif ($action == 'delete')
 	{
-		while ($co->fetch())
-		{
-			try {
+		try {
+			// Backward compatibility
+			foreach($co_ids as $comment_id)
+			{
 				# --BEHAVIOR-- adminBeforeCommentDelete
-				$core->callBehavior('adminBeforeCommentDelete',$co->comment_id);				
-				
-				$core->blog->delComment($co->comment_id);
-			} catch (Exception $e) {
-				$core->error->add($e->getMessage());
+				$core->callBehavior('adminBeforeCommentDelete',$comment_id);				
 			}
+			
+			# --BEHAVIOR-- adminBeforeCommentsDelete
+			$core->callBehavior('adminBeforeCommentsDelete',$co_ids);
+			
+			$core->blog->delComments($co_ids);
+		} catch (Exception $e) {
+			$core->error->add($e->getMessage());
 		}
 		
 		if (!$core->error->flag()) {
@@ -130,7 +136,7 @@ else
 # --BEHAVIOR-- adminCommentsActionsContent
 $core->callBehavior('adminCommentsActionsContent',$core,$action,$hidden_fields);
 
-echo '<p><a class="back" href="'.str_replace('&','&amp;',$redir).'">'.__('back').'</a></p>';
+echo '<p><a class="back" href="'.str_replace('&','&amp;',$redir).'">'.__('Back to comments list').'</a></p>';
 
 dcPage::close();
 ?>

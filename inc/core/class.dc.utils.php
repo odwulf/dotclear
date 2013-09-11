@@ -3,7 +3,7 @@
 #
 # This file is part of Dotclear 2.
 #
-# Copyright (c) 2003-2011 Olivier Meunier & Association Dotclear
+# Copyright (c) 2003-2013 Olivier Meunier & Association Dotclear
 # Licensed under the GPL version 2.0 license.
 # See LICENSE file or
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
@@ -47,6 +47,31 @@ class dcUtils
 		}
 		
 		return $user_id;
+	}
+	
+	/**
+	Cleanup a list of IDs
+	
+	@param	ids			<b>mixed</b>	ID(s)
+	@return	<b>array</b>
+	*/
+	public static function cleanIds($ids)
+	{
+		$clean_ids = array();
+		
+		if (!is_array($ids)) {
+			$ids = array($ids);
+		}
+		
+		foreach($ids as $id)
+		{
+			$id = abs((integer) $id);
+			
+			if (!empty($id)) {
+				$clean_ids[] = $id;
+			}
+		}
+		return $clean_ids;
 	}
 }
 

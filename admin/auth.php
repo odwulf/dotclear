@@ -3,7 +3,7 @@
 #
 # This file is part of Dotclear 2.
 #
-# Copyright (c) 2003-2011 Olivier Meunier & Association Dotclear
+# Copyright (c) 2003-2013 Olivier Meunier & Association Dotclear
 # Licensed under the GPL version 2.0 license.
 # See LICENSE file or
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
@@ -30,7 +30,7 @@ if ($dlang != 'en' && preg_match('/^[a-z]{2}(-[a-z]{2})?$/',$dlang))
 $page_url = http::getHost().$_SERVER['REQUEST_URI'];
 
 $change_pwd = $core->auth->allowPassChange() && isset($_POST['new_pwd']) && isset($_POST['new_pwd_c']) && isset($_POST['login_data']);
-$login_data = !empty($_POST['login_data']) ? $_POST['login_data'] : null;
+$login_data = !empty($_POST['login_data']) ? html::escapeHTML($_POST['login_data']) : null;
 $recover = $core->auth->allowPassChange() && !empty($_REQUEST['recover']);
 $safe_mode = !empty($_REQUEST['safe_mode']);
 $akey = $core->auth->allowPassChange() && !empty($_GET['akey']) ? $_GET['akey'] : null;
@@ -264,6 +264,7 @@ xml:lang="<?php echo $dlang; ?>" lang="<?php echo $dlang; ?>">
   <meta http-equiv="Content-Language" content="<?php echo $dlang; ?>" />
   <meta name="ROBOTS" content="NOARCHIVE,NOINDEX,NOFOLLOW" />
   <meta name="GOOGLEBOT" content="NOSNIPPET" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title><?php echo html::escapeHTML(DC_VENDOR_NAME); ?></title>
   
 <?php
@@ -287,13 +288,10 @@ echo dcPage::jsCommon();
     
     if (upw.length == 0) { return; }
     
-    if ($.browser.mozilla) {
-      uid.keypress(processKey);
-    } else {
-      uid.keydown(processKey);
-    }
+    uid.keypress(processKey);
+
     function processKey(evt) {
-      if (evt.keyCode == 13 && upw.val() == '') {
+      if (evt.which == 13 && upw.val() == '') {
          upw.focus();
 	    return false;
       }
@@ -322,7 +320,7 @@ if ($err) {
 	echo '<div class="error">'.$err.'</div>';
 }
 if ($msg) {
-	echo '<p class="message">'.$msg.'</p>';
+	echo '<p class="success">'.$msg.'</p>';
 }
 
 if ($akey)
@@ -332,30 +330,31 @@ if ($akey)
 elseif ($recover)
 {
 	echo
-	'<fieldset><legend>'.__('Request a new password').'</legend>'.
-	'<p><label for="user_id">'.__('Username:').' '.
-	form::field(array('user_id','user_id'),20,32,html::escapeHTML($user_id)).'</label></p>'.
+	'<div class="fieldset"><h2>'.__('Request a new password').'</h2>'.
+	'<p><label for="user_id">'.__('Username:').'</label> '.
+	form::field(array('user_id','user_id'),20,32,html::escapeHTML($user_id)).'</p>'.
 	
-	'<p><label for="user_email">'.__('Email:').' '.
-	form::field(array('user_email','user_email'),20,255,html::escapeHTML($user_email)).'</label></p>'.
+	'<p><label for="user_email">'.__('Email:').'</label> '.
+	form::field(array('user_email','user_email'),20,255,html::escapeHTML($user_email)).'</p>'.
 	
 	'<p><input type="submit" value="'.__('recover').'" />'.
 	form::hidden(array('recover'),1).'</p>'.
-	'</fieldset>'.
+	'</div>'.
 	
 	'<div id="issue">'.
-	'<p><a href="auth.php">'.__('Back to login screen').'</a></p></div>';
+	'<p><a href="auth.php">'.__('Back to login screen').'</a></p>'.
+	'</div>';
 }
 elseif ($change_pwd)
 {
 	echo
-	'<fieldset><legend>'.__('Change your password').'</legend>'.
-	'<p><label for="new_pwd">'.__('New password:').' '.
-	form::password(array('new_pwd','new_pwd'),20,255).'</label></p>'.
+	'<div class="fieldset"><h2>'.__('Change your password').'</h2>'.
+	'<p><label for="new_pwd">'.__('New password:').'</label> '.
+	form::password(array('new_pwd','new_pwd'),20,255).'</p>'.
 	
-	'<p><label for="new_pwd_c">'.__('Confirm password:').' '.
-	form::password(array('new_pwd_c','new_pwd_c'),20,255).'</label></p>'.
-	'</fielset>'.
+	'<p><label for="new_pwd_c">'.__('Confirm password:').'</label> '.
+	form::password(array('new_pwd_c','new_pwd_c'),20,255).'</p>'.
+	'</div>'.
 	
 	'<p><input type="submit" value="'.__('change').'" />'.
 	form::hidden('login_data',$login_data).'</p>';
@@ -368,38 +367,45 @@ else
 	}
 	else
 	{
-		echo
-		'<fieldset>';
 		if ($safe_mode) {
-			echo '<legend>'.__('Safe mode login').'</legend>';
+			echo '<div class="fieldset">';
+			echo '<h2>'.__('Safe mode login').'</h2>';
 			echo 
-				'<p class="form-note info">'.
-				__('This mode allows you to login without activating any of your plugins. This may be useful to solve compatibility problems').'&nbsp;<br />'.
-				__('Disable or delete any plugin suspected to cause trouble, then log out and log back in normally.').
+				'<p class="form-note">'.
+				__('This mode allows you to login without activating any of your plugins. This may be useful to solve compatibility problems').'&nbsp;</p>'.
+				'<p class="form-note">'.__('Disable or delete any plugin suspected to cause trouble, then log out and log back in normally.').
 				'</p>';
 		}
+		else {
+			echo '<div class="fieldset">';
+		}
+
 		echo
-		'<p><label for="user_id">'.__('Username:').' '.
-		form::field(array('user_id','user_id'),20,32,html::escapeHTML($user_id)).'</label></p>'.
+		'<p><label for="user_id">'.__('Username:').'</label> '.
+		form::field(array('user_id','user_id'),20,32,html::escapeHTML($user_id)).'</p>'.
 		
-		'<p><label for="user_pwd">'.__('Password:').' '.
-		form::password(array('user_pwd','user_pwd'),20,255).'</label></p>'.
+		'<p><label for="user_pwd">'.__('Password:').'</label> '.
+		form::password(array('user_pwd','user_pwd'),20,255).'</p>'.
 		
-		'<p><label for="user_remember" class="classic">'.
-		form::checkbox(array('user_remember','user_remember'),1).' '.
+		'<p>'.
+		form::checkbox(array('user_remember','user_remember'),1).
+		'<label for="user_remember" class="classic">'.
 		__('Remember my ID on this computer').'</label></p>'.
 		
-		'<p><input type="submit" value="'.__('log in').'" /></p>';
+		'<p><input type="submit" value="'.__('log in').'" class="login" /></p>';
 		
 		if (!empty($_REQUEST['blog'])) {
 			echo form::hidden('blog',html::escapeHTML($_REQUEST['blog']));
 		}
 		if($safe_mode) {
-			echo form::hidden('safe_mode',1);
+			echo 
+			form::hidden('safe_mode',1).
+			'</div>';
 		}
-		
+		else {
+			echo '</div>';
+		}
 		echo
-		'</fieldset>'.
 		'<p id="cookie_help" class="error">'.__('You must accept cookies in order to use the private area.').'</p>';
 
 		echo '<div id="issue">';

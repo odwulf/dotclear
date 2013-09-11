@@ -3,7 +3,7 @@
 #
 # This file is part of Dotclear 2.
 #
-# Copyright (c) 2003-2011 Olivier Meunier & Association Dotclear
+# Copyright (c) 2003-2013 Olivier Meunier & Association Dotclear
 # Licensed under the GPL version 2.0 license.
 # See LICENSE file or
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
@@ -35,9 +35,9 @@ class dcWidgets
 		return base64_encode(serialize($serialized));
 	}
 	
-	public function create($id,$name,$callback,$append_callback=null)
+	public function create($id,$name,$callback,$append_callback=null,$desc='')
 	{
-		$this->__widgets[$id] = new dcWidget($id,$name,$callback);
+		$this->__widgets[$id] = new dcWidget($id,$name,$callback,$desc);
 		$this->__widgets[$id]->append_callback = $append_callback;
 	}
 	
@@ -134,6 +134,7 @@ class dcWidget
 {
 	private $id;
 	private $name;
+	private $desc;
 	private $public_callback = null;
 	public $append_callback = null;
 	private $settings = array();
@@ -147,11 +148,12 @@ class dcWidget
 		return $values;
 	}
 	
-	public function __construct($id,$name,$callback)
+	public function __construct($id,$name,$callback,$desc='')
 	{
 		$this->public_callback = $callback;
 		$this->id = $id;
 		$this->name = $name;
+		$this->desc = $desc;
 	}
 	
 	public function id()
@@ -162,6 +164,11 @@ class dcWidget
 	public function name()
 	{
 		return $this->name;
+	}
+
+	public function desc()
+	{
+		return $this->desc;
 	}
 	
 	public function getCallback()
@@ -230,15 +237,15 @@ class dcWidget
 			{
 				case 'text':
 					$res .=
-					'<p><label for="'.$wfid.'">'.$s['title'].' '.
+					'<p><label for="'.$wfid.'">'.$s['title'].'</label> '.
 					form::field(array($iname,$wfid),20,255,html::escapeHTML($s['value']),'maximal').
-					'</label></p>';
+					'</p>';
 					break;
 				case 'textarea':
 					$res .=
-					'<p><label for="'.$wfid.'">'.$s['title'].' '.
+					'<p><label for="'.$wfid.'">'.$s['title'].'</label> '.
 					form::textarea(array($iname,$wfid),30,5,html::escapeHTML($s['value']),'maximal').
-					'</label></p>';
+					'</p>';
 					break;
 				case 'check':
 					$res .=
@@ -249,9 +256,9 @@ class dcWidget
 					break;
 				case 'combo':
 					$res .=
-					'<p><label for="'.$wfid.'">'.$s['title'].' '.
+					'<p><label for="'.$wfid.'">'.$s['title'].'</label> '.
 					form::combo(array($iname,$wfid),$s['options'],$s['value']).
-					'</label></p>';
+					'</p>';
 					break;
 			}
 			$i++;
