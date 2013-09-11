@@ -189,7 +189,7 @@ if ($can_install && !empty($_POST))
 		$core->auth->user_prefs->addWorkspace('dashboard');
 		$core->auth->user_prefs->dashboard->put('doclinks',true,'boolean','',null,true);
 		$core->auth->user_prefs->dashboard->put('dcnews',true,'boolean','',null,true);
-		$core->auth->user_prefs->dashboard->put('quickentry',false,'boolean','',null,true);
+		$core->auth->user_prefs->dashboard->put('quickentry',true,'boolean','',null,true);
 
 		# Add accessibility options
 		$core->auth->user_prefs->addWorkspace('accessibility');
@@ -207,28 +207,18 @@ if ($can_install && !empty($_POST))
 		$init_fav['new_post'] = array('new_post','New entry','post.php',
 			'images/menu/edit.png','images/menu/edit-b.png',
 			'usage,contentadmin',null,'menu-new-post');
-		$init_fav['posts'] = array('posts','Entries','posts.php',
-			'images/menu/entries.png','images/menu/entries-b.png',
-			'usage,contentadmin',null,null);
-		$init_fav['comments'] = array('comments','Comments','comments.php',
-			'images/menu/comments.png','images/menu/comments-b.png',
-			'usage,contentadmin',null,null);
-		$init_fav['prefs'] = array('prefs','My preferences','preferences.php',
-			'images/menu/user-pref.png','images/menu/user-pref-b.png',
-			'*',null,null);
-		$init_fav['blog_pref'] = array('blog_pref','Blog settings','blog_pref.php',
-			'images/menu/blog-pref.png','images/menu/blog-pref-b.png',
+		$init_fav['newpage'] = array('newpage','New page','plugin.php?p=pages&amp;act=page',
+			'index.php?pf=pages/icon-np.png','index.php?pf=pages/icon-np-big.png',
+			'contentadmin,pages',null,null);
+		$init_fav['media'] = array('media','Media manager','media.php',
+			'images/menu/media.png','images/menu/media-b.png',
+			'media,media_admin',null,null);
+		$init_fav['widgets'] = array('widgets','Presentation widgets','plugin.php?p=widgets',
+			'index.php?pf=widgets/icon.png','index.php?pf=widgets/icon-big.png',
 			'admin',null,null);
 		$init_fav['blog_theme'] = array('blog_theme','Blog appearance','blog_theme.php',
 			'images/menu/themes.png','images/menu/blog-theme-b.png',
 			'admin',null,null);
-
-		$init_fav['pages'] = array('pages','Pages','plugin.php?p=pages',
-			'index.php?pf=pages/icon.png','index.php?pf=pages/icon-big.png',
-			'contentadmin,pages',null,null);
-		$init_fav['blogroll'] = array('blogroll','Blogroll','plugin.php?p=blogroll',
-			'index.php?pf=blogroll/icon-small.png','index.php?pf=blogroll/icon.png',
-			'usage,contentadmin',null,null);
 
 		$count = 0;
 		foreach ($init_fav as $k => $f) {
@@ -306,12 +296,16 @@ echo
 '<h1>'.__('Dotclear installation').'</h1>'.
 '<div id="main">';
 
+if (!is_writable(DC_TPL_CACHE)) {
+	echo '<div class="error"><p>'.sprintf(__('Cache directory %s is not writable.'),DC_TPL_CACHE).'</p></div>';
+}
+
 if ($can_install && !empty($err)) {
 	echo '<div class="error"><p><strong>'.__('Errors:').'</strong></p>'.$err.'</div>';
 }
 
 if (!empty($_GET['wiz'])) {
-	echo '<p class="message">'.__('Configuration file has been successfully created.').'</p>';
+	echo '<p class="success">'.__('Configuration file has been successfully created.').'</p>';
 }
 
 if ($can_install && $step == 0)
@@ -323,12 +317,12 @@ if ($can_install && $step == 0)
 	
 	'<form action="index.php" method="post">'.
 	'<fieldset><legend>'.__('User information').'</legend>'.
-	'<p><label for="u_firstname">'.__('First Name:').' '.
-	form::field('u_firstname',30,255,html::escapeHTML($u_firstname)).'</label></p>'.
-	'<p><label for="u_name">'.__('Last Name:').' '.
-	form::field('u_name',30,255,html::escapeHTML($u_name)).'</label></p>'.
-	'<p><label for="u_email">'.__('Email:').' '.
-	form::field('u_email',30,255,html::escapeHTML($u_email)).'</label></p>'.
+	'<p><label for="u_firstname">'.__('First Name:').'</label> '.
+	form::field('u_firstname',30,255,html::escapeHTML($u_firstname)).'</p>'.
+	'<p><label for="u_name">'.__('Last Name:').'</label> '.
+	form::field('u_name',30,255,html::escapeHTML($u_name)).'</p>'.
+	'<p><label for="u_email">'.__('Email:').'</label> '.
+	form::field('u_email',30,255,html::escapeHTML($u_email)).'</p>'.
 	'</fieldset>'.
 	
 	'<fieldset><legend>'.__('Username and password').'</legend>'.
@@ -377,7 +371,7 @@ elseif ($can_install && $step == 1)
 	
 	$plugins_install_result.
 	
-	'<p>'.__('Dotclear has been successfully installed. Here is some useful information you should keep.').'</p>'.
+	'<p class="success">'.__('Dotclear has been successfully installed. Here is some useful information you should keep.').'</p>'.
 	
 	'<h3>'.__('Your account').'</h3>'.
 	'<ul>'.

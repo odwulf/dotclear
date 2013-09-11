@@ -221,7 +221,7 @@ msgid "I would like to prevent search engines and archivers from indexing or arc
 msgstr "検索エンジンとアーカイバに、ブログのコンテンツの索引付けとアーカイブをしてもらいたくない"
 
 #, fuzzy
-msgid "That blog Id is already in use."
+msgid "This blog ID is already used."
 msgstr "Dotclear はすでにインストールされています。"
 
 msgid "Invalid language code"
@@ -464,7 +464,7 @@ msgid "Themes"
 msgstr "テーマ"
 
 #, php-format
-msgid "You are currently using \"%s\""
+msgid "You are currently using <strong>%s</strong>"
 msgstr "現在使用中のテーマ： %s"
 
 #, fuzzy
@@ -592,7 +592,7 @@ msgstr "カテゴリは正常に並び替えられました。"
 msgid "The category has been successfully moved."
 msgstr "カテゴリは正常に移動されました。"
 
-msgid "No category yet."
+msgid "No category so far."
 msgstr "カテゴリはまだありません。"
 
 msgid "Categories list"
@@ -771,7 +771,7 @@ msgstr "コメント / ページ"
 msgid "Comment author:"
 msgstr "コメントの投稿者："
 
-msgid "You have one spam comments."
+msgid "You have one spam comment."
 msgstr "1 のスパムコメントがあります。"
 
 msgid "Show it."
@@ -1764,10 +1764,10 @@ msgstr "選択されたエントリに実行："
 msgid "This user does not exist"
 msgstr "このユーザは存在しません"
 
-msgid "Change category for entries"
+msgid "Change category for this selection"
 msgstr "エントリのカテゴリを変更"
 
-msgid "Change author for entries"
+msgid "Change author for this selection"
 msgstr "エントリの投稿者を変更"
 
 msgid "Author ID:"
@@ -2153,7 +2153,7 @@ msgstr "選択されていません"
 msgid "select all"
 msgstr "すべてを選択"
 
-msgid "invert selection"
+msgid "Invert selection"
 msgstr "選択を反転"
 
 msgid "view entry"

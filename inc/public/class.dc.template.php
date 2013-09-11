@@ -66,10 +66,10 @@ class dcTemplate extends template
 		$this->addValue('BlogName',array($this,'BlogName'));
 		$this->addValue('BlogLanguage',array($this,'BlogLanguage'));
 		$this->addValue('BlogThemeURL',array($this,'BlogThemeURL'));
-		$this->addValue('BlogParentThemeURL',array($this,'BlogParentThemeURL'));
 		$this->addValue('BlogUpdateDate',array($this,'BlogUpdateDate'));
 		$this->addValue('BlogID',array($this,'BlogID'));
 		$this->addValue('BlogURL',array($this,'BlogURL'));
+		$this->addValue('BlogXMLRPCURL',array($this,'BlogXMLRPCURL'));
 		$this->addValue('BlogPublicURL',array($this,'BlogPublicURL'));
 		$this->addValue('BlogQmarkURL',array($this,'BlogQmarkURL'));
 		$this->addValue('BlogMetaRobots',array($this,'BlogMetaRobots'));
@@ -839,22 +839,12 @@ class dcTemplate extends template
 	}
 	
 	/*dtd
-	<!ELEMENT tpl:BlogThemeURL - O -- Blog's current Theme URL -->
+	<!ELEMENT tpl:BlogThemeURL - O -- Blog's current Themei URL -->
 	*/
 	public function BlogThemeURL($attr)
 	{
 		$f = $this->getFilters($attr);
 		return '<?php echo '.sprintf($f,'$core->blog->settings->system->themes_url."/".$core->blog->settings->system->theme').'; ?>';
-	}
-	
-	/*dtd
-	<!ELEMENT tpl:BlogParentThemeURL - O -- Blog's current Theme's parent URL -->
-	*/
-	public function BlogParentThemeURL($attr)
-	{
-		$f = $this->getFilters($attr);
-		$parent = '$core->themes->moduleInfo($core->blog->settings->system->theme,\'parent\')';
-		return '<?php echo '.sprintf($f,'$core->blog->settings->system->themes_url."/".('."$parent".' ? '."$parent".' : $core->blog->settings->system->theme)').'; ?>';
 	}
     
 	/*dtd
@@ -916,6 +906,15 @@ class dcTemplate extends template
 	}
 	
 	/*dtd
+	<!ELEMENT tpl:BlogXMLRPCURL - O -- Blog XML-RPC URL -->
+	*/
+	public function BlogXMLRPCURL($attr)
+	{
+		$f = $this->getFilters($attr);
+		return '<?php echo '.sprintf($f,'$core->blog->url.$core->url->getURLFor(\'xmlrpc\',$core->blog->id)').'; ?>';
+	}
+	
+	/*dtd
 	<!ELEMENT tpl:BlogURL - O -- Blog URL -->
 	*/
 	public function BlogURL($attr)
@@ -964,6 +963,10 @@ class dcTemplate extends template
 		
 		if (!empty($attr['level'])) {
 			$p .= "\$params['level'] = ".(integer) $attr['level'].";\n";
+		}
+
+		if (isset($attr['with_empty']) && ((boolean) $attr['with_empty'] == true)) {
+			$p .= '$params[\'without_empty\'] = false;';
 		}
 		
 		$res = "<?php\n";

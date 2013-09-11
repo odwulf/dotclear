@@ -260,7 +260,7 @@ if ($core->auth->userID() && $core->blog !== null)
 	$_fav['users'] = new ArrayObject(array('users','Users','users.php',
 		'images/menu/users.png','images/menu/users-b.png',
 		null,null,null));
-	$_fav['plugins'] = new ArrayObject(array('plugins','Plugins','plugins.php',
+	$_fav['plugins'] = new ArrayObject(array('plugins','Plugins management','plugins.php',
 		'images/menu/plugins.png','images/menu/plugins-b.png',
 		null,null,null));
 	$_fav['langs'] = new ArrayObject(array('langs','Languages','langs.php',
@@ -283,7 +283,7 @@ if ($core->auth->userID() && $core->blog !== null)
 	
 	# Set menu titles
 	
-	$_menu['System']->title = __('System');
+	$_menu['System']->title = __('System settings');
 	$_menu['Blog']->title = __('Blog');
 	$_menu['Plugins']->title = __('Plugins');
 	if (!$user_ui_nofavmenu)
@@ -327,7 +327,7 @@ if ($core->auth->userID() && $core->blog !== null)
 	$_menu['System']->prependItem(__('Languages'),'langs.php','images/menu/langs.png',
 		preg_match('/langs.php(\?.*)?$/',$_SERVER['REQUEST_URI']),
 		$core->auth->isSuperAdmin());
-	$_menu['System']->prependItem(__('Plugins'),'plugins.php','images/menu/plugins.png',
+	$_menu['System']->prependItem(__('Plugins management'),'plugins.php','images/menu/plugins.png',
 		preg_match('/plugins.php(\?.*)?$/',$_SERVER['REQUEST_URI']),
 		$core->auth->isSuperAdmin());
 	$_menu['System']->prependItem(__('Users'),'users.php','images/menu/users.png',
@@ -372,6 +372,10 @@ if ($core->auth->userID() && $core->blog !== null)
 				preg_match('/post.php$/',$_SERVER['REQUEST_URI']),
 				$core->auth->check('usage,contentadmin',$core->blog->id),'menu-new-post',null);
 		}
+	}
+	
+	if (empty($core->blog->settings->system->jquery_migrate_mute)) {
+		$core->blog->settings->system->put('jquery_migrate_mute', true, 'boolean', 'Mute warnings for jquery migrate plugin ?', false);
 	}
 }
 ?>

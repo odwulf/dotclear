@@ -80,7 +80,7 @@ class dcBlog
 			$this->name = $b->blog_name;
 			$this->desc = $b->blog_desc;
 			$this->url = $b->blog_url;
-			$this->host = preg_replace('|^([a-z]{3,}://)(.*?)/.*$|','$1$2',$this->url);
+			$this->host = http::getHostFromURL($this->url);
 			$this->creadt = strtotime($b->blog_creadt);
 			$this->upddt = strtotime($b->blog_upddt);
 			$this->status = $b->blog_status;
@@ -90,15 +90,15 @@ class dcBlog
 			$this->themes_path = path::fullFromRoot($this->settings->system->themes_path,DC_ROOT);
 			$this->public_path = path::fullFromRoot($this->settings->system->public_path,DC_ROOT);
 			
-			$this->post_status['-2'] = __('pending');
-			$this->post_status['-1'] = __('scheduled');
-			$this->post_status['0'] = __('unpublished');
-			$this->post_status['1'] = __('published');
+			$this->post_status['-2'] = __('Pending');
+			$this->post_status['-1'] = __('Scheduled');
+			$this->post_status['0'] = __('Unpublished');
+			$this->post_status['1'] = __('Published');
 			
-			$this->comment_status['-2'] = __('junk');
-			$this->comment_status['-1'] = __('pending');
-			$this->comment_status['0'] = __('unpublished');
-			$this->comment_status['1'] = __('published');
+			$this->comment_status['-2'] = __('Junk');
+			$this->comment_status['-1'] = __('Pending');
+			$this->comment_status['0'] = __('Unpublished');
+			$this->comment_status['1'] = __('Published');
 			
 			# --BEHAVIOR-- coreBlogConstruct
 			$this->core->callBehavior('coreBlogConstruct',$this);
@@ -198,7 +198,7 @@ class dcBlog
 	
 	/**
 	Updates comments and trackbacks counters in post table. Should be called
-	every time comments or trackbacks are added, removed or changed there status.
+	every time comments or trackbacks are added, removed or changed their status.
 	
 	@param	ids		<b>mixed</b>		Comment(s) ID(s)
 	@param	del		<b>boolean</b>		If comment is delete, set this to true
@@ -299,7 +299,11 @@ class dcBlog
 		}
 		$counter = $this->getCategoriesCounter($c_params);
 		
-		$without_empty = $this->core->auth->userID() == false; # For public display
+		if (isset($params['without_empty']) && ($params['without_empty'] == false)) {
+			$without_empty = false;
+		} else {
+			$without_empty = $this->core->auth->userID() == false; # Get all categories if in admin display
+		}
 		
 		$start = isset($params['start']) ? (integer) $params['start'] : 0;
 		$l = isset($params['level']) ? (integer) $params['level'] : 0;
@@ -549,6 +553,19 @@ class dcBlog
 		
 		$this->triggerBlog();
 	}
+
+        /**
+        Set category position
+
+        @param  id              <b>integer</b>          Category ID
+        @param  left            <b>integer</b>          Category ID before
+        @param  right           <b>integer</b>          Category ID after
+        */
+        public function updCategoryPosition($id,$left,$right)
+        {
+                $this->categories()->updatePosition($id,$left,$right);
+                $this->triggerBlog();
+        }
 	
 	/**
 	DEPRECATED METHOD. Use dcBlog::setCategoryParent and dcBlog::moveCategory
@@ -640,7 +657,7 @@ class dcBlog
 		
 		if (!$rs->isEmpty())
 		{
-			if ($this->con->driver() == 'mysql') {
+			if ($this->con->driver() == 'mysql' || $this->con->driver() == 'mysqli') {
 				$clause = "REGEXP '^".$this->con->escape($url)."[0-9]+$'";
 			} elseif ($this->con->driver() == 'pgsql') {
 				$clause = "~ '^".$this->con->escape($url)."[0-9]+$'";
@@ -1810,7 +1827,7 @@ class dcBlog
 		
 		if (!$rs->isEmpty())
 		{
-			if ($this->con->driver() == 'mysql') {
+			if ($this->con->driver() == 'mysql' || $this->con->driver() == 'mysqli') {
 				$clause = "REGEXP '^".$this->con->escape($url)."[0-9]+$'";
 			} elseif ($this->con->driver() == 'pgsql') {
 				$clause = "~ '^".$this->con->escape($url)."[0-9]+$'";
@@ -1862,6 +1879,7 @@ class dcBlog
 	- post_id: (integer) Get comments belonging to given post_id
 	- cat_id: (integer or array) Get comments belonging to entries of given category ID
 	- comment_id: (integer) Get comment with given ID
+	- comment_site: (string) Get comments with given comment_site
 	- comment_status: (integer) Get comments with given comment_status
 	- comment_trackback: (integer) Get only comments (0) or trackbacks (1)
 	- comment_ip: (string) Get comments with given IP address
@@ -1951,6 +1969,11 @@ class dcBlog
 		
 		if (isset($params['comment_id']) && $params['comment_id'] !== '') {
 			$strReq .= 'AND comment_id = '.(integer) $params['comment_id'].' ';
+		}
+		
+		if (isset($params['comment_site'])) {
+			$comment_site = $this->con->escape(str_replace('*','%',$params['comment_site']));
+			$strReq .= "AND comment_site LIKE '".$comment_site."' ";
 		}
 		
 		if (isset($params['comment_status'])) {
@@ -2163,7 +2186,7 @@ class dcBlog
 			'UPDATE '.$this->prefix.'comment tc ';
 		
 		# mySQL uses "JOIN" synthax
-		if ($this->con->driver() == 'mysql') {
+		if ($this->con->driver() == 'mysql' || $this->con->driver() == 'mysqli') {
 			$strReq .= 
 				'JOIN '.$this->prefix.'post tp ON tc.post_id = tp.post_id ';
 		}
@@ -2172,7 +2195,7 @@ class dcBlog
 			'SET comment_status = '.$status.' ';
 		
 		# pgSQL uses "FROM" synthax
-		if ($this->con->driver() != 'mysql') {
+		if ($this->con->driver() != 'mysql' || $this->con->driver() == 'mysqli') {
 			$strReq .= 
 				'FROM '.$this->prefix.'post tp ';
 		}
@@ -2182,7 +2205,7 @@ class dcBlog
 			'AND comment_id'.$this->con->in($co_ids);
 		
 		# add pgSQL "WHERE" clause
-		if ($this->con->driver() != 'mysql') {
+		if ($this->con->driver() != 'mysql' || $this->con->driver() == 'mysqli') {
 			$strReq .= 
 				'AND tc.post_id = tp.post_id ';
 		}
@@ -2241,7 +2264,7 @@ class dcBlog
 		}
 		
 		# mySQL uses "INNER JOIN" synthax
-		if ($this->con->driver() == 'mysql') {
+		if ($this->con->driver() == 'mysql' || $this->con->driver() == 'mysqli') {
 			$strReq = 
 				'DELETE FROM tc '.
 				'USING '.$this->prefix.'comment tc '.
@@ -2278,7 +2301,7 @@ class dcBlog
 		}
 		
 		# mySQL uses "INNER JOIN" synthax
-		if ($this->con->driver() == 'mysql') {
+		if ($this->con->driver() == 'mysql' || $this->con->driver() == 'mysqli') {
 			$strReq = 
 				'DELETE FROM tc '.
 				'USING '.$this->prefix.'comment tc '.
