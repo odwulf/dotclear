@@ -9,7 +9,7 @@ function checkQueryString() {
 	}
 	$("p#urlwarning").remove();
 	if (errorMsg != '') {
-		$("#blog_url").parents('p').before('<p id="urlwarning" class="error">'+errorMsg+'</p>');
+		$("#blog_url").parents('p').after('<p id="urlwarning" class="warning">'+errorMsg+'</p>');
 	}
 }
 
@@ -17,5 +17,5 @@ function checkQueryString() {
 $(function() {
 	checkQueryString();
 	$('#blog_url').focusout(checkQueryString);
-	$('#url_scan').live("change",checkQueryString);
+	$('body').on('change','#url_scan',checkQueryString);
 });

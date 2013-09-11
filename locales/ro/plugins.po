@@ -1,299 +1,331 @@
-# SOME DESCRIPTIVE TITLE.
-# This file is put in the public domain.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# Romanian translation for dotclear
+# Copyright (c) 2011 Rosetta Contributors and Canonical Ltd 2011
+# This file is distributed under the same license as the dotclear package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2011.
 #
-#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: Dotclear 2\n"
+"Project-Id-Version: dotclear\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-05-13 19:36+0200\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: \n"
+"POT-Creation-Date: 2012-05-28 07:53+0200\n"
+"PO-Revision-Date: 2011-09-03 00:21+0000\n"
+"Last-Translator: transla73436 <Unknown>\n"
+"Language-Team: Romanian <ro@li.org>\n"
+"Language: ro\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"X-Launchpad-Export-Date: 2012-05-27 15:39+0000\n"
+"X-Generator: Launchpad (build 15288)\n"
 
 msgid "no"
+msgstr "nu"
+
+msgid "yes"
 msgstr ""
 
 msgid "Configuration successfully updated"
-msgstr ""
+msgstr "Configurație actualizată cu succes"
 
 msgid "Settings definition successfully updated"
-msgstr ""
+msgstr "Definiția setărilor a fost actualizată cu succes"
 
 msgid "blog settings"
-msgstr ""
+msgstr "setări blog"
 
 msgid "Value"
-msgstr ""
+msgstr "Valoare"
 
 msgid "Description"
+msgstr "Descriere"
+
+msgid "Goto:"
+msgstr ""
+
+msgid "Ok"
 msgstr ""
 
 msgid "global settings"
-msgstr ""
+msgstr "setări globale"
 
 msgid "Akismet spam filter"
-msgstr ""
+msgstr "Filtru de spam Akismet"
 
 #, php-format
 msgid "Filtered by %s."
-msgstr ""
+msgstr "Filtrat de %s."
 
 msgid "Akismet API key:"
-msgstr ""
+msgstr "Cheie API de Akismet"
 
 msgid "API key verified"
-msgstr ""
+msgstr "Cheie API verificată"
 
 msgid "API key not verified"
-msgstr ""
+msgstr "Cheia API nu a fost verificată"
 
 msgid "Get your own API key"
-msgstr ""
+msgstr "Obțineți-vă propia cheie API"
 
 msgid "Antispam"
-msgstr ""
+msgstr "Antispam"
 
 msgid "Delete junk comments older than"
-msgstr ""
+msgstr "Șterge comentariile din folderul junk mai vechi de"
 
 msgid "days"
-msgstr ""
+msgstr "zile"
 
 msgid "IP Blacklist / Whitelist Filter"
-msgstr ""
+msgstr "IP Blacklist / Filtru Whitelist"
 
 #, php-format
 msgid "Filtered by %1$s with rule %2$s."
-msgstr ""
+msgstr "Filtrat de %1$s cu regula %2$s."
 
 msgid "IP address has been successfully added."
-msgstr ""
+msgstr "Adresa IP a fost adăugată cu succes."
 
 msgid "IP addresses have been successfully removed."
-msgstr ""
+msgstr "Adresele IP au fost șterse cu succes."
 
 msgid "Blacklist"
-msgstr ""
+msgstr "Lista neagră"
 
 msgid "Whitelist"
-msgstr ""
+msgstr "Listă excepții"
 
-msgid "Add an IP address"
-msgstr ""
+#, fuzzy
+msgid "Add an IP address: "
+msgstr "Adaugă o adresă IP"
 
 msgid "Global IP"
-msgstr ""
+msgstr "IP global"
 
 msgid "Add"
-msgstr ""
+msgstr "Inserare"
 
 msgid "No IP address in list."
-msgstr ""
+msgstr "Nicio adresă IP în listă"
 
 msgid "IP list"
-msgstr ""
+msgstr "Lista cu IP"
 
 msgid "Checks sender IP address against DNSBL servers"
-msgstr ""
+msgstr "Verifică adresa IP a utilizatorului cu serverele DNSB"
 
 #, php-format
 msgid "Filtered by %1$s with server %2$s."
-msgstr ""
+msgstr "Filtrat de %1$s cu serverul %2$s."
 
 msgid "IP Lookup servers"
-msgstr ""
+msgstr "Servere de căutare IP"
 
 msgid "Add here a coma separated list of servers."
-msgstr ""
+msgstr "Adaugă aici o listă de servere separate prin virgulă"
 
 msgid "Checks links in comments against surbl.org"
-msgstr ""
+msgstr "Verifică legăturile în comentarii cu surbl.org"
 
 msgid "Words Blacklist"
-msgstr ""
+msgstr "Listă de cuvinte interzise"
 
 #, php-format
 msgid "Filtered by %1$s with word %2$s."
-msgstr ""
+msgstr "Filtrat de %1$s prin cuvântul %2$s."
 
 msgid "Words have been successfully added."
-msgstr ""
+msgstr "Cuvintele au fost adăugate cu succes."
 
 msgid "Word has been successfully added."
-msgstr ""
+msgstr "Cuvântul a fost adăugat cu succes."
 
 msgid "Words have been successfully removed."
-msgstr ""
+msgstr "Cuvintele au fost retrase cu succes."
 
-msgid "Add a word"
-msgstr ""
+#, fuzzy
+msgid "Add a word "
+msgstr "Adaugă un cuvânt"
 
 msgid "Global word"
-msgstr ""
+msgstr "Cuvânt global"
 
 msgid "No word in list."
-msgstr ""
+msgstr "Niciun cuvânt în listă."
 
-msgid "List"
+msgid "List of bad words"
 msgstr ""
 
 msgid "Delete selected words"
-msgstr ""
+msgstr "Șterge cuvintele selectate"
 
 msgid "Create default wordlist"
-msgstr ""
+msgstr "Verifică lista implicită de cuvinte"
 
 msgid "This word exists"
-msgstr ""
+msgstr "Acest cuvânt (deja) există"
 
 msgid "No description"
-msgstr ""
+msgstr "Fără descriere"
 
 #, php-format
 msgid "Filtered by %1$s (%2$s)"
-msgstr ""
+msgstr "Filtrat de %1$s (%2$s)"
 
 msgid "Unknown filter."
-msgstr ""
+msgstr "Filtru necunoscut"
 
 msgid "This comment is a spam:"
-msgstr ""
+msgstr "Acest comentariu este spam:"
 
 #, php-format
 msgid "(including %d spam comment)"
-msgstr ""
+msgstr "(incluzând %d comentariu spam)"
 
 #, php-format
 msgid "(including %d spam comments)"
-msgstr ""
+msgstr "(incluzând %d comentarii spam)"
 
 msgid "Spam moderation"
-msgstr ""
+msgstr "Moderare spam"
 
 msgid "Spam"
-msgstr ""
+msgstr "Spam"
 
 msgid "Ham"
-msgstr ""
+msgstr "Ham"
 
 msgid "Filter does not exist."
-msgstr ""
+msgstr "Filtru nu există"
 
 msgid "Filter has no user interface."
-msgstr ""
-
-msgid "Return to filters"
-msgstr ""
+msgstr "Filtru nu are interfață de utilizator."
 
 #, php-format
 msgid "%s configuration"
-msgstr ""
+msgstr "configuratia %s"
 
 msgid "Information"
-msgstr ""
+msgstr "Informații"
 
 msgid "Spam comments have been successfully deleted."
-msgstr ""
+msgstr "Comentariile spam au fost șterse."
 
 msgid "Junk comments:"
-msgstr ""
+msgstr "Comentarii junk:"
 
 msgid "Published comments:"
-msgstr ""
+msgstr "Comentarii publicate:"
 
 msgid "Delete all spams"
-msgstr ""
+msgstr "Șterge tot spam-ul"
 
 #, php-format
 msgid "All spam comments older than %s day(s) will be automatically deleted."
+msgstr "Toate comentariile spam mai vechi de %s zile vor fi șterse automat."
+
+msgid "You can modify this duration in the %s"
 msgstr ""
 
-msgid "Available spam filters"
+msgid "Blog preferences"
 msgstr ""
 
 msgid "Filters configuration has been successfully saved."
-msgstr ""
+msgstr "Configurația filtrelor a fost salvată."
+
+msgid "Available spam filters"
+msgstr "Filtre de spam disponibile."
 
 msgid "Order"
-msgstr ""
+msgstr "Comandă"
 
 msgid "Active"
-msgstr ""
+msgstr "Activ"
 
 msgid "Auto Del."
-msgstr ""
+msgstr "Ștergere auto."
 
 msgid "Filter name"
-msgstr ""
+msgstr "Nume filtru"
 
 msgid "Filter configuration"
-msgstr ""
+msgstr "Configurare filtru"
 
+#, fuzzy
 msgid "position"
-msgstr ""
+msgstr "Poziția barei laterale:"
 
 msgid "Syndication"
-msgstr ""
+msgstr "Abonare distribuită (syndication)"
 
 msgid "Junk comments RSS feed"
-msgstr ""
+msgstr "Abonare RSS de comentarii junk"
 
 msgid "Published comments RSS feed"
+msgstr "Abonare RSS de comentarii publicate"
+
+msgid "Attachments"
 msgstr ""
+
+msgid "remove"
+msgstr ""
+
+msgid "No attachment."
+msgstr ""
+
+msgid "Add files to this entry"
+msgstr ""
+
+msgid "Blogroll"
+msgstr "Blogroll"
 
 msgid "manage blogroll"
-msgstr ""
+msgstr "administrare blogroll"
 
 msgid "Links"
-msgstr ""
+msgstr "Legături"
 
 msgid "All categories"
-msgstr ""
+msgstr "Toate categoriile"
 
 msgid "Home page only"
-msgstr ""
+msgstr "Doar pagina de start"
 
 msgid "You must provide a link title"
-msgstr ""
+msgstr "Trebuie să inserezi un titlu al legăturii"
 
 msgid "You must provide a link URL"
-msgstr ""
+msgstr "Trebuie să inserezi o legătură web"
 
 msgid "You need to provide a XBEL or OPML file."
-msgstr ""
+msgstr "Trebuie să furnizezi un fișier XBEL sau OPML."
 
 msgid "File is not in XML format."
-msgstr ""
+msgstr "Fișierul nu este XML."
 
 msgid "No such link or title"
-msgstr ""
+msgstr "Nu există legătura/titlul"
 
 msgid "Return to blogroll"
-msgstr ""
+msgstr "Înapoi la blogroll"
 
 msgid "Category has been successfully updated"
-msgstr ""
+msgstr "Categoria a fost actualizată cu succes"
 
 msgid "Edit category"
-msgstr ""
+msgstr "Editează categoria"
 
 msgid "Link has been successfully updated"
-msgstr ""
+msgstr "Legătura a fost actualizată cu succes"
 
 msgid "Edit link"
-msgstr ""
+msgstr "Modifică legătura"
 
 msgid "XFN"
-msgstr ""
+msgstr "XFN"
 
 msgid "_xfn_Me"
-msgstr ""
+msgstr "_xfn_Me"
 
 msgid "_xfn_Another link for myself"
 msgstr ""
@@ -368,179 +400,180 @@ msgid "_xfn_Sweetheart"
 msgstr ""
 
 msgid "Nothing to import"
-msgstr ""
+msgstr "Nimic a se importa"
 
 msgid "Import operation cancelled."
-msgstr ""
+msgstr "Execuția de import a fost anulată."
 
 msgid "Items order has been successfully updated"
-msgstr ""
+msgstr "Lista de elements a fost actualizată"
 
 msgid "Items have been successfully removed."
-msgstr ""
+msgstr "Elementele au fost eliminate"
 
 msgid "Link has been successfully created."
-msgstr ""
+msgstr "Legătura a fost creată."
 
 msgid "category has been successfully created."
-msgstr ""
+msgstr "categoria a fost creată."
 
 msgid "links have been successfully imported."
-msgstr ""
+msgstr "legături au fost importate."
 
 msgid "URL"
-msgstr ""
+msgstr "URL"
 
 msgid "Lang"
-msgstr ""
+msgstr "Limbă"
 
 msgid "select this link"
 msgstr ""
 
 msgid "Delete selected links"
-msgstr ""
+msgstr "Șterge legăturile selectate"
 
+#, fuzzy
 msgid "Are you sure you want to delete selected links?"
-msgstr ""
+msgstr "Sigur dorești a șterge legăturile selectate?"
 
 msgid "The link list is empty."
 msgstr ""
 
 msgid "Add a new link"
-msgstr ""
+msgstr "Adaugă o nouă legătură"
 
 msgid "Add a category"
-msgstr ""
+msgstr "Adaugă o categorie"
 
 msgid "Import links"
-msgstr ""
+msgstr "Importă legături"
 
 msgid "OPML or XBEL File:"
-msgstr ""
+msgstr "Fișier OPML sau XBEL:"
 
-msgid "import"
+msgid "Import"
 msgstr ""
 
 msgid "Light linear gradient"
-msgstr ""
+msgstr "Gradient linear deschis"
 
 msgid "Medium linear gradient"
-msgstr ""
+msgstr "Gradient linear mediu"
 
 msgid "Dark linear gradient"
-msgstr ""
+msgstr "Gradient linear închis"
 
 msgid "Solid color"
-msgstr ""
+msgstr "Culoare solidă"
 
 msgid "Custom..."
-msgstr ""
+msgstr "Personalizat..."
 
 msgid "Blowup configuration"
-msgstr ""
+msgstr "Aruncă configurația"
 
 msgid "Predefined styles"
-msgstr ""
+msgstr "Stil predefinit"
 
 msgid "Apply code"
-msgstr ""
+msgstr "Aplică cod"
 
+#, fuzzy
 msgid "Choose a predefined style"
-msgstr ""
+msgstr "Stil predefinit"
 
+#, fuzzy
 msgid "For the following reasons, images cannot be created. You won't be able to change some background properties."
-msgstr ""
+msgstr "Cum imaginile nu pot fi create, nu vei putea fi capabil a schimba anume propietăți de fundal."
 
+#, fuzzy
 msgid "Theme configuration has been successfully updated."
-msgstr ""
+msgstr "Configurația șablonului a fost actualizată."
 
 msgid "General"
-msgstr ""
+msgstr "General"
 
 msgid "Background color:"
-msgstr ""
+msgstr "Culoare de fundal:"
 
 msgid "Background color fill:"
-msgstr ""
+msgstr "Culoarea de umplere fundal:"
 
 msgid "Main text font:"
-msgstr ""
+msgstr "Fontul principal de text:"
 
 msgid "Main text font size:"
-msgstr ""
+msgstr "Mărimea de text principală:"
 
 msgid "Main text color:"
-msgstr ""
+msgstr "Culoarea de text principală:"
 
 msgid "Text line height:"
-msgstr ""
+msgstr "Înălțimea liniei de text:"
 
 msgid "Links color:"
-msgstr ""
+msgstr "Culoarea legăturilor:"
 
 msgid "Visited links color:"
-msgstr ""
+msgstr "Culoarea legăturilor vizitate:"
 
 msgid "Focus links color:"
 msgstr ""
 
 msgid "Page top"
-msgstr ""
+msgstr "Începutul paginii"
 
 msgid "Prelude color:"
 msgstr ""
 
 msgid "Hide main title"
-msgstr ""
+msgstr "Ascunde titlul principal"
 
 msgid "Main title font:"
-msgstr ""
+msgstr "Fontul principal de titlu:"
 
 msgid "Main title font size:"
-msgstr ""
+msgstr "Mărimea de titlu principală:"
 
 msgid "Main title color:"
-msgstr ""
+msgstr "Culoarea principală de titlu:"
 
 msgid "Main title alignment:"
-msgstr ""
+msgstr "Aranjamentul în pagină de titlu:"
 
 msgid "center"
-msgstr ""
+msgstr "centru"
 
 msgid "left"
-msgstr ""
+msgstr "la stânga"
 
 msgid "right"
-msgstr ""
+msgstr "la dreapta"
 
 msgid "Main title position (x:y)"
-msgstr ""
+msgstr "Poziția principală de titlu (x:y)"
 
 msgid "Top image"
-msgstr ""
+msgstr "Imagine principală"
 
 msgid "Choose \"Custom...\" to upload your own image."
-msgstr ""
+msgstr "Alege personalizat pentru a urca propia imagine."
 
 msgid "Add your image:"
-msgstr ""
+msgstr "Adaugă-ți imaginea:"
 
 #, php-format
 msgid "JPEG or PNG file, 800 pixels wide, maximum size %s"
-msgstr ""
-
-msgid "Preview"
-msgstr ""
+msgstr "JPEG sau PNG, lat de 800 pixeli, mărimea maximă de %s"
 
 msgid "Sidebar"
-msgstr ""
+msgstr "Bară laterală"
 
 msgid "Sidebar position:"
-msgstr ""
+msgstr "Poziția barei laterale:"
 
 msgid "Sidebar text font:"
-msgstr ""
+msgstr "Fontul barei laterale:"
 
 msgid "Sidebar text font size:"
 msgstr ""
@@ -626,6 +659,9 @@ msgstr ""
 msgid "Footer background color:"
 msgstr ""
 
+msgid "Additional CSS"
+msgstr ""
+
 msgid "Configuration import / export"
 msgstr ""
 
@@ -641,8 +677,9 @@ msgstr ""
 msgid "At least one of the following functions is not available: imagecreatetruecolor, imagepng & imagecreatefrompng."
 msgstr ""
 
+#, fuzzy
 msgid "The 'public' directory does not exist."
-msgstr ""
+msgstr "Filtru nu există"
 
 #, php-format
 msgid "The '%s' directory cannot be modified."
@@ -791,9 +828,6 @@ msgstr ""
 msgid "Feed URL:"
 msgstr ""
 
-msgid "Send"
-msgstr ""
-
 msgid "Flat file import"
 msgstr ""
 
@@ -810,7 +844,7 @@ msgid "Import a single blog"
 msgstr ""
 
 #, php-format
-msgid "This will import a single blog backup as new content in the current blog: %s."
+msgid "This will import a single blog backup as new content in the current blog: <strong>%s</strong>."
 msgstr ""
 
 msgid "Upload a backup file"
@@ -856,8 +890,9 @@ msgstr ""
 msgid "Prefix such tags with:"
 msgstr ""
 
+#, fuzzy
 msgid "Content filters"
-msgstr ""
+msgstr "Întoarce-te la filtre"
 
 msgid "You may want to process your post and/or comment content with the following filters."
 msgstr ""
@@ -887,9 +922,6 @@ msgid "The backup file does not appear to be well formed."
 msgstr ""
 
 msgid "Please wait..."
-msgstr ""
-
-msgid "Import"
 msgstr ""
 
 msgid "Maintenance"
@@ -954,8 +986,9 @@ msgstr ""
 msgid "Vacuum logs"
 msgstr ""
 
+#, fuzzy
 msgid "Delete all logs"
-msgstr ""
+msgstr "Șterge tot spam-ul"
 
 msgid "Empty templates cache directory"
 msgstr ""
@@ -963,7 +996,7 @@ msgstr ""
 msgid "Empty directory"
 msgstr ""
 
-msgid "New page"
+msgid "Pages"
 msgstr ""
 
 #, php-format
@@ -1004,6 +1037,9 @@ msgstr ""
 msgid "Are you sure you want to delete selected pages?"
 msgstr ""
 
+msgid "New page"
+msgstr ""
+
 msgid "Selected pages action:"
 msgstr ""
 
@@ -1028,22 +1064,19 @@ msgstr ""
 msgid "Page has been successfully created."
 msgstr ""
 
-msgid "View page"
+msgid "Go to this page on the site"
 msgstr ""
 
-msgid "Preview page"
+msgid "Page status"
 msgstr ""
 
-msgid "Page status:"
+msgid "Page position"
 msgstr ""
 
-msgid "Page position:"
+msgid "Page lang"
 msgstr ""
 
-msgid "Page lang:"
-msgstr ""
-
-msgid "Page password:"
+msgid "Page password"
 msgstr ""
 
 msgid "Warning: If you set the URL manually, it may conflict with another page."
@@ -1082,7 +1115,142 @@ msgstr ""
 msgid "Pings:"
 msgstr ""
 
+msgid "Simple menu"
+msgstr ""
+
+msgid "Menu"
+msgstr ""
+
+msgid "All months"
+msgstr ""
+
+msgid "All tags"
+msgstr ""
+
+msgid "Home"
+msgstr ""
+
+msgid "Archive"
+msgstr ""
+
+#, fuzzy
+msgid "Page"
+msgstr "Începutul paginii"
+
 msgid "Tags"
+msgstr ""
+
+msgid "User defined"
+msgstr ""
+
+msgid "Label"
+msgstr ""
+
+msgid "Recent posts"
+msgstr ""
+
+#, php-format
+msgid "Switch to %s language"
+msgstr ""
+
+msgid "Recent Posts from this category"
+msgstr ""
+
+msgid "Archives"
+msgstr ""
+
+#, php-format
+msgid "Posts from %s"
+msgstr ""
+
+#, php-format
+msgid "Recent posts for %s tag"
+msgstr ""
+
+msgid "Label and URL of menu item are mandatory."
+msgstr ""
+
+msgid "No menu items selected."
+msgstr ""
+
+msgid "Label is mandatory."
+msgstr ""
+
+msgid "URL is mandatory."
+msgstr ""
+
+#, fuzzy
+msgid "Menu item has been successfully added."
+msgstr "Cuvântul a fost adăugat cu succes."
+
+#, fuzzy
+msgid "Menu items have been successfully removed."
+msgstr "Elementele au fost eliminate"
+
+#, fuzzy
+msgid "Menu items have been successfully updated."
+msgstr "Lista de elements a fost actualizată"
+
+msgid "Add item"
+msgstr ""
+
+msgid "Select type"
+msgstr ""
+
+msgid "Type of item menu:"
+msgstr ""
+
+msgid "Continue..."
+msgstr ""
+
+msgid "Select language:"
+msgstr ""
+
+#, fuzzy
+msgid "Select category:"
+msgstr "Editează categoria"
+
+msgid "Select month (if necessary):"
+msgstr ""
+
+msgid "Select page:"
+msgstr ""
+
+msgid "Select tag (if necessary):"
+msgstr ""
+
+msgid "Label of item menu:"
+msgstr ""
+
+#, fuzzy
+msgid "Description of item menu:"
+msgstr "Descriere"
+
+msgid "URL of item menu:"
+msgstr ""
+
+msgid "Add this item"
+msgstr ""
+
+#, fuzzy
+msgid "Add an item"
+msgstr "Adaugă o nouă legătură"
+
+msgid "Menu items list"
+msgstr ""
+
+msgid "Update menu"
+msgstr ""
+
+#, fuzzy
+msgid "Delete selected menu items"
+msgstr "Șterge legăturile selectate"
+
+#, fuzzy
+msgid "Are you sure you want to remove selected menu items?"
+msgstr "Sigur dorești a șterge legăturile selectate?"
+
+msgid "No menu items so far."
 msgstr ""
 
 msgid "Tags:"
@@ -1162,9 +1330,6 @@ msgstr ""
 msgid "Tag name"
 msgstr ""
 
-msgid "All tags"
-msgstr ""
-
 msgid "Link to all tags:"
 msgstr ""
 
@@ -1177,10 +1342,19 @@ msgstr ""
 msgid "Back to tags list"
 msgstr ""
 
-msgid "Rename this tag:"
+msgid "Actions for this tag"
 msgstr ""
 
-msgid "Delete this tag"
+msgid "Edit tag name:"
+msgstr ""
+
+msgid "Rename"
+msgstr ""
+
+msgid "Delete this tag:"
+msgstr ""
+
+msgid "List of entries with this tag"
 msgstr ""
 
 msgid "Tag has been successfully removed"
@@ -1244,17 +1418,20 @@ msgstr ""
 msgid "JavaScript files"
 msgstr ""
 
+#, fuzzy
 msgid "Preferences successfully updated"
-msgstr ""
+msgstr "Configurație actualizată cu succes"
 
+#, fuzzy
 msgid "Preferences definition successfully updated"
-msgstr ""
+msgstr "Definiția setărilor a fost actualizată cu succes"
 
 msgid "user preferences"
 msgstr ""
 
+#, fuzzy
 msgid "global preferences"
-msgstr ""
+msgstr "setări globale"
 
 msgid "Presentation widgets"
 msgstr ""
@@ -1316,12 +1493,6 @@ msgstr ""
 msgid "Comments limit:"
 msgstr ""
 
-msgid "Home"
-msgstr ""
-
-msgid "Archives"
-msgstr ""
-
 #, php-format
 msgid "This blog's entries %s feed"
 msgstr ""
@@ -1342,6 +1513,10 @@ msgstr ""
 msgid "extra"
 msgstr ""
 
+#, fuzzy
+msgid "custom"
+msgstr "Personalizat..."
+
 msgid "Widgets"
 msgstr ""
 
@@ -1354,7 +1529,7 @@ msgstr ""
 msgid "Append to:"
 msgstr ""
 
-msgid "add widgets to sidebars"
+msgid "Add widgets to sidebars"
 msgstr ""
 
 msgid "Navigation sidebar"
@@ -1363,10 +1538,25 @@ msgstr ""
 msgid "Extra sidebar"
 msgstr ""
 
-msgid "update sidebars"
+msgid "Custom sidebar"
 msgstr ""
 
-msgid "reset sidebars"
+msgid "Update sidebars"
+msgstr ""
+
+msgid "Reset sidebars"
+msgstr ""
+
+msgid "Use of widgets"
+msgstr ""
+
+msgid "Widgets may be used to add various blocks of content to be displayed on your public pages. To add a widget, drag it from the Available widgets list on the left to one of the sidebars on the right of this page. You can order your widgets in a sidebar by dragging them up or down. You must update sidebars to apply your changes."
+msgstr ""
+
+msgid "Once included in a sidebar, widgets have configuration options that you can reach by clicking on the arrow next to their name."
+msgstr ""
+
+msgid "Reset sidebars to get back to default widgets installation."
 msgstr ""
 
 msgid "Widget templates tags"
@@ -1407,3 +1597,15 @@ msgstr ""
 
 msgid "Remove widget"
 msgstr ""
+
+#~ msgid "List"
+#~ msgstr "Listă"
+
+#~ msgid "Save order"
+#~ msgstr "Salvează ordinea"
+
+#~ msgid "import"
+#~ msgstr "Import"
+
+#~ msgid "Preview"
+#~ msgstr "Previzualizare"

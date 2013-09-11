@@ -3,7 +3,7 @@
 #
 # This file is part of Dotclear 2.
 #
-# Copyright (c) 2003-2011 Olivier Meunier & Association Dotclear
+# Copyright (c) 2003-2013 Olivier Meunier & Association Dotclear
 # Licensed under the GPL version 2.0 license.
 # See LICENSE file or
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
@@ -14,23 +14,57 @@ require dirname(__FILE__).'/../inc/admin/prepend.php';
 
 dcPage::check('categories');
 
-# Remove a category
-if (!empty($_POST['del_cat']))
-{
-	try
-	{
-		$c = $core->blog->getCategory((integer) $_POST['del_cat']);
-		if ($c->isEmpty()) {
-			throw new Exception(__('This category does not exist.'));
+# Remove a categories
+if (!empty($_POST['categories']) && !empty($_POST['delete'])) {
+	try {
+		# Check if category where to move posts exists
+		$mov_cat = (int) $_POST['mov_cat'];
+		$mov_cat = $mov_cat ? $mov_cat : null;
+		if ($mov_cat !== null) {
+			$c = $core->blog->getCategory($mov_cat);
+			if ($c->isEmpty()) {
+				throw new Exception(__('Category where to move posts does not exist'));
+			}
+			unset($c);
+
+			if (in_array($mov_cat, $_POST['categories'])) {
+				throw new Exception(__('The entries cannot be moved to the category you choose to delete.'));
+			}
 		}
-		unset($c);
-		$core->blog->delCategory($_POST['del_cat']);
-		http::redirect('categories.php?del=1');
-	}
-	catch (Exception $e)
-	{
+
+		foreach ($_POST['categories'] as $cat_id) {
+			# Check if category to delete exists
+			$c = $core->blog->getCategory((integer) $cat_id);
+			if ($c->isEmpty()) {
+				continue;
+			}
+			unset($c);
+
+			# Move posts
+			if ($mov_cat != $cat_id) {
+			        $core->blog->changePostsCategory($cat_id,$mov_cat);
+			}
+
+			# Delete category
+			$core->blog->delCategory($cat_id);
+		}
+		http::redirect('categories.php?del='.count($_POST['categories']));
+	} catch (Exception $e) {
 		$core->error->add($e->getMessage());
 	}
+}
+
+# Update order
+if (!empty($_POST['save_order']) && !empty($_POST['categories_order'])) {
+	$categories = json_decode($_POST['categories_order']);
+
+	foreach ($categories as $category) {
+		if (!empty($category->item_id)) {
+			$core->blog->updCategoryPosition($category->item_id, $category->left, $category->right);
+		}
+	}
+
+	http::redirect('categories.php?reord=1');
 }
 
 # Reset order
@@ -47,142 +81,121 @@ if (!empty($_POST['reset']))
 	}
 }
 
+
 /* Display
 -------------------------------------------------------- */
-dcPage::open(__('Categories'),
-	dcPage::jsToolMan()."\n".
-	dcPage::jsLoad('js/_categories.js')
-);
-
-if (!empty($_GET['add'])) {
-	echo '<p class="message">'.__('The category has been successfully created.').'</p>';
-}
-if (!empty($_GET['del'])) {
-		echo '<p class="message">'.__('The category has been successfully removed.').'</p>';
-}
-if (!empty($_GET['reord'])) {
-		echo '<p class="message">'.__('Categories have been successfully reordered.').'</p>';
-}
-if (!empty($_GET['moved'])) {
-		echo '<p class="message">'.__('The category has been successfully moved.').'</p>';
-}
-
-echo '<h2>'.html::escapeHTML($core->blog->name).' &rsaquo; <span class="page-title">'.__('Categories').'</span></h2>';
-
 $rs = $core->blog->getCategories(array('post_type'=>'post'));
 
+$starting_script = "";
+if (!$core->auth->user_prefs->accessibility->nodragdrop
+	&& $core->auth->check('categories',$core->blog->id)
+	&& $rs->count()>1) {
+		$starting_script .= dcPage::jsLoad('js/jquery/jquery-ui.custom.js');
+		$starting_script .= dcPage::jsLoad('js/jquery/jquery.mjs.nestedSortable.js');
+}
+$starting_script .= dcPage::jsLoad('js/_categories.js');
+
+dcPage::open(__('Categories'),$starting_script,
+	dcPage::breadcrumb(
+		array(
+			html::escapeHTML($core->blog->name) => '',
+			'<span class="page-title">'.__('Categories').'</span>' => ''
+		))
+);
+
+if (!empty($_GET['del'])) {
+        dcPage::success(__('The category has been successfully removed.',
+			   'The categories have been successfully removed.',
+			   (int) $_GET['del']
+			   )
+			);
+}
+if (!empty($_GET['reord'])) {
+	dcPage::success(__('Categories have been successfully reordered.'));
+}
+$categories_combo = dcAdminCombos::getCategoriesCombo($rs);
+
 echo
-'<div class="two-cols">'.
+'<p class="top-add"><a class="button add" href="category.php">'.__('New category').'</a></p>';
+
+echo
 '<div class="col">';
 if ($rs->isEmpty())
 {
-	echo '<p>'.__('No category yet.').'</p>';
+	echo '<p>'.__('No category so far.').'</p>';
 }
 else
 {
 	echo
-	'<h3>'.__('Categories list').'</h3>'.
+	'<form action="categories.php" method="post" id="form-categories">'.
 	'<div id="categories">';
-	
+
 	$ref_level = $level = $rs->level-1;
 	while ($rs->fetch())
 	{
-		$attr = 'id="cat'.$rs->cat_id.'"';
-		if ($rs->nb_total == 0) {
-			$attr .= ' class="deletable"';
-		}
-		
+		$attr = 'id="cat_'.$rs->cat_id.'"';
+
 		if ($rs->level > $level) {
 			echo str_repeat('<ul><li '.$attr.'>',$rs->level - $level);
 		} elseif ($rs->level < $level) {
 			echo str_repeat('</li></ul>',-($rs->level - $level));
 		}
-		
+
 		if ($rs->level <= $level) {
 			echo '</li><li '.$attr.'>';
 		}
-		
+
 		echo
-		'<p><strong><a href="category.php?id='.$rs->cat_id.'">'.html::escapeHTML($rs->cat_title).'</a></strong>'.
+		'<p>'.
+		form::checkbox(array('categories[]','cat-'.$rs->cat_id),$rs->cat_id,null,$rs->nb_total>0?'notempty':'').
+		'<label class="classic" for="cat-'.$rs->cat_id.'"><a href="category.php?id='.$rs->cat_id.'">'.html::escapeHTML($rs->cat_title).'</a></label>'.
 		' (<a href="posts.php?cat_id='.$rs->cat_id.'">'.
 		sprintf(($rs->nb_post > 1 ? __('%d entries') : __('%d entry') ),$rs->nb_post).'</a>'.
-		', '.__('total:').' '.$rs->nb_total.')</p>'.
-		'<p>'.__('URL:').' '.html::escapeHTML($rs->cat_url).'</p>';
-		
+		', '.__('total:').' '.$rs->nb_total.') '.
+		'<span class="cat-url">'.__('URL:').' <code>'.html::escapeHTML($rs->cat_url).'</code></span></p>';
+
 		$level = $rs->level;
 	}
-	
+
 	if ($ref_level - $level < 0) {
 		echo str_repeat('</li></ul>',-($ref_level - $level));
 	}
-	echo '</div>';
-}
-echo '</div>';
-
-echo '<div class="col">'.
-
-'<form action="category.php" method="post">'.
-'<fieldset><legend>'.__('Add a new category').'</legend>'.
-'<p><label class="required" for="cat_title"><abbr title="'.__('Required field').'">*</abbr> '.__('Title:').' '.
-form::field('cat_title',30,255).'</label></p>'.
-'<p><label for="new_cat_parent">'.__('Parent:').' '.
-'<select id="new_cat_parent" name="new_cat_parent">'.
-'<option value="0">'.__('Top level').'</option>';
-while ($rs->fetch()) {
-	echo '<option value="'.$rs->cat_id.'">'.
-		str_repeat('&nbsp;&nbsp;',$rs->level-1).($categories->level-1 == 0 ? '' : '&bull; ').
-		html::escapeHTML($rs->cat_title).'</option>';
-}
-echo
-'</select></label></p>'.
-'<p><input type="submit" value="'.__('Save').'" /></p>'.
-$core->formNonce().
-'</fieldset>'.
-'</form>';
-
-if (!$rs->isEmpty())
-{
-	$deletable = array();
-	$l = $rs->level;
-	$full_name = array($rs->cat_title);
-	while ($rs->fetch())
-	{
-		if ($rs->level < $l) {
-			$full_name = array();
-		} elseif ($rs->level == $l) {
-			array_pop($full_name);
-		}
-		$full_name[] = html::escapeHTML($rs->cat_title);
-		if ($rs->nb_post == 0) {
-			$deletable[implode(' / ',$full_name)] = $rs->cat_id;
-		}
-		$l = $rs->level;
-	}
-	
-	if (count($deletable) > 0)
-	{
-		echo
-		'<form action="categories.php" method="post" id="delete-category">'.
-		'<fieldset><legend>'.__('Remove a category').'</legend>'.
-		'<p><label for="del_cat">'.__('Choose a category to remove:').' '.
-		form::combo('del_cat',$deletable).'</label></p> '.
-		'<p><input type="submit" value="'.__('ok').'" /></p>'.
-		$core->formNonce().
-		'</fieldset>'.
-		'</form>';
-	}
-	
 	echo
-	'<form action="categories.php" method="post" id="reset-order">'.
-	'<fieldset><legend>'.__('Reorder categories').'</legend>'.
-	'<p>'.__('This will relocate all categories on the top level').'</p> '.
-	'<p><input type="submit" value="'.__('Reorder').'" /></p>'.
-	form::hidden(array('reset'),1).
-	$core->formNonce().
-	'</fieldset>'.
-	'</form>';
+	'</div>';
+
+	echo
+	'<div class="two-cols">'.
+	'<p class="col checkboxes-helpers"></p>'.
+	'<p class="col right" id="mov-cat">'.
+	'<label for="mov_cat" class="classic">'.__('Category where entries of deleted categories will be moved:').'</label> '.
+	form::combo('mov_cat',$categories_combo,'','').
+	'</p>'.
+	'<p class="right">'.
+	'<input type="submit" class="delete" name="delete" value="'.__('Delete selected categories').'"/>'.
+	'</p>'.
+	'</div>';
+
+	echo '<div class="fieldset"><h3 class="clear hidden-if-no-js">'.__('Categories order').'</h3>';
+
+	if ($core->auth->check('categories',$core->blog->id) && $rs->count()>1) {
+		if (!$core->auth->user_prefs->accessibility->nodragdrop) {
+			echo '<p class="hidden-if-no-js">'.__('To rearrange categories order, move items by drag and drop, then click on “Save categories order” button.').'</p>';
+		}
+		echo
+		'<p class="hidden-if-no-js">'.
+		'<input type="hidden" id="categories_order" name="categories_order" value=""/>'.
+		'<input type="submit" name="save_order" id="save-set-order" value="'.__('Save categories order').'" />'.
+		'</p>';
+	}
+
+	echo
+	'<p class="hidden-if-js right"><input type="submit" name="reset" value="'.__('Reorder all categories on the top level and delete selected categories').'" />'.
+	$core->formNonce().'</p>'.
+	'<p class="hidden-if-no-js"><input type="submit" name="reset" value="'.__('Reorder all categories on the top level').'" />'.
+	$core->formNonce().'</p>'.
+	'</div></form>';
 }
-echo '</div>';
+
 echo '</div>';
 
 dcPage::helpBlock('core_categories');

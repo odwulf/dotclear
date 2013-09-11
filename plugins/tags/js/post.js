@@ -11,6 +11,7 @@ $(function() {
 				meta_field.val($('#post_tags').val());
 			}
 			var mEdit = new metaEditor(tags_edit,meta_field,'tag');
+			mEdit.meta_url = 'plugin.php?p=tags&m=tag_posts&amp;tag=';
 			mEdit.displayMeta('tag',post_id);
 			
 			// mEdit object reference for toolBar
@@ -51,15 +52,28 @@ $(function() {
 					) +
 				')</em>';
 			},
-			formatResult: function(tag) { 
-				return tag.result; 
+			formatResult: function(tag) {
+				return tag.result;
 			}
 		});
 	});
+
+	$('h5 .s-tags').toggleWithLegend($('.s-tags').not('label'),{
+		user_pref: 'post_tags',
+		legend_clik: true
+	});
+
 });
 
 // Toolbar button for tags
-jsToolBar.prototype.elements.tagSpace = {type: 'space'};
+jsToolBar.prototype.elements.tagSpace = {
+	type: 'space', 
+	format:{
+		wysiwyg:true,
+		wiki:true,
+		xhtml:true
+	}
+};
 
 jsToolBar.prototype.elements.tag = {type: 'button', title: 'Keyword', fn:{} };
 jsToolBar.prototype.elements.tag.context = 'post';

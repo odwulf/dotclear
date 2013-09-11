@@ -3,7 +3,7 @@
 #
 # This file is part of Dotclear 2.
 #
-# Copyright (c) 2003-2011 Olivier Meunier & Association Dotclear
+# Copyright (c) 2003-2013 Olivier Meunier & Association Dotclear
 # Licensed under the GPL version 2.0 license.
 # See LICENSE file or
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
@@ -80,7 +80,7 @@ class dcBlog
 			$this->name = $b->blog_name;
 			$this->desc = $b->blog_desc;
 			$this->url = $b->blog_url;
-			$this->host = preg_replace('|^([a-z]{3,}://)(.*?)/.*$|','$1$2',$this->url);
+			$this->host = http::getHostFromURL($this->url);
 			$this->creadt = strtotime($b->blog_creadt);
 			$this->upddt = strtotime($b->blog_upddt);
 			$this->status = $b->blog_status;
@@ -90,15 +90,15 @@ class dcBlog
 			$this->themes_path = path::fullFromRoot($this->settings->system->themes_path,DC_ROOT);
 			$this->public_path = path::fullFromRoot($this->settings->system->public_path,DC_ROOT);
 			
-			$this->post_status['-2'] = __('pending');
-			$this->post_status['-1'] = __('scheduled');
-			$this->post_status['0'] = __('unpublished');
-			$this->post_status['1'] = __('published');
+			$this->post_status['-2'] = __('Pending');
+			$this->post_status['-1'] = __('Scheduled');
+			$this->post_status['0'] = __('Unpublished');
+			$this->post_status['1'] = __('Published');
 			
-			$this->comment_status['-2'] = __('junk');
-			$this->comment_status['-1'] = __('pending');
-			$this->comment_status['0'] = __('unpublished');
-			$this->comment_status['1'] = __('published');
+			$this->comment_status['-2'] = __('Junk');
+			$this->comment_status['-1'] = __('Pending');
+			$this->comment_status['0'] = __('Unpublished');
+			$this->comment_status['1'] = __('Published');
 			
 			# --BEHAVIOR-- coreBlogConstruct
 			$this->core->callBehavior('coreBlogConstruct',$this);
@@ -193,42 +193,76 @@ class dcBlog
 	*/
 	public function triggerComment($id,$del=false)
 	{
-		$id = (integer) $id;
+		$this->triggerComments($id,$del);
+	}
+	
+	/**
+	Updates comments and trackbacks counters in post table. Should be called
+	every time comments or trackbacks are added, removed or changed their status.
+	
+	@param	ids		<b>mixed</b>		Comment(s) ID(s)
+	@param	del		<b>boolean</b>		If comment is delete, set this to true
+	@param	affected_posts		<b>mixed</b>		Posts(s) ID(s)
+	*/
+	public function triggerComments($ids, $del=false, $affected_posts=null)
+	{
+		$comments_ids = dcUtils::cleanIds($ids);
 		
-		$strReq = 'SELECT post_id, comment_trackback '.
+		# Get posts affected by comments edition
+		if (empty($affected_posts)) {
+			$strReq = 
+				'SELECT post_id '.
 				'FROM '.$this->prefix.'comment '.
-				'WHERE comment_id = '.$id.' ';
-		
-		$rs = $this->con->select($strReq);
-		
-		$post_id = $rs->post_id;
-		$tb = (boolean) $rs->comment_trackback;
-		
-		$strReq = 'SELECT COUNT(post_id) '.
-				'FROM '.$this->prefix.'comment '.
-				'WHERE post_id = '.(integer) $post_id.' '.
-				'AND comment_trackback = '.(integer) $tb.' '.
-				'AND comment_status = 1 ';
-		
-		if ($del) {
-			$strReq .= 'AND comment_id <> '.$id.' ';
+				'WHERE comment_id'.$this->con->in($comments_ids).
+				'GROUP BY post_id';
+			
+			$rs = $this->con->select($strReq);
+			
+			$affected_posts = array();
+			while ($rs->fetch()) {
+				$affected_posts[] = (integer) $rs->post_id;
+			}
 		}
 		
-		$rs = $this->con->select($strReq);
-		
-		$cur = $this->con->openCursor($this->prefix.'post');
-		
-		if ($rs->isEmpty()) {
+		if (!is_array($affected_posts) || empty($affected_posts)) {
 			return;
 		}
 		
-		if ($tb) {
-			$cur->nb_trackback = (integer) $rs->f(0);
-		} else {
-			$cur->nb_comment = (integer) $rs->f(0);
+		# Count number of comments if exists for affected posts
+		$strReq = 
+			'SELECT post_id, COUNT(post_id) AS nb_comment, comment_trackback '.
+			'FROM '.$this->prefix.'comment '.
+			'WHERE comment_status = 1 '.
+			'AND post_id'.$this->con->in($affected_posts).
+			'GROUP BY post_id,comment_trackback';
+		
+		$rs = $this->con->select($strReq);
+		
+		$posts = array();
+		while ($rs->fetch()) {
+			if ($rs->comment_trackback) {
+				$posts[$rs->post_id]['trackback'] = $rs->nb_comment;
+			} else {
+				$posts[$rs->post_id]['comment'] = $rs->nb_comment;
+			}
 		}
 		
-		$cur->update('WHERE post_id = '.(integer) $post_id);
+		# Update number of comments on affected posts
+		$cur = $this->con->openCursor($this->prefix.'post');
+		foreach($affected_posts as $post_id)
+		{
+			$cur->clean();
+			
+			if (!array_key_exists($post_id,$posts)) {
+				$cur->nb_trackback = 0;
+				$cur->nb_comment = 0;
+			} else {
+				$cur->nb_trackback = empty($posts[$post_id]['trackback']) ? 0 : $posts[$post_id]['trackback'];
+				$cur->nb_comment = empty($posts[$post_id]['comment']) ? 0 : $posts[$post_id]['comment'];
+			}
+			
+			$cur->update('WHERE post_id = '.$post_id);
+		}
 	}
 	//@}
 	
@@ -265,7 +299,11 @@ class dcBlog
 		}
 		$counter = $this->getCategoriesCounter($c_params);
 		
-		$without_empty = $this->core->auth->userID() == false; # For public display
+		if (isset($params['without_empty']) && ($params['without_empty'] == false)) {
+			$without_empty = false;
+		} else {
+			$without_empty = $this->core->auth->userID() == false; # Get all categories if in admin display
+		}
 		
 		$start = isset($params['start']) ? (integer) $params['start'] : 0;
 		$l = isset($params['level']) ? (integer) $params['level'] : 0;
@@ -316,7 +354,7 @@ class dcBlog
 		}
 		
 		# We need to apply filter after counting
-		if (!empty($params['cat_id']))
+		if (isset($params['cat_id']) && $params['cat_id'] !== '')
 		{
 			$found = false;
 			foreach ($data as $v) {
@@ -331,7 +369,8 @@ class dcBlog
 			}
 		}
 		
-		if (!empty($params['cat_url']) && empty($params['cat_id']))
+		if (isset($params['cat_url']) && ($params['cat_url'] !== '') 
+			&& !isset($params['cat_id']))
 		{
 			$found = false;
 			foreach ($data as $v) {
@@ -458,7 +497,13 @@ class dcBlog
 		# --BEHAVIOR-- coreBeforeCategoryCreate
 		$this->core->callBehavior('coreBeforeCategoryCreate',$this,$cur);
 		
-		$this->categories()->addNode($cur,$parent);
+		$id = $this->categories()->addNode($cur,$parent);
+		# Update category's cursor
+		$rs = $this->getCategory($id);
+		if (!$rs->isEmpty()) {
+			$cur->cat_lft = $rs->cat_lft;
+			$cur->cat_rgt = $rs->cat_rgt;
+		}
 		
 		# --BEHAVIOR-- coreAfterCategoryCreate
 		$this->core->callBehavior('coreAfterCategoryCreate',$this,$cur);
@@ -508,6 +553,19 @@ class dcBlog
 		
 		$this->triggerBlog();
 	}
+
+        /**
+        Set category position
+
+        @param  id              <b>integer</b>          Category ID
+        @param  left            <b>integer</b>          Category ID before
+        @param  right           <b>integer</b>          Category ID after
+        */
+        public function updCategoryPosition($id,$left,$right)
+        {
+                $this->categories()->updatePosition($id,$left,$right);
+                $this->triggerBlog();
+        }
 	
 	/**
 	DEPRECATED METHOD. Use dcBlog::setCategoryParent and dcBlog::moveCategory
@@ -578,28 +636,66 @@ class dcBlog
 	public function resetCategoriesOrder()
 	{
 		if (!$this->core->auth->check('categories',$this->id)) {
-			throw new Exception(__('You are not allowed to delete categories'));
+			throw new Exception(__('You are not allowed to reset categories order'));
 		}
 		
 		$this->categories()->resetOrder();
+		$this->triggerBlog();
 	}
 	
 	private function checkCategory($title,$url,$id=null)
 	{
-		$strReq = 'SELECT cat_id '.
-				'FROM '.$this->prefix.'category '.
-				"WHERE cat_url = '".$this->con->escape($url)."' ".
-				"AND blog_id = '".$this->con->escape($this->id)."' ";
-		
-		if ($id !== null) {
-			$strReq .= 'AND cat_id <> '.(integer) $id.' ';
-		}
+		# Let's check if URL is taken...
+		$strReq = 
+			'SELECT cat_url FROM '.$this->prefix.'category '.
+			"WHERE cat_url = '".$this->con->escape($url)."' ".
+			($id ? 'AND cat_id <> '.(integer) $id. ' ' : '').
+			"AND blog_id = '".$this->con->escape($this->id)."' ".
+			'ORDER BY cat_url DESC';
 		
 		$rs = $this->con->select($strReq);
 		
-		if (!$rs->isEmpty()) {
-			throw new Exception(__('Category URL must be unique.'));
+		if (!$rs->isEmpty())
+		{
+			if ($this->con->driver() == 'mysql' || $this->con->driver() == 'mysqli') {
+				$clause = "REGEXP '^".$this->con->escape($url)."[0-9]+$'";
+			} elseif ($this->con->driver() == 'pgsql') {
+				$clause = "~ '^".$this->con->escape($url)."[0-9]+$'";
+			} else {
+				$clause = "LIKE '".$this->con->escape($url)."%'";
+			}
+			$strReq = 
+				'SELECT cat_url FROM '.$this->prefix.'category '.
+				"WHERE cat_url ".$clause.' '.
+				($id ? 'AND cat_id <> '.(integer) $id. ' ' : '').
+				"AND blog_id = '".$this->con->escape($this->id)."' ".
+				'ORDER BY cat_url DESC ';
+			
+			$rs = $this->con->select($strReq);
+			$a = array();
+			while ($rs->fetch()) {
+				$a[] = $rs->cat_url;
+			}
+			
+			natsort($a);
+			$t_url = end($a);
+			
+			if (preg_match('/(.*?)([0-9]+)$/',$t_url,$m)) {
+				$i = (integer) $m[2];
+				$url = $m[1];
+			} else {
+				$i = 1;
+			}
+			
+			return $url.($i+1);
 		}
+		
+		# URL is empty?
+		if ($url == '') {
+			throw new Exception(__('Empty category URL'));
+		}
+		
+		return $url;
 	}
 	
 	private function getCategoryCursor($cur,$id=null)
@@ -621,7 +717,7 @@ class dcBlog
 		}
 		
 		# Check if title or url are unique
-		$this->checkCategory($cur->cat_title,$cur->cat_url,$id);
+		$cur->cat_url = $this->checkCategory($cur->cat_title,$cur->cat_url,$id);
 		
 		if ($cur->cat_desc !== null) {
 			$cur->cat_desc = $this->core->HTMLfilter($cur->cat_desc);
@@ -637,7 +733,7 @@ class dcBlog
 	
 	- no_content: Don't retrieve entry content (excerpt and content)
 	- post_type: Get only entries with given type (default "post", array for many types and '' for no type)
-	- post_id: (integer) Get entry with given post_id
+	- post_id: (integer or array) Get entry with given post_id
 	- post_url: Get entry with given post_url field
 	- user_id: (integer) Get entries belonging to given user ID
 	- cat_id: (string or array) Get entries belonging to given category ID
@@ -656,20 +752,29 @@ class dcBlog
 	- from: Append SQL string after "FROM" statement in query
 	- order: Order of results (default "ORDER BY post_dt DES")
 	- limit: Limit parameter
+	- sql_only : return the sql request instead of results. Only ids are selected
+	- exclude_post_id : (integer or array) Exclude entries with given post_id
 	
 	Please note that on every cat_id or cat_url, you can add ?not to exclude
 	the category and ?sub to get subcategories.
 	
 	@param	params		<b>array</b>		Parameters
 	@param	count_only	<b>boolean</b>		Only counts results
-	@param	sql_only	<b>boolean</b>		Only return SQL request
 	@return	<b>record</b>	A record with some more capabilities or the SQL request
 	*/
-	public function getPosts($params=array(),$count_only=false,$sql_only=false)
+	public function getPosts($params=array(),$count_only=false)
 	{
+		# --BEHAVIOR-- coreBlogBeforeGetPosts
+		$params = new ArrayObject($params);
+		$this->core->callBehavior('coreBlogBeforeGetPosts',$params);
+
 		if ($count_only)
 		{
 			$strReq = 'SELECT count(P.post_id) ';
+		}
+		elseif (!empty($params['sql_only'])) 
+		{
+			$strReq = 'SELECT P.post_id ';
 		}
 		else
 		{
@@ -735,7 +840,7 @@ class dcBlog
 			$strReq .= "AND post_type = 'post' ";
 		}
 		
-		if (!empty($params['post_id'])) {
+		if (isset($params['post_id']) && $params['post_id'] !== '') {
 			if (is_array($params['post_id'])) {
 				array_walk($params['post_id'],create_function('&$v,$k','if($v!==null){$v=(integer)$v;}'));
 			} else {
@@ -744,7 +849,16 @@ class dcBlog
 			$strReq .= 'AND P.post_id '.$this->con->in($params['post_id']);
 		}
 		
-		if (!empty($params['post_url'])) {
+		if (isset($params['exclude_post_id']) && $params['exclude_post_id'] !== '') {
+			if (is_array($params['exclude_post_id'])) {
+				array_walk($params['exclude_post_id'],create_function('&$v,$k','if($v!==null){$v=(integer)$v;}'));
+			} else {
+				$params['exclude_post_id'] = array((integer) $params['exclude_post_id']);
+			}
+			$strReq .= 'AND P.post_id NOT '.$this->con->in($params['exclude_post_id']);
+		}
+		
+		if (isset($params['post_url']) && $params['post_url'] !== '') {
 			$strReq .= "AND post_url = '".$this->con->escape($params['post_url'])."' ";
 		}
 		
@@ -752,7 +866,7 @@ class dcBlog
 			$strReq .= "AND U.user_id = '".$this->con->escape($params['user_id'])."' ";
 		}
 		
-		if (!empty($params['cat_id']))
+		if (isset($params['cat_id']) && $params['cat_id'] !== '')
 		{
 			if (!is_array($params['cat_id'])) {
 				$params['cat_id'] = array($params['cat_id']);
@@ -762,7 +876,7 @@ class dcBlog
 			}
 			$strReq .= 'AND '.$this->getPostsCategoryFilter($params['cat_id'],'cat_id').' ';
 		}
-		elseif (!empty($params['cat_url']))
+		elseif (isset($params['cat_url']) && $params['cat_url'] !== '')
 		{
 			if (!is_array($params['cat_url'])) {
 				$params['cat_url'] = array($params['cat_url']);
@@ -839,7 +953,7 @@ class dcBlog
 			$strReq .= $this->con->limit($params['limit']);
 		}
 		
-		if ($sql_only) {
+		if (!empty($params['sql_only'])) {
 			return $strReq;
 		}
 		
@@ -999,10 +1113,10 @@ class dcBlog
 		
 		$cat_field = $catReq = $limit = '';
 		
-		if (!empty($params['cat_id'])) {
+		if (isset($params['cat_id']) && $params['cat_id'] !== '') {
 			$catReq = 'AND P.cat_id = '.(integer) $params['cat_id'].' ';
 			$cat_field = ', C.cat_url ';
-		} elseif (!empty($params['cat_url'])) {
+		} elseif (isset($params['cat_url']) && $params['cat_url'] !== '') {
 			$catReq = "AND C.cat_url = '".$this->con->escape($params['cat_url'])."' ";
 			$cat_field = ', C.cat_url ';
 		}
@@ -1212,27 +1326,31 @@ class dcBlog
 	*/
 	public function updPostStatus($id,$status)
 	{
+		$this->updPostsStatus($id,$status);
+	}
+	
+	/**
+	Updates posts status.
+	
+	@param	ids		<b>mixed</b>		Post(s) ID(s)
+	@param	status	<b>integer</b>		Post status
+	*/
+	public function updPostsStatus($ids,$status)
+	{
 		if (!$this->core->auth->check('publish,contentadmin',$this->id)) {
 			throw new Exception(__('You are not allowed to change this entry status'));
 		}
 		
-		$id = (integer) $id;
+		$posts_ids = dcUtils::cleanIds($ids);
 		$status = (integer) $status;
+		
+		$strReq = "WHERE blog_id = '".$this->con->escape($this->id)."' ".
+				"AND post_id ".$this->con->in($posts_ids);
 		
 		#If user can only publish, we need to check the post's owner
 		if (!$this->core->auth->check('contentadmin',$this->id))
 		{
-			$strReq = 'SELECT post_id '.
-					'FROM '.$this->prefix.'post '.
-					'WHERE post_id = '.$id.' '.
-					"AND blog_id = '".$this->con->escape($this->id)."' ".
-					"AND user_id = '".$this->con->escape($this->core->auth->userID())."' ";
-			
-			$rs = $this->con->select($strReq);
-			
-			if ($rs->isEmpty()) {
-				throw new Exception(__('You are not allowed to change this entry status'));
-			}
+			$strReq .= "AND user_id = '".$this->con->escape($this->core->auth->userID())."' ";
 		}
 		
 		$cur = $this->con->openCursor($this->prefix.'post');
@@ -1240,36 +1358,43 @@ class dcBlog
 		$cur->post_status = $status;
 		$cur->post_upddt = date('Y-m-d H:i:s');
 		
-		$cur->update(
-			'WHERE post_id = '.$id.' '.
-			"AND blog_id = '".$this->con->escape($this->id)."' "
-			);
+		$cur->update($strReq);
 		$this->triggerBlog();
 	}
 	
+	/**
+	Updates post selection.
+	
+	@param	id		<b>integer</b>		Post ID
+	@param	selected	<b>integer</b>		Is selected post
+	*/
 	public function updPostSelected($id,$selected)
+	{
+		$this->updPostsSelected($id,$selected);
+	}
+	
+	/**
+	Updates posts selection.
+	
+	@param	ids		<b>mixed</b>		Post(s) ID(s)
+	@param	selected	<b>integer</b>		Is selected post(s)
+	*/
+	public function updPostsSelected($ids,$selected)
 	{
 		if (!$this->core->auth->check('usage,contentadmin',$this->id)) {
 			throw new Exception(__('You are not allowed to change this entry category'));
 		}
 		
-		$id = (integer) $id;
+		$posts_ids = dcUtils::cleanIds($ids);
 		$selected = (boolean) $selected;
+		
+		$strReq = "WHERE blog_id = '".$this->con->escape($this->id)."' ".
+				"AND post_id ".$this->con->in($posts_ids);
 		
 		# If user is only usage, we need to check the post's owner
 		if (!$this->core->auth->check('contentadmin',$this->id))
 		{
-			$strReq = 'SELECT post_id '.
-					'FROM '.$this->prefix.'post '.
-					'WHERE post_id = '.$id.' '.
-					"AND blog_id = '".$this->con->escape($this->id)."' ".
-					"AND user_id = '".$this->con->escape($this->core->auth->userID())."' ";
-			
-			$rs = $this->con->select($strReq);
-			
-			if ($rs->isEmpty()) {
-				throw new Exception(__('You are not allowed to mark this entry as selected'));
-			}
+			$strReq .= "AND user_id = '".$this->con->escape($this->core->auth->userID())."' ";
 		}
 		
 		$cur = $this->con->openCursor($this->prefix.'post');
@@ -1277,10 +1402,7 @@ class dcBlog
 		$cur->post_selected = (integer) $selected;
 		$cur->post_upddt = date('Y-m-d H:i:s');
 		
-		$cur->update(
-			'WHERE post_id = '.$id.' '.
-			"AND blog_id = '".$this->con->escape($this->id)."' "
-		);
+		$cur->update($strReq);
 		$this->triggerBlog();
 	}
 	
@@ -1292,27 +1414,31 @@ class dcBlog
 	*/
 	public function updPostCategory($id,$cat_id)
 	{
+		$this->updPostsCategory($id,$cat_id);
+	}
+	
+	/**
+	Updates posts category. <var>$cat_id</var> can be null.
+	
+	@param	ids		<b>mixed</b>		Post(s) ID(s)
+	@param	cat_id	<b>integer</b>		Category ID
+	*/
+	public function updPostsCategory($ids,$cat_id)
+	{
 		if (!$this->core->auth->check('usage,contentadmin',$this->id)) {
 			throw new Exception(__('You are not allowed to change this entry category'));
 		}
 		
-		$id = (integer) $id;
+		$posts_ids = dcUtils::cleanIds($ids);
 		$cat_id = (integer) $cat_id;
+		
+		$strReq = "WHERE blog_id = '".$this->con->escape($this->id)."' ".
+				"AND post_id ".$this->con->in($posts_ids);
 		
 		# If user is only usage, we need to check the post's owner
 		if (!$this->core->auth->check('contentadmin',$this->id))
 		{
-			$strReq = 'SELECT post_id '.
-					'FROM '.$this->prefix.'post '.
-					'WHERE post_id = '.$id.' '.
-					"AND blog_id = '".$this->con->escape($this->id)."' ".
-					"AND user_id = '".$this->con->escape($this->core->auth->userID())."' ";
-			
-			$rs = $this->con->select($strReq);
-			
-			if ($rs->isEmpty()) {
-				throw new Exception(__('You are not allowed to change this entry category'));
-			}
+			$strReq .= "AND user_id = '".$this->con->escape($this->core->auth->userID())."' ";
 		}
 		
 		$cur = $this->con->openCursor($this->prefix.'post');
@@ -1320,8 +1446,32 @@ class dcBlog
 		$cur->cat_id = ($cat_id ? $cat_id : null);
 		$cur->post_upddt = date('Y-m-d H:i:s');
 		
+		$cur->update($strReq);
+		$this->triggerBlog();
+	}
+	
+	/**
+	Updates posts category. <var>$new_cat_id</var> can be null.
+	
+	@param	old_cat_id	<b>integer</b>		Old category ID
+	@param	new_cat_id	<b>integer</b>		New category ID
+	*/
+	public function changePostsCategory($old_cat_id,$new_cat_id)
+	{
+		if (!$this->core->auth->check('contentadmin,categories',$this->id)) {
+			throw new Exception(__('You are not allowed to change entries category'));
+		}
+		
+		$old_cat_id = (integer) $old_cat_id;
+		$new_cat_id = (integer) $new_cat_id;
+		
+		$cur = $this->con->openCursor($this->prefix.'post');
+		
+		$cur->cat_id = ($new_cat_id ? $new_cat_id : null);
+		$cur->post_upddt = date('Y-m-d H:i:s');
+		
 		$cur->update(
-			'WHERE post_id = '.$id.' '.
+			'WHERE cat_id = '.$old_cat_id.' '.
 			"AND blog_id = '".$this->con->escape($this->id)."' "
 		);
 		$this->triggerBlog();
@@ -1334,36 +1484,35 @@ class dcBlog
 	*/
 	public function delPost($id)
 	{
+		$this->delPosts($id);
+	}
+	
+	/**
+	Deletes multiple posts.
+	
+	@param	ids		<b>mixed</b>		Post(s) ID(s)
+	*/
+	public function delPosts($ids)
+	{
 		if (!$this->core->auth->check('delete,contentadmin',$this->id)) {
 			throw new Exception(__('You are not allowed to delete entries'));
 		}
 		
-		$id = (integer) $id;
+		$posts_ids = dcUtils::cleanIds($ids);
 		
-		if (empty($id)) {
+		if (empty($posts_ids)) {
 			throw new Exception(__('No such entry ID'));
 		}
+		
+		$strReq = 'DELETE FROM '.$this->prefix.'post '.
+				"WHERE blog_id = '".$this->con->escape($this->id)."' ".
+				"AND post_id ".$this->con->in($posts_ids);
 		
 		#If user can only delete, we need to check the post's owner
 		if (!$this->core->auth->check('contentadmin',$this->id))
 		{
-			$strReq = 'SELECT post_id '.
-					'FROM '.$this->prefix.'post '.
-					'WHERE post_id = '.$id.' '.
-					"AND blog_id = '".$this->con->escape($this->id)."' ".
-					"AND user_id = '".$this->con->escape($this->core->auth->userID())."' ";
-			
-			$rs = $this->con->select($strReq);
-			
-			if ($rs->isEmpty()) {
-				throw new Exception(__('You are not allowed to delete this entry'));
-			}
+			$strReq .= "AND user_id = '".$this->con->escape($this->core->auth->userID())."' ";
 		}
-		
-		
-		$strReq = 'DELETE FROM '.$this->prefix.'post '.
-				'WHERE post_id = '.$id.' '.
-				"AND blog_id = '".$this->con->escape($this->id)."' ";
 		
 		$this->con->execute($strReq);
 		$this->triggerBlog();
@@ -1382,8 +1531,8 @@ class dcBlog
 		$rs = $this->con->select($strReq);
 		
 		$now = dt::toUTC(time());
-		$to_change = array();
-		
+		$to_change = new ArrayObject();
+
 		if ($rs->isEmpty()) {
 			return;
 		}
@@ -1401,18 +1550,23 @@ class dcBlog
 				$to_change[] = (integer) $rs->post_id;
 			}
 		}
-		
-		if (!empty($to_change))
+		if (count($to_change))
 		{
+			# --BEHAVIOR-- coreBeforeScheduledEntriesPublish
+			$this->core->callBehavior('coreBeforeScheduledEntriesPublish',$this,$to_change);
+
 			$strReq =
 			'UPDATE '.$this->prefix.'post SET '.
 			'post_status = 1 '.
 			"WHERE blog_id = '".$this->con->escape($this->id)."' ".
-			'AND post_id '.$this->con->in($to_change).' ';
-			
+			'AND post_id '.$this->con->in((array)$to_change).' ';
 			$this->con->execute($strReq);
 			$this->triggerBlog();
+
+			# --BEHAVIOR-- coreAfterScheduledEntriesPublish
+			$this->core->callBehavior('coreAfterScheduledEntriesPublish',$this,$to_change);
 		}
+		
 	}
 	
 	/**
@@ -1582,6 +1736,21 @@ class dcBlog
 		{
 			$this->core->initWikiPost();
 			$this->core->wiki2xhtml->setOpt('note_prefix','pnote-'.$post_id);
+			switch ($this->settings->system->note_title_tag) {
+				case 1:
+					$tag = 'h3';
+					break;
+				case 2:
+					$tag = 'p';
+					break;
+				default:
+					$tag = 'h4';
+					break;
+			}
+			$this->core->wiki2xhtml->setOpt('note_str','<div class="footnotes"><'.$tag.' class="footnotes-title">'.
+				__('Notes').'</'.$tag.'>%s</div>');
+			$this->core->wiki2xhtml->setOpt('note_str_single','<div class="footnotes"><'.$tag.' class="footnotes-title">'.
+				__('Note').'</'.$tag.'>%s</div>');
 			if (strpos($lang,'fr') === 0) {
 				$this->core->wiki2xhtml->setOpt('active_fr_syntax',1);
 			}
@@ -1658,7 +1827,7 @@ class dcBlog
 		
 		if (!$rs->isEmpty())
 		{
-			if ($this->con->driver() == 'mysql') {
+			if ($this->con->driver() == 'mysql' || $this->con->driver() == 'mysqli') {
 				$clause = "REGEXP '^".$this->con->escape($url)."[0-9]+$'";
 			} elseif ($this->con->driver() == 'pgsql') {
 				$clause = "~ '^".$this->con->escape($url)."[0-9]+$'";
@@ -1710,6 +1879,7 @@ class dcBlog
 	- post_id: (integer) Get comments belonging to given post_id
 	- cat_id: (integer or array) Get comments belonging to entries of given category ID
 	- comment_id: (integer) Get comment with given ID
+	- comment_site: (string) Get comments with given comment_site
 	- comment_status: (integer) Get comments with given comment_status
 	- comment_trackback: (integer) Get only comments (0) or trackbacks (1)
 	- comment_ip: (string) Get comments with given IP address
@@ -1720,6 +1890,7 @@ class dcBlog
 	- from: Append SQL string after "FROM" statement in query
 	- order: Order of results (default "ORDER BY comment_dt DES")
 	- limit: Limit parameter
+	- sql_only : return the sql request instead of results. Only ids are selected
 	
 	@param	params		<b>array</b>		Parameters
 	@param	count_only	<b>boolean</b>		Only counts results
@@ -1730,6 +1901,10 @@ class dcBlog
 		if ($count_only)
 		{
 			$strReq = 'SELECT count(comment_id) ';
+		}
+		elseif (!empty($params['sql_only'])) 
+		{
+			$strReq = 'SELECT P.post_id ';
 		}
 		else
 		{
@@ -1784,16 +1959,21 @@ class dcBlog
 			$strReq .= 'AND post_type '.$this->con->in($params['post_type']);
 		}
 		
-		if (!empty($params['post_id'])) {
+		if (isset($params['post_id']) && $params['post_id'] !== '') {
 			$strReq .= 'AND P.post_id = '.(integer) $params['post_id'].' ';
 		}
 		
-		if (!empty($params['cat_id'])) {
+		if (isset($params['cat_id']) && $params['cat_id'] !== '') {
 			$strReq .= 'AND P.cat_id = '.(integer) $params['cat_id'].' ';
 		}
 		
-		if (!empty($params['comment_id'])) {
+		if (isset($params['comment_id']) && $params['comment_id'] !== '') {
 			$strReq .= 'AND comment_id = '.(integer) $params['comment_id'].' ';
+		}
+		
+		if (isset($params['comment_site'])) {
+			$comment_site = $this->con->escape(str_replace('*','%',$params['comment_site']));
+			$strReq .= "AND comment_site LIKE '".$comment_site."' ";
 		}
 		
 		if (isset($params['comment_status'])) {
@@ -1810,7 +1990,8 @@ class dcBlog
 		}
 		
 		if (isset($params['comment_ip'])) {
-			$strReq .= "AND comment_ip = '".$this->con->escape($params['comment_ip'])."' ";
+			$comment_ip = $this->con->escape(str_replace('*','%',$params['comment_ip']));
+			$strReq .= "AND comment_ip LIKE '".$comment_ip."' ";
 		}
 		
 		if (isset($params['q_author'])) {
@@ -1854,6 +2035,10 @@ class dcBlog
 		
 		if (!$count_only && !empty($params['limit'])) {
 			$strReq .= $this->con->limit($params['limit']);
+		}
+
+		if (!empty($params['sql_only'])) {
+			return $strReq;
 		}
 		
 		$rs = $this->con->select($strReq);
@@ -1979,13 +2164,62 @@ class dcBlog
 	*/
 	public function updCommentStatus($id,$status)
 	{
+		$this->updCommentsStatus($id,$status);
+	}
+	
+	/**
+	Updates comments status.
+	
+	@param	ids		<b>mixed</b>		Comment(s) ID(s)
+	@param	status	<b>integer</b>		Comment status
+	*/
+	public function updCommentsStatus($ids,$status)
+	{
 		if (!$this->core->auth->check('publish,contentadmin',$this->id)) {
 			throw new Exception(__("You are not allowed to change this comment's status"));
 		}
 		
-		$cur = $this->con->openCursor($this->prefix.'comment');
-		$cur->comment_status = (integer) $status;
-		$this->updComment($id,$cur);
+		$co_ids = dcUtils::cleanIds($ids);
+		$status = (integer) $status;
+		
+		$strReq = 
+			'UPDATE '.$this->prefix.'comment tc ';
+		
+		# mySQL uses "JOIN" synthax
+		if ($this->con->driver() == 'mysql' || $this->con->driver() == 'mysqli') {
+			$strReq .= 
+				'JOIN '.$this->prefix.'post tp ON tc.post_id = tp.post_id ';
+		}
+		
+		$strReq .= 
+			'SET comment_status = '.$status.' ';
+		
+		# pgSQL uses "FROM" synthax
+		if ($this->con->driver() != 'mysql' || $this->con->driver() == 'mysqli') {
+			$strReq .= 
+				'FROM '.$this->prefix.'post tp ';
+		}
+		
+		$strReq .=
+			"WHERE blog_id = '".$this->con->escape($this->id)."' ".
+			'AND comment_id'.$this->con->in($co_ids);
+		
+		# add pgSQL "WHERE" clause
+		if ($this->con->driver() != 'mysql' || $this->con->driver() == 'mysqli') {
+			$strReq .= 
+				'AND tc.post_id = tp.post_id ';
+		}
+		
+		#If user is only usage, we need to check the post's owner
+		if (!$this->core->auth->check('contentadmin',$this->id))
+		{
+			$strReq .= 
+				"AND user_id = '".$this->con->escape($this->core->auth->userID())."' ";
+		}
+		
+		$this->con->execute($strReq);
+		$this->triggerComments($co_ids);
+		$this->triggerBlog();
 	}
 	
 	/**
@@ -1995,37 +2229,103 @@ class dcBlog
 	*/
 	public function delComment($id)
 	{
+		$this->delComments($id);
+	}
+	
+	/**
+	Delete comments
+	
+	@param	ids		<b>mixed</b>		Comment(s) ID(s)
+	*/
+	public function delComments($ids)
+	{
 		if (!$this->core->auth->check('delete,contentadmin',$this->id)) {
 			throw new Exception(__('You are not allowed to delete comments'));
 		}
 		
-		$id = (integer) $id;
+		$co_ids = dcUtils::cleanIds($ids);
 		
-		if (empty($id)) {
+		if (empty($co_ids)) {
 			throw new Exception(__('No such comment ID'));
 		}
+		
+		# Retrieve posts affected by comments edition
+		$affected_posts = array();
+		$strReq =
+			'SELECT post_id '.
+			'FROM '.$this->prefix.'comment '.
+			'WHERE comment_id'.$this->con->in($co_ids).
+			'GROUP BY post_id';
+		
+		$rs = $this->con->select($strReq);
+		
+		while ($rs->fetch()) {
+			$affected_posts[] = (integer) $rs->post_id;
+		}
+		
+		# mySQL uses "INNER JOIN" synthax
+		if ($this->con->driver() == 'mysql' || $this->con->driver() == 'mysqli') {
+			$strReq = 
+				'DELETE FROM tc '.
+				'USING '.$this->prefix.'comment tc '.
+				'INNER JOIN '.$this->prefix.'post tp ';
+		}
+		# pgSQL uses nothing special
+		else {
+			$strReq = 
+				'DELETE FROM '.$this->prefix.'comment tc '.
+				'USING '.$this->prefix.'post tp ';
+		}
+		
+		$strReq .= 
+			'WHERE tc.post_id = tp.post_id '.
+			"AND tp.blog_id = '".$this->con->escape($this->id)."' ".
+			'AND comment_id'.$this->con->in($co_ids);
 		
 		#If user can only delete, we need to check the post's owner
 		if (!$this->core->auth->check('contentadmin',$this->id))
 		{
-			$strReq = 'SELECT P.post_id '.
-					'FROM '.$this->prefix.'post P, '.$this->prefix.'comment C '.
-					'WHERE P.post_id = C.post_id '.
-					"AND P.blog_id = '".$this->con->escape($this->id)."' ".
-					'AND comment_id = '.$id.' '.
-					"AND user_id = '".$this->con->escape($this->core->auth->userID())."' ";
-			
-			$rs = $this->con->select($strReq);
-			
-			if ($rs->isEmpty()) {
-				throw new Exception(__('You are not allowed to delete this comment'));
-			}
+			$strReq .= 
+				"AND user_id = '".$this->con->escape($this->core->auth->userID())."' ";
 		}
 		
-		$strReq = 'DELETE FROM '.$this->prefix.'comment '.
-				'WHERE comment_id = '.$id.' ';
+		$this->con->execute($strReq);
+		$this->triggerComments($co_ids, true, $affected_posts);
+		$this->triggerBlog();
+	}
+
+	public function delJunkComments()
+	{
+		if (!$this->core->auth->check('delete,contentadmin',$this->id)) {
+			throw new Exception(__('You are not allowed to delete comments'));
+		}
 		
-		$this->triggerComment($id,true);
+		# mySQL uses "INNER JOIN" synthax
+		if ($this->con->driver() == 'mysql' || $this->con->driver() == 'mysqli') {
+			$strReq = 
+				'DELETE FROM tc '.
+				'USING '.$this->prefix.'comment tc '.
+				'INNER JOIN '.$this->prefix.'post tp ';
+		}
+		# pgSQL uses nothing special
+		else {
+			$strReq = 
+				'DELETE FROM '.$this->prefix.'comment tc '.
+				'USING '.$this->prefix.'post tp ';
+		}
+		
+		$strReq .= 
+			'WHERE tc.post_id = tp.post_id '.
+			"AND tp.blog_id = '".$this->con->escape($this->id)."' ".
+			'AND comment_status = -2';
+		
+		#If user can only delete, we need to check the post's owner
+		if (!$this->core->auth->check('contentadmin',$this->id))
+		{
+			$strReq .= 
+				"AND user_id = '".$this->con->escape($this->core->auth->userID())."' ";
+		}
+		
 		$this->con->execute($strReq);
 		$this->triggerBlog();
 	}
@@ -2045,8 +2345,10 @@ class dcBlog
 		}
 		
 		if ($cur->comment_site !== null && $cur->comment_site != '') {
-			if (!preg_match('|^http(s?)://|',$cur->comment_site)) {
+			if (!preg_match('|^http(s?)://|i',$cur->comment_site, $matches)) {
 				$cur->comment_site = 'http://'.$cur->comment_site;
+			}else{
+				$cur->comment_site = strtolower($matches[0]).substr($cur->comment_site, strlen($matches[0]));
 			}
 		}
 		

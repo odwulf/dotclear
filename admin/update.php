@@ -3,7 +3,7 @@
 #
 # This file is part of Dotclear 2.
 #
-# Copyright (c) 2003-2011 Olivier Meunier & Association Dotclear
+# Copyright (c) 2003-2013 Olivier Meunier & Association Dotclear
 # Licensed under the GPL version 2.0 license.
 # See LICENSE file or
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
@@ -26,7 +26,7 @@ if (!is_readable(DC_DIGESTS)) {
 }
 
 $updater = new dcUpdate(DC_UPDATE_URL,'dotclear',DC_UPDATE_VERSION,DC_TPL_CACHE.'/versions');
-$new_v = $updater->check(DC_VERSION);
+$new_v = $updater->check(DC_VERSION, !empty($_GET['nocache']));
 $zip_file = $new_v ? DC_BACKUP_PATH.'/'.basename($updater->getFileURL()) : '';
 $version_info = $new_v ? $updater->getInfoURL() : '';
 
@@ -41,11 +41,21 @@ $p_url = 'update.php';
 $step = isset($_GET['step']) ? $_GET['step'] : '';
 $step = in_array($step,array('check','download','backup','unzip')) ? $step : '';
 
+$default_tab = !empty($_GET['tab']) ? html::escapeHTML($_GET['tab']) : 'update';
+if (!empty($_POST['backup_file'])) {
+	$default_tab = 'files';
+}
+
 $archives = array();
 foreach (files::scanDir(DC_BACKUP_PATH) as $v) {
 	if (preg_match('/backup-([0-9A-Za-z\.-]+).zip/',$v)) {
 		$archives[] = $v;
 	}
+}
+if (!empty($archives)) {
+	usort($archives,"version_compare");
+} else {
+	$default_tab = 'update';
 }
 
 # Revert or delete backup file
@@ -60,7 +70,7 @@ if (!empty($_POST['backup_file']) && in_array($_POST['backup_file'],$archives))
 			if (!@unlink(DC_BACKUP_PATH.'/'.$b_file)) {
 				throw new Exception(sprintf(__('Unable to delete file %s'),html::escapeHTML($b_file)));
 			}
-			http::redirect($p_url);
+			http::redirect($p_url.'?tab=files');
 		}
 		
 		if (!empty($_POST['b_revert']))
@@ -68,7 +78,7 @@ if (!empty($_POST['backup_file']) && in_array($_POST['backup_file'],$archives))
 			$zip = new fileUnzip(DC_BACKUP_PATH.'/'.$b_file);
 			$zip->unzipAll(DC_BACKUP_PATH.'/');
 			@unlink(DC_BACKUP_PATH.'/'.$b_file);
-			http::redirect($p_url);
+			http::redirect($p_url.'?tab=files');
 		}
 	}
 	catch (Exception $e)
@@ -95,7 +105,10 @@ if ($new_v && $step)
 				if (!$updater->checkDownload($zip_file)) {
 					throw new Exception(
 						sprintf(__('Downloaded Dotclear archive seems to be corrupted. '.
-						'Try <a %s>download it</a> again.'),'href="'.$p_url.'?step=download"')
+						'Try <a %s>download it</a> again.'),'href="'.$p_url.'?step=download"').
+						' '.
+						__('If this problem persists try to '.
+						'<a href="http://dotclear.org/download">update manually</a>.')
 					);
 				}
 				http::redirect($p_url.'?step=backup');
@@ -119,6 +132,7 @@ if ($new_v && $step)
 	catch (Exception $e)
 	{
 		$msg = $e->getMessage();
+		
 		if ($e->getCode() == dcUpdate::ERR_FILES_CHANGED)
 		{
 			$msg =
@@ -148,28 +162,47 @@ if ($new_v && $step)
 		}
 		
 		$core->error->add($msg);
+		
+		$core->callBehavior('adminDCUpdateException',$e);
 	}
 }
 
 /* DISPLAY Main page
 -------------------------------------------------------- */
-dcPage::open(__('Dotclear update'));
+dcPage::open(__('Dotclear update'),
+	(!$step ? 
+		dcPage::jsPageTabs($default_tab).
+		dcPage::jsLoad('js/_update.js')
+		: ''),
+	dcPage::breadcrumb(
+		array(
+			__('System') => '',
+			'<span class="page-title">'.__('Dotclear update').'</span>' => ''
+		))
+);
 
 if (!$core->error->flag()) {
-	echo '<h2>'.__('Dotclear update').'</h2>';
+	if (!empty($_GET['nocache'])) {
+		dcPage::success(__('Manual checking of update done successfully.'));
+	}
 }
 
 if (!$step)
 {
+	echo '<div class="multi-part" id="update" title="'.__('Dotclear update').'">';
 	if (empty($new_v))
 	{
-		echo '<p><strong>'.__('No newer Dotclear version available.').'</strong></p>';
+		echo '<p><strong>'.__('No newer Dotclear version available.').'</strong></p>'.
+		'<form action="'.$p_url.'" method="get">'.
+		'<p><input type="hidden" name="nocache" value="1" />'.
+		'<input type="submit" value="'.__('Force checking update Dotclear').'" /></p>'.
+		'</form>';
 	}
 	else
 	{
 		echo
 			'<p class="static-msg">'.sprintf(__('Dotclear %s is available.'),$new_v).
-				($version_info ? ' <a href="'.$version_info.'">('.__('information about this version').')</a>' : '').
+				($version_info ? ' <a href="'.$version_info.'">('.__('Information about this version').')</a>' : '').
 				'</p>'.
 		
 		'<p>'.__('To upgrade your Dotclear installation simply click on the following button. '.
@@ -179,16 +212,18 @@ if (!$step)
 		'<input type="submit" value="'.__('Update Dotclear').'" /></p>'.
 		'</form>';
 	}
+	echo '</div>';
 	
 	if (!empty($archives))
 	{
+		echo '<div class="multi-part" id="files" title="'.__('Manage backup files').'">';
+
 		echo
 		'<h3>'.__('Update backup files').'</h3>'.
 		'<p>'.__('The following files are backups of previously updates. '.
 		'You can revert your previous installation or delete theses files.').'</p>';
 		
 		echo	'<form action="'.$p_url.'" method="post">';
-		
 		foreach ($archives as $v) {
 			echo
 			'<p><label class="classic">'.form::radio(array('backup_file'),html::escapeHTML($v)).' '.
@@ -204,6 +239,8 @@ if (!$step)
 		'<input type="submit" name="b_revert" value="'.__('Revert to selected file').'" />'.
 		$core->formNonce().'</p>'.
 		'</form>';
+
+		echo '</div>';
 	}
 }
 elseif ($step == 'unzip' && !$core->error->flag())

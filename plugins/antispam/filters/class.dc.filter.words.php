@@ -3,7 +3,7 @@
 #
 # This file is part of Antispam, a plugin for Dotclear 2.
 #
-# Copyright (c) 2003-2011 Olivier Meunier & Association Dotclear
+# Copyright (c) 2003-2013 Olivier Meunier & Association Dotclear
 # Licensed under the GPL version 2.0 license.
 # See LICENSE file or
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
@@ -15,10 +15,6 @@ class dcFilterWords extends dcSpamFilter
 {
 	public $has_gui = true;
 	public $name = 'Bad Words';
-
-	private $style_list = 'height: 200px; overflow: auto; margin-bottom: 1em; ';
-	private $style_p = 'margin: 1px 0 0 0; padding: 0.2em 0.5em; ';
-	private $style_global = 'background: #ccff99; ';
 
 	private $con;
 	private $table;
@@ -108,29 +104,28 @@ class dcFilterWords extends dcSpamFilter
 		$res = '';
 
 		if (!empty($_GET['list'])) {
-			$res .= '<p class="message">'.__('Words have been successfully added.').'</p>';
+			$res .= dcPage::message(__('Words have been successfully added.'),true,false,false);
 		}
 		if (!empty($_GET['added'])) {
-			$res .= '<p class="message">'.__('Word has been successfully added.').'</p>';
+			$res .= dcPage::message(__('Word has been successfully added.'),true,false,false);
 		}
 		if (!empty($_GET['removed'])) {
-			$res .= '<p class="message">'.__('Words have been successfully removed.').'</p>';
+			$res .= dcPage::message(__('Words have been successfully removed.'),true,false,false);
 		}
 
 		$res .=
-		'<form action="'.html::escapeURL($url).'" method="post">'.
-		'<fieldset><legend>'.__('Add a word').'</legend>'.
-		'<p><label class="classic" for="swa">'.__('Add a word').' '.form::field('swa',20,128).'</label>';
+		'<form action="'.html::escapeURL($url).'" method="post" class="fieldset">'.
+		'<p><label class="classic" for="swa">'.__('Add a word ').'</label> '.form::field('swa',20,128);
 
 		if ($core->auth->isSuperAdmin()) {
-			$res .= '<label class="classic" for="globalsw">'.form::checkbox('globalsw',1).' '.
-			__('Global word').'</label> ';
+			$res .= '<label class="classic" for="globalsw">'.form::checkbox('globalsw',1).'</label> '.
+			__('Global word (used for all blogs)');
 		}
 
 		$res .=
 		$core->formNonce().
-		'<input type="submit" value="'.__('Add').'"/></p>'.
-		'</fieldset>'.
+		'</p>'.
+		'<p><input type="submit" value="'.__('Add').'"/></p>'.
 		'</form>';
 
 		$rs = $this->getRules();
@@ -141,32 +136,50 @@ class dcFilterWords extends dcSpamFilter
 		else
 		{
 			$res .=
-			'<form action="'.html::escapeURL($url).'" method="post">'.
-			'<fieldset><legend>' . __('List') . '</legend>'.
-			'<div style="'.$this->style_list.'">';
+			'<form action="'.html::escapeURL($url).'" method="post" class="fieldset">'.
+			'<h3>' . __('List of bad words') . '</h3>'.
+			'<div class="antispam">';
 
+			$res_global = '';
+			$res_local = '';
 			while ($rs->fetch())
 			{
 				$disabled_word = false;
-				$p_style = $this->style_p;
+
+				$p_style = '';
+
 				if (!$rs->blog_id) {
 					$disabled_word = !$core->auth->isSuperAdmin();
-					$p_style .= $this->style_global;
+					$p_style .= ' global';
 				}
 
-				$res .=
-				'<p style="'.$p_style.'"><label class="classic" for="word-'.$rs->rule_id.'">'.
-				form::checkbox(array('swd[]', 'word-'.$rs->rule_id),$rs->rule_id,false,'','',$disabled_word).' '.
-				html::escapeHTML($rs->rule_content).
-				'</label></p>';
+				$item = '<p class="'.$p_style.'"><label class="classic" for="word-'.$rs->rule_id.'">'.
+					form::checkbox(array('swd[]', 'word-'.$rs->rule_id),$rs->rule_id,false,'','',$disabled_word).' '.
+					html::escapeHTML($rs->rule_content).
+					'</label></p>';
+
+				if ($rs->blog_id) {
+					// local list
+					if ($res_local == '') {
+						$res_local = '<h4>'.__('Local words (used only for this blog)').'</h4>';
+					}
+					$res_local .= $item;
+				} else {
+					// global list
+					if ($res_global == '') {
+						$res_global = '<h4>'.__('Global words (used for all blogs)').'</h4>';
+					}
+					$res_global .= $item;
+				}
 			}
+			$res .= $res_local.$res_global;
 
 			$res .=
 			'</div>'.
 			'<p>'.form::hidden(array('spamwords'),1).
 			$core->formNonce().
 			'<input class="submit delete" type="submit" value="' . __('Delete selected words') . '"/></p>'.
-			'</fieldset></form>';
+			'</form>';
 		}
 
 		if ($core->auth->isSuperAdmin())

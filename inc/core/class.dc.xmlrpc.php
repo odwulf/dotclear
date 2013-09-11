@@ -3,7 +3,7 @@
 #
 # This file is part of Dotclear 2.
 #
-# Copyright (c) 2003-2011 Olivier Meunier & Association Dotclear
+# Copyright (c) 2003-2013 Olivier Meunier & Association Dotclear
 # Licensed under the GPL version 2.0 license.
 # See LICENSE file or
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
@@ -213,6 +213,11 @@ class dcXmlRpc extends xmlrpcIntrospectionServer
 		$this->addCallback('wp.getCommentStatusList',array($this,'wp_getCommentStatusList'),
 			array('array','integer','string','string'),
 			'Retrieve all of the comment statuses.');
+			
+		# Pingback support
+		$this->addCallback('pingback.ping',array($this,'pingback_ping'),
+			array('string', 'string', 'string'),
+			'Notify a link to a post.');
 	}
 	
 	public function serve($data=false,$encoding='UTF-8')
@@ -269,7 +274,7 @@ class dcXmlRpc extends xmlrpcIntrospectionServer
 		return true;
 	}
 	
-	private function setBlog()
+	private function setBlog($bypass = false)
 	{
 		if (!$this->blog_id) {
 			throw new Exception('No blog ID given.');
@@ -287,8 +292,9 @@ class dcXmlRpc extends xmlrpcIntrospectionServer
 			throw new Exception('Blog does not exist.');
 		}
 		
-		if (!$this->core->blog->settings->system->enable_xmlrpc ||
-		!$this->core->auth->check('usage,contentadmin',$this->core->blog->id)) {
+		if (!$bypass &&
+			(!$this->core->blog->settings->system->enable_xmlrpc ||
+			!$this->core->auth->check('usage,contentadmin',$this->core->blog->id))) {
 			$this->core->blog = null;
 			throw new Exception('Not enough permissions on this blog.');
 		}
@@ -693,8 +699,10 @@ class dcXmlRpc extends xmlrpcIntrospectionServer
 				'parentId' => $parent,
 				'description' => $rs->cat_title,
 				'categoryName' => $rs->cat_url,
-				'htmlUrl' => $this->core->blog->url.$this->core->url->getBase('category').'/'.$rs->cat_url,
-				'rssUrl' => $this->core->blog->url.$this->core->url->getBase('feed').'/category/'.$rs->cat_url.'/rss2'
+				'htmlUrl' => $this->core->blog->url.
+					$this->core->url->getURLFor('category',$rs->cat_url),
+				'rssUrl' => $this->core->blog->url.
+					$this->core->url->getURLFor('feed','category/'.$rs->cat_url.'/rss2')
 			);
 			
 			$stack[] = $rs->cat_url;
@@ -1071,8 +1079,10 @@ class dcXmlRpc extends xmlrpcIntrospectionServer
 		$tags->sort('meta_id_lower','asc');
 		
 		$res = array();
-		$url   = $this->core->blog->url.$this->core->url->getBase('tag').'/%s';
-		$f_url = $this->core->blog->url.$this->core->url->getBase('tag_feed').'/%s';
+		$url   = $this->core->blog->url.
+			$this->core->url->getURLFor('tag','%s');
+		$f_url = $this->core->blog->url.
+			$this->core->url->getURLFor('tag_feed','%s');
 		while ($tags->fetch())
 		{
 			$res[] = array(
@@ -1222,7 +1232,7 @@ class dcXmlRpc extends xmlrpcIntrospectionServer
 				'author'				=> $rs->comment_author,
 				'author_url'			=> $rs->comment_site,
 				'author_email'			=> $rs->comment_email,
-				'author_ip'			=> $rs->comment_ip,
+				'author_ip'			=> $rs->comment_ip
 			);
 		}
 		return $res;
@@ -1623,6 +1633,29 @@ class dcXmlRpc extends xmlrpcIntrospectionServer
 			'approve' => 'Approved',
 			'spam' => 'Spam'
 		);
+	}
+
+	/* Pingback support
+	--------------------------------------------------- */
+	public function pingback_ping($from_url, $to_url)
+	{
+		# Come on, buddy! Don't make me waste time with this kind of silliness...
+		if (!(filter_var($from_url, FILTER_VALIDATE_URL) && preg_match('!^https?://!',$from_url))) {
+			throw new Exception(__('No valid source URL provided? Try again!'), 0);
+		}
+
+		if (!(filter_var($to_url, FILTER_VALIDATE_URL) && preg_match('!^https?://!',$to_url))) {
+			throw new Exception(__('No valid target URL provided? Try again!'), 0);
+		}
+
+		if (html::sanitizeURL(urldecode($from_url)) == html::sanitizeURL(urldecode($to_url))) {
+			throw new Exception(__('LOL!'), 0);
+		}
+		
+		# Time to get things done...
+		$this->setBlog(true);
+		$tb = new dcTrackback($this->core);
+		return $tb->receive_pb($from_url, $to_url);
 	}
 }
 ?>

@@ -3,7 +3,7 @@
 #
 # This file is part of Dotclear 2.
 #
-# Copyright (c) 2003-2011 Olivier Meunier & Association Dotclear
+# Copyright (c) 2003-2013 Olivier Meunier & Association Dotclear
 # Licensed under the GPL version 2.0 license.
 # See LICENSE file or
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
@@ -53,7 +53,7 @@ class tplBlogroll
 	public static function blogrollXbelLink($attr)
 	{
 		$f = $GLOBALS['core']->tpl->getFilters($attr);
-		return '<?php echo '.sprintf($f,'$core->blog->url.$core->url->getBase("xbel")').'; ?>';
+		return '<?php echo '.sprintf($f,'$core->blog->url.$core->url->getURLFor("xbel")').'; ?>';
 	}
 	
 	public static function getList($cat_title='<h3>%s</h3>',$block='<ul>%s</ul>',$item='<li>%s</li>',$category=null)
@@ -139,7 +139,8 @@ class tplBlogroll
 	{
 		global $core;
 		
-		if ($w->homeonly && $core->url->type != 'default') {
+		if (($w->homeonly == 1 && $core->url->type != 'default') ||
+			($w->homeonly == 2 && $core->url->type == 'default')) {
 			return;
 		}
 		
@@ -150,10 +151,10 @@ class tplBlogroll
 		}
 		
 		return
-		'<div class="links">'.
+		($w->content_only ? '' : '<div class="links'.($w->class ? ' '.html::escapeHTML($w->class) : '').'">').
 		($w->title ? '<h2>'.html::escapeHTML($w->title).'</h2>' : '').
 		$links.
-		'</div>';
+		($w->content_only ? '' : '</div>');
 	}
 }
 

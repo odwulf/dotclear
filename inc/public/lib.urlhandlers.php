@@ -3,7 +3,7 @@
 #
 # This file is part of Dotclear 2.
 #
-# Copyright (c) 2003-2011 Olivier Meunier & Association Dotclear
+# Copyright (c) 2003-2013 Olivier Meunier & Association Dotclear
 # Licensed under the GPL version 2.0 license.
 # See LICENSE file or
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
@@ -14,6 +14,29 @@ if (!defined('DC_RC_PATH')) { return; }
 class dcUrlHandlers extends urlHandler
 {
 	public $args;
+	
+	public function getURLFor($type,$value='') {
+		$core =& $GLOBALS['core'];
+		$url = $core->callBehavior("publicGetURLFor",$type,$value);
+		if (!$url) {
+			$url = $this->getBase($type);
+			if ($value) {
+				if ($url) {
+					$url .= '/';
+				}
+				$url .= $value;
+			}
+		}
+		return $url;
+	}
+	
+	public function register($type,$url,$representation,$handler)
+	{
+		$core =& $GLOBALS['core'];
+		$t = new ArrayObject(array($type,$url,$representation,$handler));
+		$core->callBehavior("publicRegisterURL",$t);
+		parent::register($t[0],$t[1],$t[2],$t[3]);
+	}
 	
 	public static function p404()
 	{
@@ -239,7 +262,8 @@ class dcUrlHandlers extends urlHandler
 		{
 			$params = new ArrayObject(array(
 				'cat_url' => $args,
-				'post_type' => 'post'));
+				'post_type' => 'post',
+				'without_empty' => false));
 			
 			$core->callBehavior('publicCategoryBeforeGetCategories',$params,$args);
 			
@@ -455,6 +479,9 @@ class dcUrlHandlers extends urlHandler
 				}
 				
 				# The entry
+				if ($_ctx->posts->trackbacksActive()) {
+					header('X-Pingback: '.$core->blog->url.$core->url->getURLFor("xmlrpc",$core->blog->id));
+				}
 				self::serveDocument('post.html');
 			}
 		}

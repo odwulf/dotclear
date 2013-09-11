@@ -3,7 +3,7 @@
 #
 # This file is part of Dotclear 2.
 #
-# Copyright (c) 2003-2011 Olivier Meunier & Association Dotclear
+# Copyright (c) 2003-2013 Olivier Meunier & Association Dotclear
 # Licensed under the GPL version 2.0 license.
 # See LICENSE file or
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
@@ -27,15 +27,12 @@ if (isset($_POST['css']))
 	fwrite($fp,$_POST['css']);
 	fclose($fp);
 	
-	echo
-	'<div class="message"><p>'.
-	__('Style sheet upgraded.').
-	'</p></div>';
+	dcPage::message(__('Style sheet upgraded.'),true,true);
 }
 
 $css_content = is_file($css_file) ? file_get_contents($css_file) : '';
 
 echo
-'<p class="area"><label>'.__('Style sheet:').' '.
-form::textarea('css',60,20,html::escapeHTML($css_content)).'</label></p>';
+'<p class="area"><label>'.__('Style sheet:').'</label> '.
+form::textarea('css',60,20,html::escapeHTML($css_content)).'</p>';
 ?>

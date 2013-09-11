@@ -3,7 +3,7 @@
 #
 # This file is part of Dotclear 2.
 #
-# Copyright (c) 2003-2011 Olivier Meunier & Association Dotclear
+# Copyright (c) 2003-2013 Olivier Meunier & Association Dotclear
 # Licensed under the GPL version 2.0 license.
 # See LICENSE file or
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
@@ -46,50 +46,45 @@ try {
 if (!$core->error->flag())
 {
 	# Filter form we'll put in html_block
-	$users_combo = $categories_combo = array();
-	$users_combo['-'] = $categories_combo['-'] = '';
-	while ($users->fetch())
-	{
-		$user_cn = dcUtils::getUserCN($users->user_id,$users->user_name,
-		$users->user_firstname,$users->user_displayname);
-		
-		if ($user_cn != $users->user_id) {
-			$user_cn .= ' ('.$users->user_id.')';
-		}
-		
-		$users_combo[$user_cn] = $users->user_id; 
-	}
-	
-	$categories_combo[__('None')] = 'NULL';
-	while ($categories->fetch()) {
-		$categories_combo[str_repeat('&nbsp;&nbsp;',$categories->level-1).($categories->level-1 == 0 ? '' : '&bull; ').
-			html::escapeHTML($categories->cat_title).
-			' ('.$categories->nb_post.')'] = $categories->cat_id;
-	}
-	
-	$status_combo = array(
-	'-' => ''
+	$users_combo = array_merge(
+		array('-' => ''),
+		dcAdminCombos::getUsersCombo($users)
 	);
-	foreach ($core->blog->getAllPostStatus() as $k => $v) {
-		$status_combo[$v] = (string) $k;
+
+	$categories_combo = array_merge(
+		array(
+			new formSelectOption('-',''),
+			new formSelectOption(__('(No cat)'),'NULL')),		
+		dcAdminCombos::getCategoriesCombo($categories,false)
+	);
+	$categories_values = array();
+	foreach ($categories_combo as $cat) {
+		if (isset($cat->value)) {
+			$categories_values[$cat->value]=true;
+		}
 	}
+	
+	$status_combo = array_merge(
+		array('-' => ''),
+		dcAdminCombos::getPostStatusesCombo()	
+	);
 	
 	$selected_combo = array(
 	'-' => '',
-	__('selected') => '1',
-	__('not selected') => '0'
+	__('Selected') => '1',
+	__('Not selected') => '0'
 	);
 	
 	# Months array
-	$dt_m_combo['-'] = '';
-	while ($dates->fetch()) {
-		$dt_m_combo[dt::str('%B %Y',$dates->ts())] = $dates->year().$dates->month();
-	}
+	$dt_m_combo = array_merge(
+		array('-' => ''),
+		dcAdminCombos::getDatesCombo($dates)
+	);
 	
-	$lang_combo['-'] = '';
-	while ($langs->fetch()) {
-		$lang_combo[$langs->post_lang] = $langs->post_lang;
-	}
+	$lang_combo = array_merge(
+		array('-' => ''),
+		dcAdminCombos::getLangsCombo($langs,false)	
+	);
 	
 	$sortby_combo = array(
 	__('Date') => 'post_dt',
@@ -121,7 +116,9 @@ $combo_action[__('Mark')] = array(
 	__('Mark as selected') => 'selected',
 	__('Mark as unselected') => 'unselected'
 );
-$combo_action[__('Change')] = array(__('Change category') => 'category');
+$combo_action[__('Change')] = array(
+	__('Change category') => 'category',
+	__('Change language') => 'lang');
 if ($core->auth->check('admin',$core->blog->id))
 {
 	$combo_action[__('Change')] = array_merge($combo_action[__('Change')],
@@ -165,24 +162,32 @@ $params['no_content'] = true;
 if ($user_id !== '' && in_array($user_id,$users_combo)) {
 	$params['user_id'] = $user_id;
 	$show_filters = true;
+} else {
+	$user_id='';
 }
 
 # - Categories filter
-if ($cat_id !== '' && in_array($cat_id,$categories_combo)) {
+if ($cat_id !== '' && isset($categories_values[$cat_id])) {
 	$params['cat_id'] = $cat_id;
 	$show_filters = true;
+} else {
+	$cat_id='';
 }
 
 # - Status filter
 if ($status !== '' && in_array($status,$status_combo)) {
 	$params['post_status'] = $status;
 	$show_filters = true;
+} else {
+	$status='';
 }
 
 # - Selected filter
 if ($selected !== '' && in_array($selected,$selected_combo)) {
 	$params['post_selected'] = $selected;
 	$show_filters = true;
+} else {
+	$selected='';
 }
 
 # - Month filter
@@ -190,23 +195,32 @@ if ($month !== '' && in_array($month,$dt_m_combo)) {
 	$params['post_month'] = substr($month,4,2);
 	$params['post_year'] = substr($month,0,4);
 	$show_filters = true;
+} else {
+	$month='';
 }
 
 # - Lang filter
 if ($lang !== '' && in_array($lang,$lang_combo)) {
 	$params['post_lang'] = $lang;
 	$show_filters = true;
+} else {
+	$lang='';
 }
 
 # - Sortby and order filter
 if ($sortby !== '' && in_array($sortby,$sortby_combo)) {
 	if ($order !== '' && in_array($order,$order_combo)) {
 		$params['order'] = $sortby.' '.$order;
+	} else {
+		$order='desc';
 	}
 	
 	if ($sortby != 'post_dt' || $order != 'desc') {
 		$show_filters = true;
 	}
+} else {
+	$sortby='post_dt';
+	$order='desc';
 }
 
 # Get posts
@@ -225,53 +239,66 @@ if (!$show_filters) {
 	$starting_script .= dcPage::jsLoad('js/filter-controls.js');
 }
 
-dcPage::open(__('Entries'),$starting_script);
-
+dcPage::open(__('Entries'),$starting_script,
+	dcPage::breadcrumb(
+		array(
+			html::escapeHTML($core->blog->name) => '',
+			'<span class="page-title">'.__('Entries').'</span>' => ''
+		))
+);
+if (!empty($_GET['upd'])) {
+	dcPage::success(__('Selected entries have been successfully updated.'));
+} elseif (!empty($_GET['del'])) {
+	dcPage::success(__('Selected entries have been successfully deleted.'));
+}
 if (!$core->error->flag())
 {
-	echo 
-	'<h2>'.html::escapeHTML($core->blog->name).' &rsaquo; <span class="page-title">'.__('Entries').'</span></h2>'.
+	echo
 	'<p class="top-add"><a class="button add" href="post.php">'.__('New entry').'</a></p>';
 	
 	if (!$show_filters) {
 		echo '<p><a id="filter-control" class="form-control" href="#">'.
-		__('Filters').'</a></p>';
+		__('Filter posts list').'</a></p>';
 	}
 	
 	echo
 	'<form action="posts.php" method="get" id="filters-form">'.
-	'<fieldset><legend>'.__('Filters').'</legend>'.
-	'<div class="three-cols">'.
-	'<div class="col">'.
-	'<label for="user_id">'.__('Author:').
-	form::combo('user_id',$users_combo,$user_id).'</label> '.
-	'<label for="cat_id">'.__('Category:').
-	form::combo('cat_id',$categories_combo,$cat_id).'</label> '.
-	'<label for="status">'.__('Status:').
-	form::combo('status',$status_combo,$status).'</label> '.
+	'<h3 class="hidden">'.__('Filter posts list').'</h3>'.
+
+	'<div class="table">'.
+	'<div class="cell">'.
+	'<h4>'.__('Filters').'</h4>'.
+	'<p><label for="user_id" class="ib">'.__('Author:').'</label> '.
+	form::combo('user_id',$users_combo,$user_id).'</p>'.
+	'<p><label for="cat_id" class="ib">'.__('Category:').'</label> '.
+	form::combo('cat_id',$categories_combo,$cat_id).'</p>'.
+	'<p><label for="status" class="ib">'.__('Status:').'</label> ' .
+	form::combo('status',$status_combo,$status).'</p> '.
 	'</div>'.
 	
-	'<div class="col">'.
-	'<label for="selected">'.__('Selected:').
-	form::combo('selected',$selected_combo,$selected).'</label> '.
-	'<label for="month">'.__('Month:').
-	form::combo('month',$dt_m_combo,$month).'</label> '.
-	'<label for="lang">'.__('Lang:').
-	form::combo('lang',$lang_combo,$lang).'</label> '.
+	'<div class="cell filters-sibling-cell">'.
+	'<p><label for="selected" class="ib">'.__('Selected:').'</label> '.
+	form::combo('selected',$selected_combo,$selected).'</p>'.
+	'<p><label for="month" class="ib">'.__('Month:').'</label> '.
+	form::combo('month',$dt_m_combo,$month).'</p>'.
+	'<p><label for="lang" class="ib">'.__('Lang:').'</label> '.
+	form::combo('lang',$lang_combo,$lang).'</p> '.
 	'</div>'.
 	
-	'<div class="col">'.
-	'<p><label for="sortby">'.__('Order by:').
-	form::combo('sortby',$sortby_combo,$sortby).'</label> '.
-	'<label for="order">'.__('Sort:').
-	form::combo('order',$order_combo,$order).'</label></p>'.
-	'<p><label for="nb" class="classic">'.	form::field('nb',3,3,$nb_per_page).' '.
-	__('Entries per page').'</label></p> '.
-	'<p><input type="submit" value="'.__('Apply filters').'" /></p>'.
+	'<div class="cell filters-options">'.
+	'<h4>'.__('Display options').'</h4>'.
+	'<p><label for="sortby" class="ib">'.__('Order by:').'</label> '.
+	form::combo('sortby',$sortby_combo,$sortby).'</p>'.
+	'<p><label for="order" class="ib">'.__('Sort:').'</label> '.
+	form::combo('order',$order_combo,$order).'</p>'.
+	'<p><span class="label ib">'.__('Show').'</span> <label for="nb" class="classic">'.
+	form::field('nb',3,3,$nb_per_page).' '.
+	__('entries per page').'</label></p>'.
 	'</div>'.
 	'</div>'.
-	'<br class="clear" />'. //Opera sucks
-	'</fieldset>'.
+
+	'<p><input type="submit" value="'.__('Apply filters and display options').'" />'.
+	'<br class="clear" /></p>'. //Opera sucks
 	'</form>';
 	
 	# Show posts

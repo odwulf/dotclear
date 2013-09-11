@@ -3,7 +3,7 @@
 #
 # This file is part of Dotclear 2.
 #
-# Copyright (c) 2003-2011 Olivier Meunier & Association Dotclear
+# Copyright (c) 2003-2013 Olivier Meunier & Association Dotclear
 # Licensed under the GPL version 2.0 license.
 # See LICENSE file or
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
@@ -63,6 +63,8 @@ class dcCore
 		# define weak_locks for mysql
 		if ($this->con instanceof mysqlConnection) {
 			mysqlConnection::$weak_locks = true;
+		} elseif ($this->con instanceof mysqliConnection) {
+			mysqliConnection::$weak_locks = true;
 		}
 		
 		# define searchpath for postgresql
@@ -344,11 +346,12 @@ class dcCore
 		return $escaped ? html::escapeURL($url) : $url;
 	}
 	
-	public function setPostType($type,$admin_url,$public_url)
+	public function setPostType($type,$admin_url,$public_url,$label='')
 	{
 		$this->post_types[$type] = array(
 			'admin_url' => $admin_url,
-			'public_url' => $public_url
+			'public_url' => $public_url,
+			'label' => ($label != '' ? $label : $type)
 		);
 	}
 	
@@ -789,7 +792,7 @@ class dcCore
 		return array(
 			'edit_size' => 24,
 			'enable_wysiwyg' => true,
-			'post_format' => 'wiki',
+			'post_format' => 'wiki'
 		);
 	}
 	//@}
@@ -816,7 +819,7 @@ class dcCore
 	{
 		$strReq =
 		'SELECT U.user_id AS user_id, user_super, user_name, user_firstname, '.
-		'user_displayname, permissions '.
+		'user_displayname, user_email, permissions '.
 		'FROM '.$this->prefix.'user U '.
 		'JOIN '.$this->prefix.'permissions P ON U.user_id = P.user_id '.
 		"WHERE blog_id = '".$this->con->escape($id)."' ";
@@ -825,7 +828,7 @@ class dcCore
 			$strReq .=
 			'UNION '.
 			'SELECT U.user_id AS user_id, user_super, user_name, user_firstname, '.
-			"user_displayname, NULL AS permissions ".
+			"user_displayname, user_email, NULL AS permissions ".
 			'FROM '.$this->prefix.'user U '.
 			'WHERE user_super = 1 ';
 		}
@@ -840,6 +843,7 @@ class dcCore
 				'name' => $rs->user_name,
 				'firstname' => $rs->user_firstname,
 				'displayname' => $rs->user_displayname,
+				'email' => $rs->user_email,
 				'super' => (boolean) $rs->user_super,
 				'p' => $this->auth->parsePermissions($rs->permissions)
 			);
@@ -927,7 +931,7 @@ class dcCore
 		}
 		
 		if (!empty($params['q'])) {
-			$params['q'] = str_replace('*','%',$params['q']);
+			$params['q'] = strtolower(str_replace('*','%',$params['q']));
 			$where .=
 			'AND ('.
 			"LOWER(B.blog_id) LIKE '".$this->con->escape($params['q'])."' ".
@@ -1291,7 +1295,7 @@ class dcCore
 				'Enable XML/RPC interface'),
 				array('lang','string','en',
 				'Default blog language'),
-				array('media_exclusion','string','',
+				array('media_exclusion','string','/\.php$/i',
 				'File name exclusion pattern in media manager. (PCRE value)'),
 				array('media_img_m_size','integer',448,
 				'Image medium size in media manager'),

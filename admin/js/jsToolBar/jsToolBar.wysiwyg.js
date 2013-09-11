@@ -208,7 +208,7 @@ jsToolBar.prototype.initWindow = function() {
 		}
 		
 		This.setSwitcher();
-		setTimeout(function(){This.focusEditor();},1);
+		try { This.iwin.document.designMode = 'on'; } catch (e) {}; // Firefox needs this
 		
 		return true;
 	}
@@ -477,6 +477,7 @@ jsToolBar.prototype.simpleCleanRegex = new Array(
 	/* mise en forme identique contigue */
 	[/<\/(strong|em|ins|del|q|code)>(\s*?)<\1>/gim, "$2"],
 	[/<(br|BR)>/g, "<br />"],
+	[/<(hr|HR)>/g, "<hr />"],
 	/* opera est trop strict ;)) */
 	[/([^\s])\/>/g, "$1 />"],
 	/* br intempestifs de fin de block */

@@ -3,7 +3,7 @@
 #
 # This file is part of Dotclear 2.
 #
-# Copyright (c) 2003-2011 Olivier Meunier & Association Dotclear
+# Copyright (c) 2003-2013 Olivier Meunier & Association Dotclear
 # Licensed under the GPL version 2.0 license.
 # See LICENSE file or
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
@@ -146,7 +146,7 @@ class urlPages extends dcUrlHandlers
 						$cur->comment_ip = http::realIP();
 						
 						$redir = $_ctx->posts->getURL();
-						$redir .= strpos($redir,'?') !== false ? '&' : '?';
+						$redir .= $core->blog->settings->system->url_scan == 'query_string' ? '&' : '?';
 						
 						try
 						{
@@ -180,6 +180,9 @@ class urlPages extends dcUrlHandlers
 				}
 				
 				# The entry
+				if ($_ctx->posts->trackbacksActive()) {
+					header('X-Pingback: '.$core->blog->url.$core->url->getURLFor("xmlrpc",$core->blog->id));
+				}
 				$core->tpl->setPath($core->tpl->getPath(), dirname(__FILE__).'/default-templates');
 				self::serveDocument('page.html');
 			}
@@ -220,13 +223,15 @@ class tplPages
 	{
 		global $core, $_ctx;
 		
-		if ($w->homeonly && $core->url->type != 'default') {
+		if (($w->homeonly == 1 && $core->url->type != 'default') ||
+			($w->homeonly == 2 && $core->url->type == 'default')) {
 			return;
 		}
 		
 		$params['post_type'] = 'page';
 		$params['limit'] = abs((integer) $w->limit);
 		$params['no_content'] = true;
+		$params['post_selected'] = false;
 		
 		$sort = $w->sortby;
 		if (!in_array($sort,array('post_title','post_position','post_dt'))) {
@@ -246,7 +251,7 @@ class tplPages
 		}
 		
 		$res =
-		'<div class="pages">'.
+		($w->content_only ? '' : '<div class="pages'.($w->class ? ' '.html::escapeHTML($w->class) : '').'">').
 		($w->title ? '<h2>'.html::escapeHTML($w->title).'</h2>' : '').
 		'<ul>';
 		
@@ -259,7 +264,7 @@ class tplPages
 			html::escapeHTML($rs->post_title).'</a></li>';
 		}
 		
-		$res .= '</ul></div>';
+		$res .= '</ul>'.($w->content_only ? '' : '</div>');
 		
 		return $res;
 	}

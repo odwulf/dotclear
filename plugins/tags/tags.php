@@ -3,7 +3,7 @@
 #
 # This file is part of Dotclear 2.
 #
-# Copyright (c) 2003-2011 Olivier Meunier & Association Dotclear
+# Copyright (c) 2003-2013 Olivier Meunier & Association Dotclear
 # Licensed under the GPL version 2.0 license.
 # See LICENSE file or
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
@@ -14,17 +14,22 @@ if (!defined('DC_CONTEXT_ADMIN')) { return; }
 ?>
 <html>
 <head>
-  <title>Tags</title>
+  <title><?php echo __('Tags'); ?></title>
   <link rel="stylesheet" type="text/css" href="index.php?pf=tags/style.css" />
 </head>
 
 <body>
-<h2><?php echo html::escapeHTML($core->blog->name); ?> &rsaquo;
-<span class="page-title"><?php echo __('Tags'); ?></span></h2>
+<?php
+echo dcPage::breadcrumb(
+	array(
+		html::escapeHTML($core->blog->name) => '',
+		'<span class="page-title">'.__('Tags').'</span>' => ''
+	));
+?>
 
 <?php
 if (!empty($_GET['del'])) {
-	echo '<p class="message">'.__('Tag has been successfully removed').'</p>';
+	dcPage::message(__('Tag has been successfully removed'));
 }
 
 $tags = $core->meta->getMetadata(array('meta_type' => 'tag'));

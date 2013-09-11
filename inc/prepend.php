@@ -3,22 +3,12 @@
 #
 # This file is part of Dotclear 2.
 #
-# Copyright (c) 2003-2011 Olivier Meunier & Association Dotclear
+# Copyright (c) 2003-2013 Olivier Meunier & Association Dotclear
 # Licensed under the GPL version 2.0 license.
 # See LICENSE file or
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
 #
 # -- END LICENSE BLOCK -----------------------------------------
-
-//*== DC_DEBUG ==
-ini_set('display_errors',true);
-error_reporting(E_ALL | E_STRICT);
-define('DC_DEBUG',true);
-//*/
-
-if (!defined('DC_DEBUG')) {
-	define('DC_DEBUG',false);
-}
 
 /* ------------------------------------------------------------------------------------------- */
 #  ClearBricks, DotClear classes auto-loader
@@ -68,6 +58,7 @@ $__autoload['adminPostList']			= dirname(__FILE__).'/admin/lib.pager.php';
 $__autoload['adminPostMiniList']		= dirname(__FILE__).'/admin/lib.pager.php';
 $__autoload['adminCommentList']		= dirname(__FILE__).'/admin/lib.pager.php';
 $__autoload['adminUserList']			= dirname(__FILE__).'/admin/lib.pager.php';
+$__autoload['dcAdminCombos']			= dirname(__FILE__).'/admin/lib.admincombos.php';
 
 $__autoload['dcTemplate']			= dirname(__FILE__).'/public/class.dc.template.php';
 $__autoload['context']				= dirname(__FILE__).'/public/lib.tpl.context.php';
@@ -116,9 +107,23 @@ if (!is_file(DC_RC_PATH))
 
 require DC_RC_PATH;
 
+//*== DC_DEBUG ==
+if (!defined('DC_DEBUG')) {
+	define('DC_DEBUG',true);
+}
+if (DC_DEBUG) {
+	ini_set('display_errors',true);
+	error_reporting(E_ALL | E_STRICT);
+}
+//*/
+
+if (!defined('DC_DEBUG')) {
+	define('DC_DEBUG',false);
+}
+
 # Constants
 define('DC_ROOT',path::real(dirname(__FILE__).'/..'));
-define('DC_VERSION','2.4.0-dev');
+define('DC_VERSION','2.6-dev');
 define('DC_DIGESTS',dirname(__FILE__).'/digests');
 define('DC_L10N_ROOT',dirname(__FILE__).'/../locales');
 define('DC_L10N_UPDATE_URL','http://services.dotclear.net/dc2.l10n/?version=%s');
@@ -157,24 +162,31 @@ try {
 	$core = new dcCore(DC_DBDRIVER,DC_DBHOST,DC_DBNAME,DC_DBUSER,DC_DBPASSWORD,DC_DBPREFIX,DC_DBPERSIST);
 } catch (Exception $e) {
 	init_prepend_l10n();
-	__error(__('Unable to connect to database')
-		,$e->getCode() == 0 ?
-		sprintf(__('<p>This either means that the username and password information in '.
-		'your <strong>config.php</strong> file is incorrect or we can\'t contact '.
-		'the database server at "<em>%s</em>". This could mean your '.
-		'host\'s database server is down.</p> '.
-		'<ul><li>Are you sure you have the correct username and password?</li>'.
-		'<li>Are you sure that you have typed the correct hostname?</li>'.
-		'<li>Are you sure that the database server is running?</li></ul>'.
-		'<p>If you\'re unsure what these terms mean you should probably contact '.
-		'your host. If you still need help you can always visit the '.
-		'<a href="http://forum.dotclear.net/">Dotclear Support Forums</a>.</p>').
-		(DC_DEBUG ?
-			__('The following error was encountered while trying to read the database:').'</p><ul><li>'.$e->getMessage().'</li></ul>' :	'')
-		,(DC_DBHOST != '' ? DC_DBHOST : 'localhost')
-		)
-		: ''
-		,20);
+	if (!defined('DC_CONTEXT_ADMIN')) {
+		__error(__('Site temporarily unavailable'),
+			__('<p>We apologize for this temporary unavailability.<br />'.
+			'Thank you for your understanding.</p>'),
+			20);
+	} else {
+		__error(__('Unable to connect to database')
+			,$e->getCode() == 0 ?
+			sprintf(__('<p>This either means that the username and password information in '.
+			'your <strong>config.php</strong> file is incorrect or we can\'t contact '.
+			'the database server at "<em>%s</em>". This could mean your '.
+			'host\'s database server is down.</p> '.
+			'<ul><li>Are you sure you have the correct username and password?</li>'.
+			'<li>Are you sure that you have typed the correct hostname?</li>'.
+			'<li>Are you sure that the database server is running?</li></ul>'.
+			'<p>If you\'re unsure what these terms mean you should probably contact '.
+			'your host. If you still need help you can always visit the '.
+			'<a href="http://forum.dotclear.net/">Dotclear Support Forums</a>.</p>').
+			(DC_DEBUG ?
+				__('The following error was encountered while trying to read the database:').'</p><ul><li>'.$e->getMessage().'</li></ul>' :	'')
+			,(DC_DBHOST != '' ? DC_DBHOST : 'localhost')
+			)
+			: ''
+			,20);
+	}
 }
 
 # If we have some __top_behaviors, we load them
@@ -208,7 +220,7 @@ $core->url->register('trackback','trackback','^trackback/(.+)$',array('dcUrlHand
 $core->url->register('rsd','rsd','^rsd$',array('dcUrlHandlers','rsd'));
 $core->url->register('xmlrpc','xmlrpc','^xmlrpc/(.+)$',array('dcUrlHandlers','xmlrpc'));
 
-$core->setPostType('post','post.php?id=%d',$core->url->getBase('post').'/%s');
+$core->setPostType('post','post.php?id=%d',$core->url->getURLFor('post','%s'),'Posts');
 
 # Store upload_max_filesize in bytes
 $u_max_size = files::str2bytes(ini_get('upload_max_filesize'));

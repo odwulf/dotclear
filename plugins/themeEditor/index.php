@@ -3,7 +3,7 @@
 #
 # This file is part of Dotclear 2.
 #
-# Copyright (c) 2003-2011 Olivier Meunier & Association Dotclear
+# Copyright (c) 2003-2013 Olivier Meunier & Association Dotclear
 # Licensed under the GPL version 2.0 license.
 # See LICENSE file or
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
@@ -14,6 +14,10 @@ if (!defined('DC_CONTEXT_ADMIN')) { return; }
 require dirname(__FILE__).'/class.themeEditor.php';
 
 $file_default = $file = array('c'=>null, 'w'=>false, 'type'=>null, 'f'=>null, 'default_file'=>false);
+
+# Get interface setting
+$core->auth->user_prefs->addWorkspace('interface');
+$user_ui_colorsyntax = $core->auth->user_prefs->interface->colorsyntax;
 
 # Loading themes
 $core->themes = new dcThemes($core);
@@ -31,6 +35,8 @@ try
 			$file = $o->getFileContent('css',$_REQUEST['css']);
 		} elseif (!empty($_REQUEST['js'])) {
 			$file = $o->getFileContent('js',$_REQUEST['js']);
+		} elseif (!empty($_REQUEST['po'])) {
+			$file = $o->getFileContent('po',$_REQUEST['po']);
 		}
 	}
 	catch (Exception $e)
@@ -54,21 +60,39 @@ catch (Exception $e)
 
 <html>
 <head>
-  <title><?php echo __('Theme Editor'); ?></title>
+  <title><?php echo __('Edit theme files'); ?></title>
   <link rel="stylesheet" type="text/css" href="index.php?pf=themeEditor/style.css" />
   <script type="text/javascript">
   //<![CDATA[
   <?php echo dcPage::jsVar('dotclear.msg.saving_document',__("Saving document...")); ?>
   <?php echo dcPage::jsVar('dotclear.msg.document_saved',__("Document saved")); ?>
   <?php echo dcPage::jsVar('dotclear.msg.error_occurred',__("An error occurred:")); ?>
+  <?php echo dcPage::jsVar('dotclear.colorsyntax',$user_ui_colorsyntax); ?>
   //]]>
   </script>
   <script type="text/javascript" src="index.php?pf=themeEditor/script.js"></script>
+<?php if ($user_ui_colorsyntax) { ?>
+  <link rel="stylesheet" type="text/css" href="index.php?pf=themeEditor/codemirror/codemirror.css" />
+  <link rel="stylesheet" type="text/css" href="index.php?pf=themeEditor/codemirror.css" />
+  <script type="text/JavaScript" src="index.php?pf=themeEditor/codemirror/codemirror.js"></script>
+  <script type="text/JavaScript" src="index.php?pf=themeEditor/codemirror/multiplex.js"></script>
+  <script type="text/JavaScript" src="index.php?pf=themeEditor/codemirror/xml.js"></script>
+  <script type="text/JavaScript" src="index.php?pf=themeEditor/codemirror/javascript.js"></script>
+  <script type="text/JavaScript" src="index.php?pf=themeEditor/codemirror/css.js"></script>
+  <script type="text/JavaScript" src="index.php?pf=themeEditor/codemirror/php.js"></script>
+  <script type="text/JavaScript" src="index.php?pf=themeEditor/codemirror/htmlmixed.js"></script>
+<?php } ?>
 </head>
 
 <body>
-<?php echo '<h2>'.html::escapeHTML($core->blog->name).
-' &rsaquo; <a href="blog_theme.php">'.__('Blog appearance').'</a> &rsaquo; <span class="page-title">'.__('Theme Editor').'</span></h2>'; ?>
+<?php
+echo dcPage::breadcrumb(
+	array(
+		html::escapeHTML($core->blog->name) => '',
+		__('Blog appearance') => 'blog_theme.php',
+		'<span class="page-title">'.__('Edit theme files').'</span>' => ''
+	));
+?>
 
 <p><strong><?php echo sprintf(__('Your current theme on this blog is "%s".'),html::escapeHTML($T['name'])); ?></strong></p>
 
@@ -107,6 +131,37 @@ else
 	
 	echo
 	'</fieldset></form>';
+
+	if ($user_ui_colorsyntax) {
+		$editorMode = 
+			(!empty($_REQUEST['css']) ? "css" :
+			(!empty($_REQUEST['js']) ? "javascript" :
+			(!empty($_REQUEST['po']) ? "text/plain" : "text/html")));
+		echo 
+		'<script>
+			window.CodeMirror.defineMode("dotclear", function(config) {
+				return CodeMirror.multiplexingMode(
+					CodeMirror.getMode(config, "'.$editorMode.'"),
+					{open: "{{tpl:", close: "}}",
+					 mode: CodeMirror.getMode(config, "text/plain"),
+					 delimStyle: "delimit"},
+					{open: "<tpl:", close: ">",
+					 mode: CodeMirror.getMode(config, "text/plain"),
+					 delimStyle: "delimit"},
+					{open: "</tpl:", close: ">",
+					 mode: CodeMirror.getMode(config, "text/plain"),
+					 delimStyle: "delimit"}
+					);
+			});
+	    	var editor = CodeMirror.fromTextArea(document.getElementById("file_content"), {
+	    		mode: "dotclear",
+	       		tabMode: "indent",
+	       		lineWrapping: "true",
+	       		lineNumbers: "true",
+	   			matchBrackets: "true"
+	   		});
+	    </script>';
+	}
 }
 ?>
 </div>
@@ -121,6 +176,9 @@ else
 
 <h3><?php echo __('JavaScript files'); ?></h3>
 <?php echo $o->filesList('js','<a href="'.$p_url.'&amp;js=%2$s" class="js-link">%1$s</a>'); ?>
+
+<h3><?php echo __('Locales files'); ?></h3>
+<?php echo $o->filesList('po','<a href="'.$p_url.'&amp;po=%2$s" class="po-link">%1$s</a>'); ?>
 </div>
 
 <?php dcPage::helpBlock('themeEditor'); ?>

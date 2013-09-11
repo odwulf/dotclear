@@ -1,15 +1,19 @@
 .jstEditor {
 	border-width : 0 1px 1px 1px;
 	border-style : solid;
-	border-color : #000 #ccc #ccc #000;
-	padding-left: 5px;
-	background : #f9f9f9;
+	border-color : #ddd;
+	background : #f7f7f7;
 }
 .jstEditor textarea, .jstEditor iframe {
-  margin: 0;
-  border: 0;
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;	
+	margin: 0;
+	border: 1px solid #fbfbfb;
+  	width: 100%;
+  	padding: .5em 0 0 0;
+  	min-height: 100px;
 }
-
 .jstHandle {
 	height: 8px;
 	background: #ccc url(resize.png) no-repeat center center;
@@ -19,13 +23,17 @@
 	border-width: 0 1px 1px 1px;
 	border-style: solid;
 }
-
+.jstEditor textarea:focus, .jstEditor iframe:focus {
+	border-color: #bee74b;
+}
 .jstElements {
-	padding: 3px 3px;
-	border-width: 1px 1px 0 1px;
-	border-style: solid;
-	border-color: #000 #ccc #ccc #000;
-	background: #dfdfdf;
+	padding: 0 1rem; 
+	border: 1px solid #dfdfdf;
+	overflow: hidden; 
+	background: #f5f5f5; 
+	-moz-border-radius: 4px 4px 0 0; 
+	-webkit-border-radius: 4px 4px 0 0; 
+	border-radius: 4px 4px 0 0; 
 }
 
 .jstElements select, .jstElements button {
@@ -33,55 +41,54 @@
 }
 .jstElements select {
 	width: 12em;
+	margin-right: .6rem;
+	border: 1px solid #ddd; 
 }
 .jstElements button {
-	margin-right : 2px;
-	width : 20px;
-	height: 20px;
-	padding: 0;
+	width : 30px;
+	height: 28px;
 	border-style: solid;
-	border-width: 1px;
-	border-color: #dfdfdf;
-	background-color : transparent;
+	border-width:  0 1px 0 0;
+	border-color: #e7e7e7;
+	background-color : #f7f7f7;
 	background-position : 50% 50%;
 	background-repeat: no-repeat;
 }
 .jstElements button:hover {
-	border-color : #ccc;
+	border-color : #ddd;
 	background-color: #fff;
 }
 .jstElements button span {
 	display : none;	
 }
 .jstElements span {
-	display : inline;
+	display : inline-block;
+	vertical-align: top;
+	background: #e5e5e5;
 }
-
-.jstSpacer {
-	width : 0px;
-	font-size: 1px;
-	margin-right: 4px;
+span.jstSpacer {
+	width : 6px;
+	height: 28px;
+	margin-right: 0;
 }
 
 .jstSwitcher {
 	display: block;
 	list-style: none;
-	margin: 0 0 0 -5px;
+	margin: 0;
 	padding: 0 0 5px 0;
 	background: #dfdfdf;
 	border-top: 1px solid #999;
-	font-size: 90%;
-	font-weight: bold;
 }
 .jstSwitcher li {
 	display: inline;
 	margin: 0 0 0 5px;
-	padding: 2px 4px;
+	padding: 2px 8px;
 }
 .jstSwitcher li.jstSwitcherCurrent {
 	color: #fff;
-	background: #999;
-	-moz-border-radius: 0 0 2px 2px;
+	background: #677374;
+	border-radius: 0 0 2px 2px;
 }
 .jstSwitcher a {
 	font-weight: normal;
@@ -141,7 +148,6 @@
 .jstb_removeFormat {
 	background-image: url(bt_clean.png);
 }
-
 
 /* WYSIWYG Iframe */
 .wysiwygIframe {

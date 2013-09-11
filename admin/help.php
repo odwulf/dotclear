@@ -16,14 +16,16 @@ dcPage::check('usage');
 
 function helpPage()
 {
+	$ret = array('content' => '', 'title' => '');
+
 	$args = func_get_args();
 	if (empty($args)) {
-		return;
+		return $ret;
 	};
 	
 	global $__resources;
 	if (empty($__resources['help'])) {
-		return;
+		return $ret;
 	}
 	
 	$content = '';
@@ -55,31 +57,43 @@ function helpPage()
 	}
 	
 	if (trim($content) == '') {
-		return '';
+		return $ret;
 	}
 	
+	$ret['content'] = $content;
 	if ($title != '') {
-		$title = '<a href="help.php">'.__('Global help').'</a> &rsaquo; <span class="page-title">'.$title.'</span>';
-	} else {
-		$title = '<span class="page-title">'.__('Global help').'</span>';
+		$ret['title'] = $title;
 	}
-	return '<h2>'.$title.'</h2>'."\n".'<div id="mainhelp">'.$content.'</div>';
+	return $ret;
 }
 
 $help_page = !empty($_GET['page']) ? html::escapeHTML($_GET['page']) : 'core_main';
-$content = helpPage($help_page);
+$content_array = helpPage($help_page);
+if (($content_array['content'] == '') || ($help_page == 'core_main')) {
+	$content_array = helpPage('core_main');
+}
+if ($content_array['title'] != '') {
+	$breadcrumb = dcPage::breadcrumb(
+		array(
+			__('Global help') => 'help.php',
+			'<span class="page-title">'.$content_array['title'].'</span>' => ''
+		));
+} else {
+	$breadcrumb = dcPage::breadcrumb(
+		array(
+			'<span class="page-title">'.__('Global help').'</span>' => ''
+		));
+}
 
 /* DISPLAY
 -------------------------------------------------------- */
 dcPage::open(__('Global help'),
 	# --BEHAVIOR-- adminPostHeaders
-	$core->callBehavior('adminPostHeaders')
+	$core->callBehavior('adminPostHeaders'),
+	$breadcrumb
 );
 
-if (($content == '') || ($help_page == 'core_main')) {
-	$content = helpPage('core_main');
-}
-echo $content;
+echo $content_array['content'];
 
 dcPage::close();
 ?>

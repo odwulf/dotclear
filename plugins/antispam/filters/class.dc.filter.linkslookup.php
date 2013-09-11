@@ -3,7 +3,7 @@
 #
 # This file is part of Antispam, a plugin for Dotclear 2.
 #
-# Copyright (c) 2003-2011 Olivier Meunier & Association Dotclear
+# Copyright (c) 2003-2013 Olivier Meunier & Association Dotclear
 # Licensed under the GPL version 2.0 license.
 # See LICENSE file or
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
@@ -42,33 +42,31 @@ class dcFilterLinksLookup extends dcSpamFilter
 			if (!isset($b['host']) || !$b['host']) {
 				continue;
 			}
-			
-			$domain = preg_replace('/^(.*\.)([^.]+\.[^.]+)$/','$2',$b['host']);
-			$host = $domain.'.'.$this->server;
-			
-			if (gethostbyname($host) != $host) {
-				$status = substr($domain,0,128);
-				return true;
-			}
+
+			$domain = preg_replace('/^[\w]{2,6}:\/\/([\w\d\.\-]+).*$/','$1',$b['host']);
+			$domain_elem = explode(".",$domain);
+
+			$i = count($domain_elem) - 1;
+			$host = $domain_elem[$i];
+			do
+			{
+				$host = $domain_elem[$i - 1].'.'.$host;
+				$i--;
+				if (substr(gethostbyname($host.'.'.$this->server),0,3) == "127" ) 
+				{
+					$status = substr($domain,0,128);
+					return true;
+				}				
+			} while ($i > 0);
 		}
 	}
 	
 	private function getLinks($text)
 	{
-		$res = array();
-		
-		# href attribute on "a" tags
-		if (preg_match_all('/<a ([^>]+)>/ms', $text, $match, PREG_SET_ORDER))
-		{
-			for ($i = 0; $i<count($match); $i++)
-			{
-				if (preg_match('/href="(http:\/\/[^"]+)"/ms', $match[$i][1], $matches)) {
-					$res[] = $matches[1];
-				}
-			}
-		}
-		
-		return $res;
+		// href attribute on "a" tags is second match
+		preg_match_all('|<a.*?href="(http.*?)"|', $text, $parts);
+
+		return $parts[1];
 	}
 }
 ?>

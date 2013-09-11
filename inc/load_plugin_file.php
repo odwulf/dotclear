@@ -3,7 +3,7 @@
 #
 # This file is part of Dotclear 2.
 #
-# Copyright (c) 2003-2011 Olivier Meunier & Association Dotclear
+# Copyright (c) 2003-2013 Olivier Meunier & Association Dotclear
 # Licensed under the GPL version 2.0 license.
 # See LICENSE file or
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
@@ -44,6 +44,14 @@ if (empty($_GET['pf'])) {
 	header('Content-Type: text/plain');
 	http::head(404,'Not Found');
 	exit;
+}
+
+// Only $_GET['pf'] is allowed in URL
+if (count($_GET) > 1)
+{
+    header('Content-Type: text/plain');
+    http::head(403,'Forbidden');
+    exit;
 }
 
 $allow_types = array('png','jpg','jpeg','gif','css','js','swf');
