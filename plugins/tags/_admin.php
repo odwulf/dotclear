@@ -235,11 +235,11 @@ class tagsBehaviors
 					'<span class="page-title">'.__('Add tags to entries').'</span>' => ''
 			)).
 			'<form action="'.$form_uri.'" method="post">'.
-			$hidden_fields->getEntries().
+			//$hidden_fields->getEntries().
 			'<div><label for="new_tags" class="area">'.__('Tags to add:').'</label> '.
 			form::textarea('new_tags',60,3).
 			'</div>'.
-			$hidden_fields->getHidden().
+			$hidden_fields.
 			$core->formNonce().
 			form::hidden(array('action'),'tags').
 			'<p><input type="submit" value="'.__('Save').'" '.
@@ -320,7 +320,7 @@ class tagsBehaviors
 		$value = array_key_exists('tag_list_format',$opts) ? $opts['tag_list_format'] : 'more';
 		
 		echo
-		'<p><label for="user_tag_list_format">'.__('Tags list format:').'</label> '.
+		'<p><label for="user_tag_list_format" class="classic">'.__('Tags list format:').'</label> '.
 		form::combo('user_tag_list_format',$combo,$value).
 		'</p>';
 	}
