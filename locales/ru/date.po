@@ -1,0 +1,133 @@
+# French translation of DotClear
+# Copyright (C) 2006.
+# Olivier Meunier <olivier@dotclear.net>, 2006.
+msgid ""
+msgstr ""
+"Project-Id-Version: Dotclear 2\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2008-04-15 16:27+0200\n"
+"PO-Revision-Date: 2011-04-12 19:14+0200\n"
+"Last-Translator: Ihar <chi27@open.by>\n"
+"Language-Team: \n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Poedit-Language: French\n"
+
+msgid "%Y-%m-%d %H:%M"
+msgstr "%d/%m/%Y %H:%M"
+
+msgid "_Jan"
+msgstr "_янв"
+
+msgid "_Feb"
+msgstr "_фев"
+
+msgid "_Mar"
+msgstr "_март"
+
+msgid "_Apr"
+msgstr "_апр"
+
+msgid "_May"
+msgstr "_май"
+
+msgid "_Jun"
+msgstr "_июнь"
+
+msgid "_Jul"
+msgstr "_июль"
+
+msgid "_Aug"
+msgstr "_авг"
+
+msgid "_Sep"
+msgstr "_сен"
+
+msgid "_Oct"
+msgstr "_окт"
+
+msgid "_Nov"
+msgstr "_ноя"
+
+msgid "_Dec"
+msgstr "_дек"
+
+msgid "January"
+msgstr "января"
+
+msgid "February"
+msgstr "февраля"
+
+msgid "March"
+msgstr "марта"
+
+msgid "April"
+msgstr "апреля"
+
+msgid "May"
+msgstr "мая"
+
+msgid "June"
+msgstr "июня"
+
+msgid "July"
+msgstr "июля"
+
+msgid "August"
+msgstr "августа"
+
+msgid "September"
+msgstr "сентября"
+
+msgid "October"
+msgstr "октября"
+
+msgid "November"
+msgstr "ноября"
+
+msgid "December"
+msgstr "декабря"
+
+msgid "_Mon"
+msgstr "_пн"
+
+msgid "_Tue"
+msgstr "_вт"
+
+msgid "_Wed"
+msgstr "_ср"
+
+msgid "_Thu"
+msgstr "_чт"
+
+msgid "_Fri"
+msgstr "_пт"
+
+msgid "_Sat"
+msgstr "_сб"
+
+msgid "_Sun"
+msgstr "_вс"
+
+msgid "Monday"
+msgstr "понедельник"
+
+msgid "Tuesday"
+msgstr "вторник"
+
+msgid "Wednesday"
+msgstr "среда"
+
+msgid "Thursday"
+msgstr "четверг"
+
+msgid "Friday"
+msgstr "пятница"
+
+msgid "Saturday"
+msgstr "суббота"
+
+msgid "Sunday"
+msgstr "воскресенье"
