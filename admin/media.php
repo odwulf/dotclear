@@ -211,8 +211,10 @@ if ($dir && !empty($_GET['remove']) && empty($_GET['noconfirm']))
 			array(
 				html::escapeHTML($core->blog->name) => '',
 				__('Media manager') => '',
-				'<span class="page-title">'.__('confirm removal').'</span>' => ''
-			),!$popup)
+				__('confirm removal') => ''
+			),
+			array('home_link' => !$popup)
+		)
 	);
 	
 	echo
@@ -239,23 +241,32 @@ if (!isset($core->media)) {
 	$breadcrumb = dcPage::breadcrumb(
 		array(
 			html::escapeHTML($core->blog->name) => '',
-			'<span class="page-title">'.__('Media manager').'</span>' => ''
-		),!$popup);
+			__('Media manager') => ''
+		),
+		array('home_link' => !$popup)
+	);
 } else {
 	$breadcrumb_media = $core->media->breadCrumb(html::escapeURL($page_url).'&amp;d=%s','<span class="page-title">%s</span>');
 	if ($breadcrumb_media == '') {
 		$breadcrumb = dcPage::breadcrumb(
 			array(
 				html::escapeHTML($core->blog->name) => '',
-				'<span class="page-title">'.__('Media manager').'</span>' => ''
-			),!$popup);
+				__('Media manager') => ''
+			),
+			array('home_link' => !$popup)
+		);
 	} else {
 		$breadcrumb = dcPage::breadcrumb(
 			array(
 				html::escapeHTML($core->blog->name) => '',
 				__('Media manager') => html::escapeURL($page_url.'&d='),
 				$breadcrumb_media => ''
-			),!$popup);
+			),
+			array(
+				'home_link' => !$popup,
+				'hl' => false
+			)
+		);
 	}
 }
 
@@ -408,7 +419,7 @@ if ($core_media_writable || $core_media_archivable) {
 if ($core_media_writable)
 {
 	echo
-	'<div class="two-boxes fieldset">';	
+	'<div class="two-boxes fieldset even">';	
 	if ($user_ui_enhanceduploader) {
 		echo
 		'<div class="enhanced_uploader">';

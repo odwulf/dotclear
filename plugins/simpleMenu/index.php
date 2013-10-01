@@ -24,12 +24,12 @@ $blog_url = html::stripHostURL($core->blog->url);
 # Liste des catégories
 $categories_label = array();
 $rs = $core->blog->getCategories(array('post_type'=>'post'));
-$categories_combo = dcAdminCombos::getCategoriesCombo($rs,false);
-
+$categories_combo = dcAdminCombos::getCategoriesCombo($rs,false,true);
 $rs->moveStart();
 while ($rs->fetch()) {
-	$categories_label[$rs->cat_id] = html::escapeHTML($rs->cat_title);
+	$categories_label[$rs->cat_url] = html::escapeHTML($rs->cat_title);
 }
+
 # Liste des langues utilisées
 $langs_combo = dcAdminCombos::getLangscombo(
 	$core->blog->getLangs(array('order'=>'asc'))
@@ -373,14 +373,17 @@ if ($step) {
 		array(
 			html::escapeHTML($core->blog->name) => '',
 			$page_title => $p_url,
-			'<span class="page-title">'.__('Add item').'</span>' => '',
+			__('Add item') => '',
 			$step_label => ''
-		));
+		),
+		array(
+			'hl_pos' => -2)
+	);
 } else {
 	echo dcPage::breadcrumb(
 		array(
 			html::escapeHTML($core->blog->name) => '',
-			'<span class="page-title">'.$page_title.'</span>' => ''
+			$page_title => ''
 		));
 }
 
