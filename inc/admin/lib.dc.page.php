@@ -53,13 +53,13 @@ class dcPage
 		global $core;
 
 		# List of user's blogs
-		if ($core->auth->blog_count == 1 || $core->auth->blog_count > 20)
+		if ($core->auth->getBlogCount() == 1 || $core->auth->getBlogCount() > 20)
 		{
 			$blog_box =
 			'<p>'.__('Blog:').' <strong title="'.html::escapeHTML($core->blog->url).'">'.
 			html::escapeHTML($core->blog->name).'</strong>';
 
-			if ($core->auth->blog_count > 20) {
+			if ($core->auth->getBlogCount() > 20) {
 				$blog_box .= ' - <a href="blogs.php">'.__('Change blog').'</a>';
 			}
 			$blog_box .= '</p>';
@@ -107,9 +107,10 @@ class dcPage
 		$core->auth->user_prefs->addWorkspace('interface');
 		$user_ui_hide_std_favicon = $core->auth->user_prefs->interface->hide_std_favicon;
 		if (!$user_ui_hide_std_favicon) {
-			echo '<link rel="icon" type="image/png" href="images/favicon.png" />';
+  			echo 
+  			'<link rel="icon" type="image/png" href="images/favicon96-login.png" />'.
+  			'<link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon" />';
 		}
-
 		echo
 		self::jsCommon().
 		self::jsToggles().
@@ -173,8 +174,40 @@ class dcPage
 			$core->error->toHTML().
 			'</div>';
 		}
+		
+		if (isset($_SESSION['notifications'])) {
+			$types = array("success" => "success", "warning" => "warning-msg");
+			$notifications = $_SESSION['notifications'];
+			foreach ($types as $type => $class) {
+				if (isset($notifications[$type])) {
+					foreach ($notifications[$type] as $n) {
+						echo self::getNotification($n,$class);
+					}
+				}
+			}
+			unset($_SESSION['notifications']);
+		}
+		
 	}
-
+	public static function AddNotice($type,$message) {
+		$notification = isset($_SESSION['notifications']) ? $_SESSION['notifications']:array();
+		$notification[$type][] = array('ts' => time(), 'text' => $message);
+		$_SESSION['notifications'] = $notification;
+	}
+	public static function addSuccessNotice($message) {
+		self::addNotice("success",$message);
+	}
+	public static function addWarningNotice($message) {
+		self::addNotice("warning",$message);
+	}
+	
+	protected static function getNotification($msg,$class) {
+		global $core;
+		$res = '<p class="'.$class.'">'.
+		dt::str(__('[%H:%M:%S] '),$msg['ts'],$core->auth->getInfo('user_tz')).' '.$msg['text'].
+		'</p>';
+		return $res;	
+	}
 	public static function close()
 	{
 		global $core;
@@ -302,22 +335,28 @@ class dcPage
 		'</body></html>';
 	}
 
-	public static function breadcrumb($elements=null,$with_home_link=true,$echo=false)
+	public static function breadcrumb($elements=null,$options=array())
 	{
+		$with_home_link = isset($options['home_link'])?$options['home_link']:true;
+		$hl = isset($options['hl'])?$options['hl']:true;
+		$hl_pos = isset($options['hl_pos'])?$options['hl_pos']:-1;
 		// First item of array elements should be blog's name, System or Plugins
 		$res = '<h2>'.($with_home_link ?
 			'<a class="go_home" href="index.php"><img src="style/dashboard.png" alt="'.__('Go to dashboard').'" /></a>' :
 			'<img src="style/dashboard-alt.png" alt="" />');
 		$index = 0;
+		if ($hl_pos < 0) {
+			$hl_pos = count($elements)+$hl_pos;
+		}
 		foreach ($elements as $element => $url) {
+			if ($hl && $index == $hl_pos) {
+				$element = sprintf('<span class="page-title">%s</span>',$element);
+			}
 			$res .= ($with_home_link ? ($index == 1 ? ' : ' : ' &rsaquo; ') : ($index == 0 ? ' ' : ' &rsaquo; ')).
 				($url ? '<a href="'.$url.'">' : '').$element.($url ? '</a>' : '');
 			$index++;
 		}
 		$res .= '</h2>';
-		if ($echo) {
-			echo $res;
-		}
 		return $res;
 	}
 
