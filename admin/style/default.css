@@ -1133,7 +1133,6 @@ h1 {
 		}
 	#help-button span {
 		padding: .5em 0 .1em 0;
-		border-bottom: 1px solid #2373A8;
 		}
 	#content.with-help #help-button {
 		right: 280px; /* ie < 9 sucks */
@@ -1763,7 +1762,9 @@ span.module-version:before {
 		color: #676e78;
 		border-bottom: none;
 		}
-
+.medias-delete {
+	text-align: right;
+	}
 .zip-dl {
 	background: transparent url(package.png) no-repeat 0 50%;
 	padding: 5px 0 5px 20px;
@@ -1834,7 +1835,6 @@ label span.one-file {
 	}
 .upload-fileinfo {
 	margin-left: 0;
-/*	margin-bottom: .4em;*/
 	}
 .upload-fileinfo input {
 	position: absolute;
@@ -2331,7 +2331,7 @@ ul.from-left {
 	}
 /* caché pour tout le monde */
 .hide, .button.hide {
-	display: none;
+	display: none !important;
 	}
 /* Caché sauf pour les revues d'écran */
 .hidden, .with-js .out-of-screen-if-js {
