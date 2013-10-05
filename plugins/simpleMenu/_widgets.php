@@ -18,7 +18,7 @@ class simpleMenuWidgets
 	public static function initWidgets($w)
 	{
 		$w->create('simplemenu',__('Simple menu'),array('tplSimpleMenu','simpleMenuWidget'),null,'List of simple menu items');
-		$w->simplemenu->setting('title',__('Title:'),__('Menu'));
+		$w->simplemenu->setting('title',__('Title (optional)').' :',__('Menu'));
 		$w->simplemenu->setting('homeonly',__('Display on:'),0,'combo',
 			array(
 				__('All pages') => 0,
@@ -26,8 +26,8 @@ class simpleMenuWidgets
 				__('Except on home page') => 2
 				)
 		);
-		$w->simplemenu->setting('content_only',__('Content only'),0,'check');
-		$w->simplemenu->setting('class',__('CSS class:'),'');
+		$w->simplemenu->advanced_setting('content_only','',0,'radio', array(array(__('Content only'), '1'), array(__('Enclosing div'), '0')));
+		$w->simplemenu->advanced_setting('class',__('CSS class:'),'');
 	}
 }
 ?>
