@@ -1,0 +1,309 @@
+{# JS Helpers #}
+
+{% macro load(src,type) -%}
+	{% if not memorized('jsload',src) -%}
+		{{ memorize('jsload',src) -}}
+		{% set type = type|default('text/javascript') -%}
+		<script type="{{ type }}" src="{{ theme_url }}{{ src }}"></script>
+	{%- endif %}
+{%- endmacro %}
+
+{% macro common() %}
+<!-- jsCommon -->
+{{ _self.load('js/jquery/jquery.js') }}
+{% if current_blog is defined and jquery_migrate_mute -%}
+	<script type="text/javascript">
+	//<![CDATA[
+	jQuery.migrateMute = true
+	//]]>
+	</script>
+{%- endif %}
+{{ _self.load('js/jquery/jquery-migrate-1.2.1.js') }}
+{{ _self.load('js/jquery/jquery.biscuit.js') }}
+{{ _self.load('js/jquery/jquery.bgFade.js') }}
+{{ _self.load('js/common.js') }}
+{{ _self.load('js/prelude.js') }}
+<script type="text/javascript">
+{% autoescape 'js' %}
+//<![CDATA[
+dotclear.nonce = '{{session.nonce}}';
+dotclear.img_plus_src = 'images/expand.png';
+dotclear.img_plus_alt = '{{ __('uncover') }}';
+dotclear.img_minus_src = 'images/hide.png';
+dotclear.img_minus_alt = '{{ __('hide') }}';
+dotclear.img_menu_on = 'images/menu_on.png';
+dotclear.img_menu_off = 'images/menu_off.png';
+dotclear.img_plus_theme_src = 'images/plus-theme.png';
+dotclear.img_plus_theme_alt = '{{ __('uncover') }}';
+dotclear.img_minus_theme_src = 'images/minus-theme.png';
+dotclear.img_minus_theme_alt = '{{ __('hide') }}';
+dotclear.msg.help  = '{{ __('Need help?') }}';
+dotclear.msg.new_window  =  '{{ __('new window') }}';
+dotclear.msg.help_hide  =  '{{ __('Hide') }}';
+dotclear.msg.to_select  =  '{{ __('Select:') }}';
+dotclear.msg.no_selection  =  '{{ __('no selection') }}';
+dotclear.msg.select_all  =  '{{ __('select all') }}';
+dotclear.msg.invert_sel  =  '{{ __('Invert selection') }}';
+dotclear.msg.website  =  '{{ __('Web site:') }}';
+dotclear.msg.email  =  '{{ __('Email:') }}';
+dotclear.msg.ip_address  =  '{{ __('IP address:') }}';
+dotclear.msg.error  =  '{{ __('Error:') }}';
+dotclear.msg.entry_created  =  '{{ __('Entry has been successfully created.') }}';
+dotclear.msg.edit_entry  =  '{{ __('Edit entry') }}';
+dotclear.msg.view_entry  =  '{{ __('view entry') }}';
+dotclear.msg.confirm_delete_posts  =  '{{ __("Are you sure you want to delete selected entries (%s)?") }}';
+dotclear.msg.confirm_delete_medias  =  '{{ __("Are you sure you want to delete selected medias (%d)?") }}';
+dotclear.msg.confirm_delete_categories  =  '{{ __("Are you sure you want to delete selected categories (%s)?") }}';
+dotclear.msg.confirm_delete_post  =  '{{ __("Are you sure you want to delete this entry?") }}';
+dotclear.msg.click_to_unlock  =  '{{ __("Click here to unlock the field") }}';
+dotclear.msg.confirm_spam_delete  =  '{{ __('Are you sure you want to delete all spams?') }}';
+dotclear.msg.confirm_delete_comments  =  '{{ __('Are you sure you want to delete selected comments (%s)?') }}';
+dotclear.msg.confirm_delete_comment  =  '{{ __('Are you sure you want to delete this comment?') }}';
+dotclear.msg.cannot_delete_users  =  '{{ __('Users with posts cannot be deleted.') }}';
+dotclear.msg.confirm_delete_user  =  '{{ __('Are you sure you want to delete selected users (%s)?') }}';
+dotclear.msg.confirm_delete_category  =  '{{ __('Are you sure you want to delete category "%s"?') }}';
+dotclear.msg.confirm_reorder_categories  =  '{{ __('Are you sure you want to reorder all categories?') }}';
+dotclear.msg.confirm_delete_media  =  '{{ __('Are you sure you want to remove media "%s"?') }}';
+dotclear.msg.confirm_extract_current  =  '{{ __('Are you sure you want to extract archive in current directory?') }}';
+dotclear.msg.confirm_remove_attachment  =  '{{ __('Are you sure you want to remove attachment "%s"?') }}';
+dotclear.msg.confirm_delete_lang  =  '{{ __('Are you sure you want to delete "%s" language?') }}';
+dotclear.msg.confirm_delete_plugin  =  '{{ __('Are you sure you want to delete "%s" plugin?') }}';
+dotclear.msg.use_this_theme  =  '{{ __('Use this theme') }}';
+dotclear.msg.remove_this_theme  =  '{{ __('Remove this theme') }}';
+dotclear.msg.confirm_delete_theme  =  '{{ __('Are you sure you want to delete "%s" theme?') }}';
+dotclear.msg.confirm_delete_backup  =  '{{ __('Are you sure you want to delete this backup?') }}';
+dotclear.msg.zip_file_content  =  '{{ __('Zip file content') }}';
+dotclear.msg.xhtml_validator  =  '{{ __('XHTML markup validator') }}';
+dotclear.msg.xhtml_valid  =  '{{ __('XHTML content is valid.') }}';
+dotclear.msg.xhtml_not_valid  =  '{{ __('There are XHTML markup errors.') }}';
+dotclear.msg.warning_validate_no_save_content  =  '{{ __('Attention: an audit of a content not yet registered.') }}';
+dotclear.msg.confirm_change_post_format  =  '{{ __('You have unsaved changes. Switch post format will loose these changes. Proceed anyway?') }}';
+dotclear.msg.confirm_change_post_format_noconvert  =  '{{ __("Warning: post format change will not convert existing content. You will need to apply new format by yourself. Proceed anyway?") }}';
+dotclear.msg.load_enhanced_uploader  =  '{{ __('Loading enhanced uploader, please wait.') }}';
+dotclear.msg.module_author  =  '{{ __('Author:') }}';
+dotclear.msg.module_details  =  '{{ __('Details') }}';
+dotclear.msg.module_support  =  '{{ __('Support') }}';
+dotclear.msg.module_help  =  '{{ __('Help:') }}';
+dotclear.msg.module_section  =  '{{ __('Section:') }}';
+dotclear.msg.module_tags  =  '{{ __('Tags:') }}';
+//]]>
+</script>
+{% endautoescape %}
+{% endmacro %}
+
+{% macro load_IE7() %}
+<!--[if lt IE 9]>
+{{ _self.load('js/ie7/IE9.js') }}
+<link rel="stylesheet" type="text/css" href="style/iesucks.css" />
+<![endif]-->
+{% endmacro %}
+
+{% macro confirm_close(values) %}
+	{% if values is not iterable %}{% set values = [values] %} {% endif %}
+	<!-- jsConfirmClose -->
+	{{ _self.load('js/confirm-close.js') }}
+	<script type="text/javascript">
+	{% autoescape 'js' %}
+	//<![CDATA[
+		confirmClosePage = new confirmClose({% for value in values %}'{{value}}'{%if not loop.last %},{% endif %}{% endfor %});
+		confirmClose.prototype.prompt = '{{__('You have unsaved changes.')}}';
+	//]]>
+	</script>
+	{% endautoescape %}
+{% endmacro %}
+
+{% macro page_tabs(default_tab) %}
+	<!-- jsPageTabs -->
+	{{ _self.load('js/jquery/jquery.pageTabs.js') }}
+	<script type="text/javascript">
+	//<![CDATA[
+		$(function() {
+			$.pageTabs('{{default_tab}}');
+		});
+	//]]>
+	</script>
+{% endmacro %}
+
+{% macro modal() %}
+	<!-- jsModal -->
+	<link rel="stylesheet" href="{{theme_url}}style/modal/modal.css" type="text/css" media="screen" />
+	{{ _self.load('js/jquery/jquery.modal.js') }}
+	<script type="text/javascript">
+	//<![CDATA[
+		$.modal.prototype.params.loader_img = '{{theme_url}}style/modal/loader.gif';
+		$.modal.prototype.params.close_img = '{{theme_url}}style/modal/close.png';
+	//]]>
+	</script>
+{% endmacro %}
+
+{% macro color_picker() %}
+	<!-- jsColorPicker -->
+	<link rel="stylesheet" href="{{theme_url}}style/farbtastic/farbtastic.css" type="text/css" media="screen" />
+	{{ _self.load('js/jquery/jquery.farbtastic.js') }}
+	{{ _self.load('js/color-picker.js') }}
+{% endmacro %}
+
+{% macro date_picker() %}
+	<!-- jsDatePicker -->
+	<link rel="stylesheet" href="{{theme_url}}style/date-picker.css" type="text/css" media="screen" />
+	{{ _self.load('js/date-picker.js') }}
+	<script type="text/javascript">
+	{% autoescape 'js' %}
+	//<![CDATA[
+		datePicker.prototype.months[0] = '{{__('January')}}';
+		datePicker.prototype.months[1] = '{{__('February')}}';
+		datePicker.prototype.months[2] = '{{__('March')}}';
+		datePicker.prototype.months[3] = '{{__('April')}}';
+		datePicker.prototype.months[4] = '{{__('May')}}';
+		datePicker.prototype.months[5] = '{{__('June')}}';
+		datePicker.prototype.months[6] = '{{__('July')}}';
+		datePicker.prototype.months[7] = '{{__('August')}}';
+		datePicker.prototype.months[8] = '{{__('September')}}';
+		datePicker.prototype.months[9] = '{{__('October')}}';
+		datePicker.prototype.months[10] = '{{__('November')}}';
+		datePicker.prototype.months[11] = '{{__('December')}}';
+		datePicker.prototype.days[0] = '{{__('Monday')}}';
+		datePicker.prototype.days[1] = '{{__('Tuesday')}}';
+		datePicker.prototype.days[2] = '{{__('Wednesday')}}';
+		datePicker.prototype.days[3] = '{{__('Thursday')}}';
+		datePicker.prototype.days[4] = '{{__('Friday')}}';
+		datePicker.prototype.days[5] = '{{__('Saturday')}}';
+		datePicker.prototype.days[6] = '{{__('Sunday')}}';
+		datePicker.prototype.img_src = '{{theme_url}}images/date-picker.png';
+		datePicker.prototype.close_msg = '{{__('close')}}';
+		datePicker.prototype.now_msg = '{{__('now')}}';
+	//]]>
+	{% endautoescape %}
+	</script>
+{% endmacro %}
+
+{% macro tool_bar() %}
+	<!-- jsToolBar -->
+	<link rel="stylesheet" type="text/css" href="{{theme_url}}style/jsToolBar/jsToolBar.css" />
+	{{ _self.load('js/jsToolBar/jsToolBar.js') }}
+	
+	{% if current_user.options.enable_wysiwyg %}
+		{{ _self.load('js/jsToolBar/jsToolBar.wysiwyg.js') }}
+	{% endif %}
+	
+	{{ _self.load('js/jsToolBar/jsToolBar.dotclear.js') }}
+	<script type="text/javascript">
+	{% autoescape 'js' %}
+	//<![CDATA[
+		jsToolBar.prototype.dialog_url = 'popup.php'; 
+		jsToolBar.prototype.iframe_css = 
+		'	body{'+
+		'		font: 12px "DejaVu Sans","Lucida Grande","Lucida Sans Unicode",Arial,sans-serif;'+
+		'		color : #000;'+
+		'		background: #f9f9f9;'+
+		'		margin: 0;'+
+		'		padding : 2px;'+
+		'		border: none;'+
+		'		{% if rtl %}direction:rtl;{% endif %}'+
+		'	}'+
+		'	pre, code, kbd, samp {'+
+		'		font-family:"Courier New",Courier,monospace;'+
+		'		font-size : 1.1em;'+
+		'	}'+
+		'	code {'+
+		'		color : #666;'+
+		'		font-weight : bold;'+
+		'	}'+
+		'	body > p:first-child {'+
+		'		margin-top: 0;'+
+		'	}'+
+		''; 
+		jsToolBar.prototype.base_url = '{{blog.host}}';
+		jsToolBar.prototype.switcher_visual_title = '{{__('visual')}}';
+		jsToolBar.prototype.switcher_source_title = '{{__('source')}}';
+		jsToolBar.prototype.legend_msg = '{{__('You can use the following shortcuts to format your text.')}}';
+		jsToolBar.prototype.elements.blocks.options.none = '{{__('-- none --')}}';
+		jsToolBar.prototype.elements.blocks.options.nonebis = '{{__('-- block format --')}}';
+		jsToolBar.prototype.elements.blocks.options.p = '{{__('Paragraph')}}';
+		jsToolBar.prototype.elements.blocks.options.h1 = '{{__('Level 1 header')}}';
+		jsToolBar.prototype.elements.blocks.options.h2 = '{{__('Level 2 header')}}';
+		jsToolBar.prototype.elements.blocks.options.h3 = '{{__('Level 3 header')}}';
+		jsToolBar.prototype.elements.blocks.options.h4 = '{{__('Level 4 header')}}';
+		jsToolBar.prototype.elements.blocks.options.h5 = '{{__('Level 5 header')}}';
+		jsToolBar.prototype.elements.blocks.options.h6 = '{{__('Level 6 header')}}';
+		jsToolBar.prototype.elements.strong.title = '{{__('Strong emphasis')}}';
+		jsToolBar.prototype.elements.em.title = '{{__('Emphasis')}}';
+		jsToolBar.prototype.elements.ins.title = '{{__('Inserted')}}';
+		jsToolBar.prototype.elements.del.title = '{{__('Deleted')}}';
+		jsToolBar.prototype.elements.quote.title = '{{__('Inline quote')}}';
+		jsToolBar.prototype.elements.code.title = '{{__('Code')}}';
+		jsToolBar.prototype.elements.br.title = '{{__('Line break')}}';
+		jsToolBar.prototype.elements.blockquote.title = '{{__('Blockquote')}}';
+		jsToolBar.prototype.elements.pre.title = '{{__('Preformated text')}}';
+		jsToolBar.prototype.elements.ul.title = '{{__('Unordered list')}}';
+		jsToolBar.prototype.elements.ol.title = '{{__('Ordered list')}}';
+		
+		jsToolBar.prototype.elements.link.title = '{{__('Link')}}';
+		jsToolBar.prototype.elements.link.href_prompt = '{{__('URL?')}}';
+		jsToolBar.prototype.elements.link.hreflang_prompt = '{{__('Language?')}}';
+		
+		jsToolBar.prototype.elements.img.title = '{{__('External image')}}';
+		jsToolBar.prototype.elements.img.src_prompt = '{{__('URL?')}}';
+		
+		jsToolBar.prototype.elements.img_select.title = '{{__('Media chooser')}}';
+		jsToolBar.prototype.elements.post_link.title = '{{__('Link to an entry')}}';
+		
+		{% if current_user.rights.media %}
+			jsToolBar.prototype.elements.img_select.disabled = true;
+		{% endif %}
+	//]]>
+	</script>
+	{% endautoescape %}
+{% endmacro %}
+
+{% macro candy_upload(params) %}
+	{% if params is empty %}{% set params = {} %} {% endif %}
+	{% set params = params|merge(['sess_id={{session.id}}','sess_uid={{session.uid}}','xd_check={{session.nonce}}']) %}
+	<!-- jsCandyUpload -->
+	<link rel="stylesheet" href="{{theme_url}}style/candyUpload/style.css" type="text/css" media="screen" />
+	{{ _self.load('js/jquery/jquery.candyUpload.js') }}
+	<script type="text/javascript">
+	{% autoescape 'js' %}
+	//<![CDATA[
+		dotclear.candyUpload = {};
+		dotclear.msg.activate_enhanced_uploader = '{{__('Temporarily activate enhanced uploader')}}';
+		dotclear.msg.disable_enhanced_uploader = '{{__('Temporarily disable enhanced uploader')}}';
+		$._candyUpload.prototype.locales.file_uploaded = '{{__('File successfully uploaded.')}}';
+		$._candyUpload.prototype.locales.max_file_size = '{{__('Maximum file size allowed:')}}';
+		$._candyUpload.prototype.locales.limit_exceeded = '{{__('Limit exceeded.')}}';
+		$._candyUpload.prototype.locales.size_limit_exceeded = '{{__('File size exceeds allowed limit.')}}';
+		$._candyUpload.prototype.locales.canceled = '{{__('Canceled.')}}';
+		$._candyUpload.prototype.locales.http_error = '{{__('HTTP Error:')}}';
+		$._candyUpload.prototype.locales.error = '{{__('Error:')}}';
+		$._candyUpload.prototype.locales.choose_file = '{{__('Choose file')}}';
+		$._candyUpload.prototype.locales.choose_files = '{{__('Choose files')}}';
+		$._candyUpload.prototype.locales.cancel = '{{__('Cancel')}}';
+		$._candyUpload.prototype.locales.clean = '{{__('Clean')}}';
+		$._candyUpload.prototype.locales.upload = '{{__('Upload')}}';
+		$._candyUpload.prototype.locales.no_file_in_queue = '{{__('No file in queue.')}}';
+		$._candyUpload.prototype.locales.file_in_queue = '{{__('1 file in queue.')}}';
+		$._candyUpload.prototype.locales.files_in_queue = '{{__('%d files in queue.')}}';
+		$._candyUpload.prototype.locales.queue_error = '{{__('Queue error:')}}';
+		dotclear.candyUpload.base_url = '{{admin_url}}';
+		dotclear.candyUpload.movie_url = '{{theme_url}}swfupload.swf';
+		dotclear.candyUpload.params = '{{params|join('&')}}';
+	//]]>
+	{% endautoescape %}
+	</script>
+{% endmacro %}
+
+{% macro tool_man() %}
+	<!-- jsToolMan -->
+	{{ _self.load('js/tool-man/core.js') }}
+	{{ _self.load('js/tool-man/events.js') }}
+	{{ _self.load('js/tool-man/css.js') }}
+	{{ _self.load('js/tool-man/coordinates.js') }}
+	{{ _self.load('js/tool-man/drag.js') }}
+	{{ _self.load('js/tool-man/dragsort.js') }}
+	{{ _self.load('js/dragsort-tablerows.js') }}
+{% endmacro %}
+
+{% macro meta_editor() %}
+	<!-- jsMetaEditor -->
+	{{ _self.load('js/meta-editor.js') }}
+{% endmacro %}

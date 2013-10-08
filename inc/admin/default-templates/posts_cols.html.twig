@@ -1,0 +1,42 @@
+
+
+{% block col_title %}
+	<a href="post.php?id={{e.post_id}}">{{e.post_title}}</a>
+{% endblock %}
+
+{% block col_cat -%}
+	{% if e.exists('cat_title') %}
+		<a href="category.php?id={{e.cat_id}}">{{e.cat_title}}</a>
+	{% else %}
+		{{__('None')}}
+	{% endif %}
+{%- endblock %}
+
+{% block col_date -%}
+	{{e.post_dt|date('Y-m-d')}}
+{%- endblock %}
+
+{% block col_datetime -%}
+	{{e.post_dt|date('Y-m-d h:i')}}
+{%- endblock %}
+
+{% block col_author -%}
+	{{e.user_id}}
+{%- endblock %}
+
+{% block col_status -%}
+{% set statuses = {
+	"0": {'img' : 'check-off.png', 'name':__('Unpublished')},
+	"1": {'img' : 'check-on.png', 'name':__('Published')},
+	"-1": {'img' : 'scheduled.png', 'name':__('Scheduled')},
+	"-2": {'img' : 'check-wrn.png', 'name':__('Pending')}}
+%}
+<img alt="{{statuses[e.post_status].name}}" src="images/{{statuses[e.post_status].img}}" />
+{% if e.post_selected -%}
+	<img alt="{{__('Selected')}}" src="images/selected.png" />
+{%- endif %}
+{%- endblock %}
+
+{% block list_line_start %} 
+<tr class="line" id="p{{e.post_id}}">
+{% endblock %}
