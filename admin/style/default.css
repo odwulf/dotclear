@@ -17,6 +17,11 @@
 /* ---------------------------------------------------------------------------
 																	LAYOUTS
 ---------------------------------------------------------------------------- */
+*, *:before, *:after {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
 #header {
 	background: #676e78;
 	color: #FFF;
@@ -152,7 +157,7 @@
 	text-align: justify;
 	}
 .two-boxes {
-	width: 47%;
+	width: 48.5%;
 	}
 .three-boxes {
 	width: 30%;
@@ -161,9 +166,6 @@
 	display: inline-block;
 	vertical-align: top;
 	margin: 0 1.5% 1em;
-	-moz-box-sizing: border-box;
-	-webkit-box-sizing: border-box;
-	box-sizing: border-box;
 	text-align: left;
 	}
 /* ---------------------------------------------------------------- layout: popups */
@@ -243,10 +245,7 @@
 .box {
 	display: inline-block;
 	vertical-align: top;
-	margin: 0 1.5% 1em;
-	-moz-box-sizing: border-box;
-	-webkit-box-sizing: border-box;
-	box-sizing: border-box;
+	margin: 0 10px 10px;
 	text-align: left;
 	}
 .box.small {
@@ -495,9 +494,6 @@ input[type=text], input[type=password], textarea, select {
 	vertical-align: top;
 	}
 input:focus, textarea:focus, select:focus {
-	-webkit-box-sizing: border-box;
-	-moz-box-sizing: border-box;
-	box-sizing: border-box;
 	border-color: #9bca1c;
 	}
 textarea {
@@ -798,6 +794,7 @@ span.warn, span.warning, span.info {
 p.error, p.message, p.static-msg, p.success, p.warning-msg {
 	padding-top: 1em;
 	padding-bottom: 1em;
+	margin-top: .5em;
 	}
 .error {
 	background: #FFBABA url(msg-error.png) no-repeat .7em .7em;
@@ -1392,15 +1389,13 @@ a.form-control.open {
 	border: 1px solid #9bca1c;
 	padding: 1em 1em 0 1em;
 	background: #fff;
+	margin-bottom: 0;
 	}
 #login-screen input[type=text], #login-screen input[type=password], #login-screen input[type=submit],
 #login-screen input[type=text]:focus, #login-screen input[type=password]:focus, #login-screen input[type=submit]:focus {
 	width: 100%;
 	margin: 0;
 	padding: 5px 3px;
-	-webkit-box-sizing: border-box;	
-	-moz-box-sizing: border-box;
-	box-sizing: border-box;
 	}
 #login-screen input.login, #login-screen input.login:focus {
 	padding-top: 6px;
@@ -1411,6 +1406,9 @@ a.form-control.open {
 	margin-left: 1.33em;
 	font-size: 12px; /* ie < 9 sucks */
 	font-size: 1.2rem;
+	}
+#issue p:first-child {
+	text-align: right;
 	}
 #login-screen #issue strong {
 	font-weight: normal;
@@ -1426,7 +1424,7 @@ a.form-control.open {
 	text-align: center;
 	}
 #icons p {
-	width: 170px;
+	width: 200px;
 	text-align: center;
 	margin: 1em 0 2em;
 	padding: 1em 0;
@@ -1579,17 +1577,17 @@ li.user_admin {
 	margin: .5em;
 	padding: 10px 10px 5px 10px;
 	border: 1px solid #dfdfdf;
-	min-height: 295px;
+	min-height: 275px;
 	position: relative;
 	}
 .box.theme:hover {
 	background: #ecf0f1 url(texture.png);
 	}
 #theme-new .box.theme {
-	width: 280px;
+	width: 260px;
 	}
 #theme-activate .box.theme {
-	min-height: 330px;
+	min-height: 300px;
 	}
 #theme-deactivate .box.theme {
 	min-height: 90px;
@@ -1603,6 +1601,12 @@ li.user_admin {
 .module-sshot {
 	text-align: center;
 	}
+.with-js .module-sshot:hover {
+	cursor: pointer;
+	}
+.current-theme .module-sshot:hover {
+	cursor: auto;
+	}
 .module-sshot img {
 	padding: .5em;
 	background: #f7f7f7;
@@ -1611,7 +1615,7 @@ li.user_admin {
 	padding: .5em;
 	}
 .theme .module-sshot img {
-	max-width: 280px; /* pour ceux qui n'ont pas de miniature */
+	max-width: 260px; /* pour ceux qui n'ont pas de miniature */
 	}
 #theme-new .theme .module-sshot img {
 	max-width: 240px; /* pour ceux qui n'ont pas de miniature */
@@ -1639,22 +1643,23 @@ span.module-version:before {
 .with-js #theme-new .module-infos.toggle-bloc,
 .with-js #theme-new .module-actions.toggle-bloc {
 	position: absolute;
-	top: 138px;
+	top: 128px;
 	left: 10px;
 	width: 239px;
 	padding: 10px;
 	background: rgba(250, 250, 250, .95);
 	}
 .with-js #theme-new .module-infos.toggle-bloc {
-	top: 138px;
+	top: 128px;
 	height: 80px;
 	border-top: 1px solid #e3e3e3;
 	}
 .with-js #theme-new .module-actions.toggle-bloc {
-	top: 228px;
-	height: 18px;
+	top: 208px;
+	height: 40px;
 	margin: 0;
 	border-bottom: 1px solid #e3e3e3;
+	background: rgba(250, 250, 250, .95);
 	}
 .toggle-bloc .mod-more {
 	display: block;
@@ -1663,11 +1668,11 @@ span.module-version:before {
 .box.current-theme {
 	width: 652px;
 	margin: .5em;
-	padding: 10px 18px;
+	padding: 20px 18px 10px;
 	background: #fff url(texture.png);
 	border: 1px solid #eee;
 	border-radius: .5em;
-	min-height: 330px;
+	min-height: 300px;
 	box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
 	}
 .current-theme .module-sshot img {
@@ -1762,7 +1767,7 @@ p.cat-title {
 	border: 1px solid #dfdfdf;
 	margin: 9px;
 	padding: 10px 12px 6px;
-	width: 300px;
+	width: 320px;
 	display: inline-block;
 	vertical-align: top;
 	min-height: 140px;
@@ -1946,11 +1951,9 @@ label span.one-file {
 	}
 .upload-progress div {
 	width: 0;
-	height: 1em;
-	padding: .2em 0;
-	font-size: 0.8em;
+	height: 1.2em;
 	font-weight: bold;
-	line-height: 1em;
+	line-height: 1.2em;
 	text-align: right;
 	background: green url(loader.png) repeat-x left top;
 	color: white;
@@ -2152,6 +2155,9 @@ div.template-upload {
 	}
 /* --------------------------------------------------------------------- user.php */
 .blog-perm {
+	padding-top: 2em;
+	}
+.blog-perm {
 	margin-top: 2em;
 	font-weight: bold;
 	}
@@ -2172,6 +2178,10 @@ div.template-upload {
 	padding: 2em 0 0 0;
 	margin: 1em 0;
 	font-size: 2em;
+	}
+.guideline #content h2:first-child {
+	margin-top: 0;
+	padding-top: .5em;
 	}
 .guideline h3 {
 	margin-top: 2em;
