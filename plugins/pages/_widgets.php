@@ -19,7 +19,7 @@ class pagesWidgets
 	public static function initWidgets($w)
 	{
 		$w->create('pages',__('Pages'),array('tplPages','pagesWidget'),null,'List of published pages');
-		$w->pages->setting('title',__('Title:'),__('Pages'));
+		$w->pages->setting('title',__('Title (optional)').' :',__('Pages'));
 		$w->pages->setting('homeonly',__('Display on:'),1,'combo',
 			array(
 				__('All pages') => 0,
@@ -37,8 +37,8 @@ class pagesWidgets
 		$w->pages->setting('orderby',__('Sort:'),'asc','combo',
 			array(__('Ascending') => 'asc', __('Descending') => 'desc')
 		);
-		$w->pages->setting('content_only',__('Content only'),0,'check');
-		$w->pages->setting('class',__('CSS class:'),'');
+		$w->pages->advanced_setting('content_only','',0,'radio', array(array(__('Content only'), '1'), array(__('Enclosing div'), '0')));
+		$w->pages->advanced_setting('class',__('CSS class:'),'');
 	}
 	
 	public static function initDefaultWidgets($w,$d)
