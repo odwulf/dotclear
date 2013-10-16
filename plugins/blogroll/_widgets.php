@@ -19,7 +19,7 @@ class blogrollWidgets
 	public static function initWidgets($w)
 	{
 		$w->create('links',__('Blogroll'),array('tplBlogroll','linksWidget'),null,'Blogroll list');
-		$w->links->setting('title',__('Title:'),__('Links'));
+		$w->links->setting('title',__('Title (optional)').' :',__('Links'));
 		
 		$br = new dcBlogroll($GLOBALS['core']->blog);
 		$h = $br->getLinksHierarchy($br->getLinks());
@@ -40,8 +40,8 @@ class blogrollWidgets
 				__('Except on home page') => 2
 				)
 		);
-		$w->links->setting('content_only',__('Content only'),0,'check');
-		$w->links->setting('class',__('CSS class:'),'');
+		$w->links->advanced_setting('content_only','',0,'radio', array(array(__('Content only'), '1'), array(__('Enclosing div'), '0')));
+		$w->links->advanced_setting('class',__('CSS class:'),'');
 	}
 	
 	public static function initDefaultWidgets($w,$d)

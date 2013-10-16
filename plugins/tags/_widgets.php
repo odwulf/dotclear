@@ -19,7 +19,7 @@ class tagsWidgets
 	public static function initWidgets($w)
 	{
 		$w->create('tags',__('Tags'),array('tplTags','tagsWidget'),null,'Tags cloud');
-		$w->tags->setting('title',__('Title:'),__('Tags'));
+		$w->tags->setting('title',__('Title (optional)').' :',__('Tags'));
 		$w->tags->setting('limit',__('Limit (empty means no limit):'),'20');
 		$w->tags->setting('sortby',__('Order by:'),'meta_id_lower','combo',
 			array(__('Tag name') => 'meta_id_lower', __('Entries count') => 'count')
@@ -35,8 +35,8 @@ class tagsWidgets
 				__('Except on home page') => 2
 				)
 		);
-		$w->tags->setting('content_only',__('Content only'),0,'check');
-		$w->tags->setting('class',__('CSS class:'),'');
+		$w->tags->advanced_setting('content_only','',0,'radio', array(array(__('Content only'), '1'), array(__('Enclosing div'), '0')));
+		$w->tags->advanced_setting('class',__('CSS class:'),'');
 	}
 	
 	public static function initDefaultWidgets($w,$d)
