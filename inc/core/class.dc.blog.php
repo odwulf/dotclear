@@ -3,7 +3,7 @@
 #
 # This file is part of Dotclear 2.
 #
-# Copyright (c) 2003-2013 Olivier Meunier & Association Dotclear
+# Copyright (c) 2003-2011 Olivier Meunier & Association Dotclear
 # Licensed under the GPL version 2.0 license.
 # See LICENSE file or
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
@@ -80,7 +80,7 @@ class dcBlog
 			$this->name = $b->blog_name;
 			$this->desc = $b->blog_desc;
 			$this->url = $b->blog_url;
-			$this->host = http::getHostFromURL($this->url);
+			$this->host = preg_replace('|^([a-z]{3,}://)(.*?)/.*$|','$1$2',$this->url);
 			$this->creadt = strtotime($b->blog_creadt);
 			$this->upddt = strtotime($b->blog_upddt);
 			$this->status = $b->blog_status;
@@ -864,7 +864,7 @@ class dcBlog
 		}
 		
 		if (!empty($params['user_id'])) {
-			$strReq .= "AND U.user_id = '".$this->con->escape($params['user_id'])."' ";
+			$strReq .= "AND U.user_id ".$this->con->in($params['user_id'])." ";
 		}
 		
 		if (isset($params['cat_id']) && $params['cat_id'] !== '')
@@ -962,10 +962,9 @@ class dcBlog
 			} else {
 				$strReq .= 'ORDER BY post_dt DESC ';
 			}
-		}
-		
-		if (!$count_only && !empty($params['limit'])) {
-			$strReq .= $this->con->limit($params['limit']);
+			if (!empty($params['limit'])) {
+				$strReq .= $this->con->limit($params['limit']);
+			}
 		}
 		
 		if (!empty($params['sql_only'])) {

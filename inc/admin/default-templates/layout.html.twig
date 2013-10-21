@@ -1,0 +1,161 @@
+{% import "js_helpers.html.twig" as js %}
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="{{current_user.lang}}" lang="{{current_user.lang}}">
+<head>
+	{% block header %}
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<meta name="ROBOTS" content="NOARCHIVE,NOINDEX,NOFOLLOW" />
+	<meta name="GOOGLEBOT" content="NOSNIPPET" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>{% block title %}{{  (page_title|last).title|striptags }} - {% if current_blog.name is not empty %}{{current_blog.name}} - {% endif %}{{vendor_name}} - {{version}}{% endblock %}</title>
+	{{ js.load_IE7 }}
+	<link rel="stylesheet" href="{{theme_url}}style/default.css" type="text/css" media="screen" />
+	<link rel="icon" type="image/png" href="images/favicon.png" />
+	{% if rtl is not empty %}
+	<link rel="stylesheet" href="{{theme_url}}style/default-rtl.css" type="text/css" media="screen" />
+	{% endif %}
+	{{ js.common }}
+	{{ js.toggles }}
+	{% endblock %}
+</head>
+
+<body id="dotclear-admin{% if safe_mode %} safe-mode{% endif %}" class="no-js">
+	{% block prelude %}
+		<ul id="prelude">
+			<li><a href="#content">{{__('Go to the content')}}</a></li>
+			<li><a href="#main-menu">{{__('Go to the menu')}}</a></li>
+			<li><a href="#qx">{{__('Go to the search')}}</a></li>
+			<li><a href="#help">{{__('Go to help')}}</a></li>
+		</ul>
+	{% endblock %}
+	<div id="header">
+	<h1><a href="index.php"><span class="hidden">{{vendor_name}}</span></a></h1>
+		{% form 'switchblog_menu' with {"id":"top-info-blog"} %}
+		{% if blog_count > 1 and blog_count < 20 %}
+			<p>{{ form_field('switchblog',{},{'labelclass':'classic '}) }} {{ form_field('switchblog_submit', {"class":"hidden-if-js"}) }}</p>
+		{% else %}
+			{{__('Blog:')}} <strong title="{{current_blog.blog_url}}">{{current_blog.blog_name}}</strong>
+			{% if blogs is not empty %} - <a href="blogs.php">{{__('Change blog')}}</a>{% endif %}
+		{% endif %}
+		<p><a class="outgoing" href="{{current_blog.url}}" title="{{__('Go to site')}}">{{__('Go to site')}} <img src="{{theme_url}}images/outgoing.png" alt="" /></a>{{form_hidden()}}</p>
+		{% endform %}
+		<ul id="top-info-user">
+		<li> <a class="smallscreen{%if current_page == 'index' %} active" {% endif %}" href="index.php">{{__('My dashboard')}}</a></li>
+		<li> <a class="smallscreen{%if current_page == 'preferences' %} active" {% endif %}" href="preferences.php">{{__('My preferences')}}</a></li>
+		<li><a href="index.php?logout=1" class="logout"><span class="nomobile">{{__('Logout %s')|format(current_user.id)}}</span> <img src="{{theme_url}}images/logout.png" alt="" /></a></li>
+		</ul>
+	</div>
+	<div id="wrapper" class="clearfix">
+		<div class="hidden-if-no-js collapser-box">
+			<a href="#" id="collapser"><img class="collapse-mm" src="images/collapser-hide.png" alt="{{ __('Hide main menu') }}" />
+			<img class="expand-mm" src="images/collapser-show.png" alt="{{__('Show main menu') }}" /></a>
+		</div>
+		<div id="main">
+			<div id="content" class="clearfix">
+				{% block content %}
+				{% if safe_mode %}
+					<div class="warning"><h3>{{__('Safe mode')}}</h3>
+					<p>{{__('You are in safe mode. All plugins have been temporarily disabled. Remind to log out then log in again normally to get back all functionalities')}}</p>
+					</div>
+				{% endif %}
+				<h2>
+					{#{%- if not page_global %}{{current_blog.name}} &rsaquo; {% endif %}#}
+					{%- for part in page_title %}
+						{%- if loop.last %}<span class="page-title">{% endif %}
+						{%- if part.link is not empty %}<a href="{{ part.link }}"{% if part.class is not empty %} class="{{part.class}}"{% endif %}>{{ part.title }}</a>{% else %}{{ part.title }}{% endif %}
+						{%- if loop.last %}</span>{% else %} {% if loop.index0 == 1 %} : {% else %} &rsaquo; {% endif %}{% endif %}
+					{%- endfor -%}
+				</h2>
+				{% if messages.static is not empty %}
+					{% for message in messages.static %}
+						<p class="static-msg">{{ message }}</p>
+					{% endfor %}
+				{% endif %}
+				{% if messages.lists is not empty %}
+					{% for title,messages in messages.lists %}
+						<div class="static-msg">{{ title }}<ul>
+						{% for message in messages %}
+							<li>{{ message }}</li>
+						{% endfor %}
+						</ul></div>
+					{% endfor %}
+				{% endif %}
+				{% if messages.alert is not empty %}
+					<p class="message">{{ messages.alert }}</p>
+				{% endif %}
+				{% if messages.errors is not empty %}
+					<div class="error">
+						<p><strong>Errors :</strong></p>
+						<ul>
+						{% for error in messages.errors %}
+							<li>{{ error }}</li>
+						{% endfor %}
+						</ul>
+					</div>
+				{% endif %}
+				{% endblock %}
+
+			</div>
+		</div>
+		<div id="main-menu">
+			{% block menus %}
+			{% form 'search-menu' with {'id':'search-menu'} %}
+				<p> {{ form_field('qx',{'size':30},{'labelclass':'hidden'}) }} 
+					{{ form_field('ok') }}{{form_hidden()}}
+				</p>
+			{% endform %}
+			{% for menu in menus %}
+			{% if menu.items is not empty %}
+			<div id="{{menu.id}}">
+				{% if menu.title is not empty %}<h3>{{menu.title}}</h3>{% endif %}
+				<ul>
+				{% for item in menu.items %}
+				{% spaceless %}
+				<li {% if item.active or item.class is not empty %} class="{% if item.active %}active {% endif %}{{item.class}}"{% endif %}
+				{% if item.id is not empty %}id="{{item.id}}" {% endif %}
+				{% if item.img is not empty %} style="background-image: url({{item.img}});"{% endif %}
+				><a href="{{item.link}}"{{item.ahtml}}>{{item.title}}</a>
+				{% if loop.last %}{{menu.separator}}{% endif %}</li>
+				{% endspaceless %}
+				{% endfor %}
+				</ul>
+			</div>
+			{% endif %}
+			{% endfor %}
+			{% endblock %}
+		</div>
+		<div id="footer">
+			{% block footer %}
+			{% set text= __('Thank you for using %s.')|format(vendor_name~' '~version) %}
+			<a href="http://dotclear.org/" title="{{ text }}">
+			<img src="style/dc_logos/w-dotclear90.png" alt="{{ text }}" /></a>
+			{% endblock %}
+		</div>
+	</div>
+<!-- 
+                  
+               ,;:'`'::
+            __||
+      _____/LLLL\_
+      \__________"|
+    ~^~^~^~^~^~^~^~^~^~
+ -->
+	{#{% block debug %}
+	  {% set debug_info = debug_info() %}
+	  {% if debug_info is not empty %}
+		<div id="debug"><div>
+		<p>memory usage: {{ debug_info.memory.usage }} ({{ debug_info.memory.size }})</p>
+		{% if debug_info.xdebug is not empty %}
+		  <p>Elapsed time: {{ debug_info.xdebug.elapse_time }} seconds</p>
+		  {% if debug_info.xdebug.profiler_file is not empty %}
+			<p>Profiler file : {{ debug_info.xdebug.profiler_file }}</p>
+		  {% else %}
+			<p><a href="{{ debug_info.xdebug.profiler_url }}">Trigger profiler</a></p>
+		  {% endif %}
+		{% endif %}
+		<p>Global vars: {{ debug_info.global_vars }}</p>
+		</div></div>
+	  {% endif %}
+	{% endblock %}#}
+	</body>
+</html>
