@@ -85,6 +85,9 @@ class dcUrlHandlers extends urlHandler
 		if ($_ctx->nb_entry_per_page === null) {
 			$_ctx->nb_entry_per_page = $core->blog->settings->system->nb_post_per_page;
 		}
+		if ($_ctx->nb_entry_first_page === null) {
+			$_ctx->nb_entry_first_page = $_ctx->nb_entry_per_page;
+		}
 
 		$tpl_file = $core->tpl->getFilePath($tpl);
 
@@ -187,6 +190,7 @@ class dcUrlHandlers extends urlHandler
 		}
 		else
 		{
+			$_ctx =& $GLOBALS['_ctx'];
 			$core =& $GLOBALS['core'];
 
 			if ($n) {
@@ -195,6 +199,9 @@ class dcUrlHandlers extends urlHandler
 			}
 
 			if (empty($_GET['q'])) {
+				if ($core->blog->settings->system->nb_post_for_home !== null) {
+					$_ctx->nb_entry_first_page = $core->blog->settings->system->nb_post_for_home;
+				}
 				self::serveDocument('home.html');
 				$core->blog->publishScheduledEntries();
 			} else {
@@ -410,12 +417,18 @@ class dcUrlHandlers extends urlHandler
 
 					if ($content != '')
 					{
-						if ($core->blog->settings->system->wiki_comments) {
-							$core->initWikiComment();
+						# --BEHAVIOR-- publicBeforeCommentTransform
+						$buffer = $core->callBehavior('publicBeforeCommentTransform',$content);
+						if ($buffer != '') {
+							$content = $buffer;
 						} else {
-							$core->initWikiSimpleComment();
+							if ($core->blog->settings->system->wiki_comments) {
+								$core->initWikiComment();
+							} else {
+								$core->initWikiSimpleComment();
+							}
+							$content = $core->wikiTransform($content);
 						}
-						$content = $core->wikiTransform($content);
 						$content = $core->HTMLfilter($content);
 					}
 
