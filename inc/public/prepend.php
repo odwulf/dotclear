@@ -133,12 +133,17 @@ $__theme_tpl_path = array(
 if ($__parent_theme) {
 	$__theme_tpl_path[] = $core->blog->themes_path.'/'.$__parent_theme.'/tpl';
 }
-
-$core->tpl->setPath(
-	$__theme_tpl_path,
-	dirname(__FILE__).'/default-templates',
-	$core->tpl->getPath());
-
+$tplset = $core->themes->moduleInfo($core->blog->settings->system->theme,'tplset');
+if (!empty($tplset) && is_dir(dirname(__FILE__).'/default-templates/'.$tplset)) {
+	$core->tpl->setPath(
+		$__theme_tpl_path,
+		dirname(__FILE__).'/default-templates/'.$tplset,
+		$core->tpl->getPath());
+} else {
+	$core->tpl->setPath(
+		$__theme_tpl_path,
+		$core->tpl->getPath());
+}
 $core->url->mode = $core->blog->settings->system->url_scan;
 
 try {
