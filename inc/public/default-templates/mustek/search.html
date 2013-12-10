@@ -1,23 +1,22 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="{{tpl:BlogLanguage}}" lang="{{tpl:BlogLanguage}}">
+<!DOCTYPE html>
+<html lang="{{tpl:BlogLanguage}}">
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-  <meta name="ROBOTS" content="{{tpl:BlogMetaRobots}}" />
+  <meta charset="UTF-8" />
+  <meta name="ROBOTS" content="{{tpl:BlogMetaRobots robots="NOINDEX,NOARCHIVE"}}" />
 
-  <title>{{tpl:lang Tag}} - {{tpl:TagID}} - {{tpl:BlogName encode_html="1"}}<tpl:PaginationIf start="0"> - {{tpl:lang page}} {{tpl:PaginationCurrent}}</tpl:PaginationIf></title>
+  <title>{{tpl:lang Search}} - {{tpl:SysSearchString encode_html="1"}} - {{tpl:BlogName encode_html="1"}}<tpl:PaginationIf start="0"> - {{tpl:lang page}} {{tpl:PaginationCurrent}}</tpl:PaginationIf></title>
   <meta name="copyright" content="{{tpl:BlogCopyrightNotice encode_html="1"}}" />
   <meta name="author" content="{{tpl:BlogEditor encode_html="1"}}" />
-  <meta name="date" scheme="W3CDTF" content="{{tpl:BlogUpdateDate iso8601="1"}}" />
+  <meta name="date" content="{{tpl:BlogUpdateDate iso8601="1"}}" />
 
   <link rel="schema.dc" href="http://purl.org/dc/elements/1.1/" />
-  <meta name="dc.title" lang="{{tpl:BlogLanguage}}" content="{{tpl:lang Tag}} - {{tpl:TagID}} - {{tpl:BlogName encode_html="1"}}<tpl:PaginationIf start="0"> - {{tpl:lang page}} {{tpl:PaginationCurrent}}</tpl:PaginationIf>" />
-  <meta name="dc.language" content="{{tpl:BlogLanguage}}" />
-  <meta name="dc.publisher" content="{{tpl:BlogEditor encode_html="1"}}" />
-  <meta name="dc.rights" content="{{tpl:BlogCopyrightNotice encode_html="1"}}" />
-  <meta name="dc.date" scheme="W3CDTF" content="{{tpl:BlogUpdateDate iso8601="1"}}" />
-  <meta name="dc.type" content="text" />
-  <meta name="dc.format" content="text/html" />
+  <meta property="dc.title" lang="{{tpl:BlogLanguage}}" content="{{tpl:lang Search}} - {{tpl:SysSearchString encode_html="1"}} - {{tpl:BlogName encode_html="1"}}<tpl:PaginationIf start="0"> - {{tpl:lang page}} {{tpl:PaginationCurrent}}</tpl:PaginationIf>" />
+  <meta property="dc.language" content="{{tpl:BlogLanguage}}" />
+  <meta property="dc.publisher" content="{{tpl:BlogEditor encode_html="1"}}" />
+  <meta property="dc.rights" content="{{tpl:BlogCopyrightNotice encode_html="1"}}" />
+  <meta property="dc.date" content="{{tpl:BlogUpdateDate iso8601="1"}}" />
+  <meta property="dc.type" content="text" />
+  <meta property="dc.format" content="text/html" />
 
   <link rel="top" href="{{tpl:BlogURL}}" title="{{tpl:lang Home}}" />
   <link rel="contents" href="{{tpl:BlogArchiveURL}}" title="{{tpl:lang Archives}}" />
@@ -38,36 +37,35 @@
     <link rel="chapter" href="{{tpl:EntryURL}}" title="{{tpl:EntryTitle encode_html="1"}}" />
   </tpl:Entries>
 
-  <link rel="alternate" type="application/atom+xml" title="Atom 1.0" href="{{tpl:TagFeedURL type="atom"}}" />
   <link rel="meta" type="application/xbel+xml" title="Blogroll" href="{{tpl:BlogrollXbelLink}}" />
 
   {{tpl:include src="_head.html"}}
 </head>
 
-<body class="dc-tag">
+<body class="dc-search">
 <div id="page">
 {{tpl:include src="_top.html"}}
 
 <div id="wrapper">
 
-<div id="main">
+<div id="main" role="main">
   <div id="content">
 
   <div id="content-info">
-    <h2>{{tpl:lang Tag}} - {{tpl:TagID}}</h2>
-
-    <p><a type="application/atom+xml" href="{{tpl:TagFeedURL type="atom"}}"
-    title="{{tpl:lang This tag's entries Atom feed}}" class="feed">{{tpl:lang Entries feed}}</a>
-
-    <tpl:SysIf operator="or" comments_active="1" pings_active="1">
-    - <a type="application/atom+xml" href="{{tpl:TagFeedURL type="atom"}}/comments"
-    title="{{tpl:lang This tag's comments Atom feed}}" class="feed">{{tpl:lang Comments feed}}</a>
+    <h2>{{tpl:lang Search}}</h2>
+    <tpl:SysIf search_count="==0">
+      <p>{{tpl:SysSearchString encode_html="1" string="Your search for <em>%1$s</em> returned no result."}}</p>
     </tpl:SysIf>
-    </p>
+    <tpl:SysIf search_count="==1">
+      <p>{{tpl:SysSearchString encode_html="1" string="Your search for <em>%1$s</em> returned <strong>%2$s</strong> result."}}</p>
+    </tpl:SysIf>
+    <tpl:SysIf search_count="&gt;1">
+      <p>{{tpl:SysSearchString encode_html="1" string="Your search for <em>%1$s</em> returned <strong>%2$s</strong> results."}}</p>
+    </tpl:SysIf>
   </div>
 
   <tpl:Entries>
-    <div id="p{{tpl:EntryID}}" class="post {{tpl:EntryIfOdd}} {{tpl:EntryIfFirst}}" lang="{{tpl:EntryLang}}" xml:lang="{{tpl:EntryLang}}">
+    <div id="p{{tpl:EntryID}}" class="post {{tpl:EntryIfOdd}} {{tpl:EntryIfFirst}}" lang="{{tpl:EntryLang}}" role="article">
     <!-- # New day date -->
     <tpl:DateHeader><p class="day-date">{{tpl:EntryDate}}</p></tpl:DateHeader>
 
@@ -135,7 +133,7 @@
   </div>
 </div> <!-- End #main -->
 
-<div id="sidebar">
+<div id="sidebar" role="complementary">
   <div id="blognav">
     {{tpl:Widgets type="nav"}}
   </div> <!-- End #blognav -->

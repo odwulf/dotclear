@@ -124,6 +124,36 @@ class dcNamespace
 	}
 
 	/**
+	Returns global setting value if exists.
+
+	@param	n		<b>string</b>		setting name
+	@return	<b>mixed</b>
+	*/
+	public function getGlobal($n)
+	{
+		if (isset($this->global_settings[$n]['value'])) {
+			return $this->global_settings[$n]['value'];
+		}
+
+		return null;
+	}
+
+	/**
+	Returns local setting value if exists.
+
+	@param	n		<b>string</b>		setting name
+	@return	<b>mixed</b>
+	*/
+	public function getLocal($n)
+	{
+		if (isset($this->local_settings[$n]['value'])) {
+			return $this->local_settings[$n]['value'];
+		}
+
+		return null;
+	}
+
+	/**
 	Magic __get method.
 	@copydoc ::get
 	*/

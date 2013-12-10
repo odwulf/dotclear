@@ -1893,7 +1893,7 @@ class dcBlog
 	- post_type: Get only entries with given type (default no type, array for many types)
 	- post_id: (integer) Get comments belonging to given post_id
 	- cat_id: (integer or array) Get comments belonging to entries of given category ID
-	- comment_id: (integer) Get comment with given ID
+	- comment_id: (integer or array) Get comment with given ID (or IDs)
 	- comment_site: (string) Get comments with given comment_site
 	- comment_status: (integer) Get comments with given comment_status
 	- comment_trackback: (integer) Get only comments (0) or trackbacks (1)
@@ -1983,7 +1983,12 @@ class dcBlog
 		}
 
 		if (isset($params['comment_id']) && $params['comment_id'] !== '') {
-			$strReq .= 'AND comment_id = '.(integer) $params['comment_id'].' ';
+			if (is_array($params['comment_id'])) {
+				array_walk($params['comment_id'],create_function('&$v,$k','if($v!==null){$v=(integer)$v;}'));
+			} else {
+				$params['comment_id'] = array((integer) $params['comment_id']);
+			}
+			$strReq .= 'AND comment_id '.$this->con->in($params['comment_id']);
 		}
 
 		if (isset($params['comment_site'])) {

@@ -176,6 +176,7 @@ try {
 	if (!$core->auth->user_prefs->accessibility->nodragdrop) {
 	echo
 		dcPage::jsLoad('js/jquery/jquery-ui.custom.js').
+		dcPage::jsLoad('js/jquery/jquery.ui.touch-punch.js').
 		dcPage::jsLoad('index.php?pf=blogroll/blogroll.js');
 	}
   ?>
