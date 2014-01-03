@@ -111,12 +111,18 @@ class urlPages extends dcUrlHandlers
 
 					if ($content != '')
 					{
-						if ($core->blog->settings->system->wiki_comments) {
-							$core->initWikiComment();
+						# --BEHAVIOR-- publicBeforeCommentTransform
+						$buffer = $core->callBehavior('publicBeforeCommentTransform',$content);
+						if ($buffer != '') {
+							$content = $buffer;
 						} else {
-							$core->initWikiSimpleComment();
+							if ($core->blog->settings->system->wiki_comments) {
+								$core->initWikiComment();
+							} else {
+								$core->initWikiSimpleComment();
+							}
+							$content = $core->wikiTransform($content);
 						}
-						$content = $core->wikiTransform($content);
 						$content = $core->HTMLfilter($content);
 					}
 
@@ -183,7 +189,13 @@ class urlPages extends dcUrlHandlers
 				if ($_ctx->posts->trackbacksActive()) {
 					header('X-Pingback: '.$core->blog->url.$core->url->getURLFor("xmlrpc",$core->blog->id));
 				}
-				$core->tpl->setPath($core->tpl->getPath(), dirname(__FILE__).'/default-templates');
+
+				$tplset = $core->themes->moduleInfo($core->blog->settings->system->theme,'tplset');
+				if (!empty($tplset) && is_dir(dirname(__FILE__).'/default-templates/'.$tplset)) {
+					$core->tpl->setPath($core->tpl->getPath(), dirname(__FILE__).'/default-templates/'.$tplset);
+				} else {
+					$core->tpl->setPath($core->tpl->getPath(), dirname(__FILE__).'/default-templates/'.DC_DEFAULT_TPLSET);
+				}
 				self::serveDocument('page.html');
 			}
 		}

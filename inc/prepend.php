@@ -10,6 +10,9 @@
 #
 # -- END LICENSE BLOCK -----------------------------------------
 
+/* Start tick  */
+define('DC_START_TIME',microtime(true));
+
 /* ------------------------------------------------------------------------------------------- */
 #  ClearBricks, DotClear classes auto-loader
 if (@is_dir('/usr/lib/clearbricks')) {
@@ -134,12 +137,13 @@ if (!defined('DC_DEBUG')) {
 
 # Constants
 define('DC_ROOT',path::real(dirname(__FILE__).'/..'));
-define('DC_VERSION','2.6.2');
+define('DC_VERSION','2.7-dev');
 define('DC_DIGESTS',dirname(__FILE__).'/digests');
 define('DC_L10N_ROOT',dirname(__FILE__).'/../locales');
 define('DC_L10N_UPDATE_URL','http://services.dotclear.net/dc2.l10n/?version=%s');
-define('DC_DISTRIB_PLUGINS','aboutConfig,akismet,antispam,attachments,blogroll,blowupConfig,dclegacy,fairTrackbacks,importExport,maintenance,pages,pings,simpleMenu,tags,themeEditor,userPref,widgets');
+define('DC_DISTRIB_PLUGINS','aboutConfig,akismet,antispam,attachments,blogroll,blowupConfig,dclegacy,fairTrackbacks,importExport,maintenance,pages,pings,simpleMenu,tags,themeEditor,userPref,widgets,dcLegacyEditor');
 define('DC_DISTRIB_THEMES','blueSilence,blowupConfig,customCSS,default,ductile');
+define('DC_DEFAULT_TPLSET','mustek');
 
 if (!defined('DC_VENDOR_NAME')) {
 	define('DC_VENDOR_NAME','Dotclear');
