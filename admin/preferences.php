@@ -304,6 +304,7 @@ dcPage::open($page_title,
 	dcPage::jsLoad('js/_preferences.js').
 	($user_acc_nodragdrop ? '' : dcPage::jsLoad('js/_preferences-dragdrop.js')).
 	dcPage::jsLoad('js/jquery/jquery-ui.custom.js').
+	dcPage::jsLoad('js/jquery/jquery.ui.touch-punch.js').
 	dcPage::jsLoad('js/jquery/jquery.pwstrength.js').
 		'<script type="text/javascript">'."\n".
 		"//<![CDATA[\n".
