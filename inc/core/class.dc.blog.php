@@ -864,7 +864,11 @@ class dcBlog
 		}
 
 		if (!empty($params['user_id'])) {
-			$strReq .= "AND U.user_id = '".$this->con->escape($params['user_id'])."' ";
+			$not="";
+			if (!empty($params['user_id_not'])) {
+				$not=" not";
+			}
+			$strReq .= "AND U.user_id ".$not.$this->con->in($params['user_id'])." ";
 		}
 
 		if (isset($params['cat_id']) && $params['cat_id'] !== '')
@@ -965,8 +969,8 @@ class dcBlog
 		}
 
 		if (!$count_only && !empty($params['limit'])) {
-			$strReq .= $this->con->limit($params['limit']);
-		}
+				$strReq .= $this->con->limit($params['limit']);
+			}
 
 		if (!empty($params['sql_only'])) {
 			return $strReq;
@@ -2205,7 +2209,7 @@ class dcBlog
 		$strReq =
 			'UPDATE '.$this->prefix.'comment '.
 			'SET comment_status = '.$status.' ';
-		$strReq .=
+			$strReq .=
 			'WHERE comment_id'.$this->con->in($co_ids).
 			'AND post_id in (SELECT tp.post_id '.
 			'FROM '.$this->prefix.'post tp '.
@@ -2262,7 +2266,7 @@ class dcBlog
 			$affected_posts[] = (integer) $rs->post_id;
 		}
 
-		$strReq =
+			$strReq =
 			'DELETE FROM '.$this->prefix.'comment '.
 			'WHERE comment_id'.$this->con->in($co_ids).' '.
 			'AND post_id in (SELECT tp.post_id '.
@@ -2286,7 +2290,7 @@ class dcBlog
 			throw new Exception(__('You are not allowed to delete comments'));
 		}
 
-		$strReq =
+			$strReq =
 			'DELETE FROM '.$this->prefix.'comment '.
 			'WHERE comment_status = -2 '.
 			'AND post_id in (SELECT tp.post_id '.
