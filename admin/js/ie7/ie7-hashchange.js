@@ -1,5 +1,5 @@
 /*!
- * jQuery hashchange event - v1.3 - 7/21/2010
+ * jQuery hashchange event - v1.3.1 - 09/27/2013
  * http://benalman.com/projects/jquery-hashchange-plugin/
  * 
  * Copyright (c) 2010 "Cowboy" Ben Alman
@@ -9,6 +9,9 @@
 
 // Script: jQuery hashchange event
 //
+// *Version: 1.3.1, Last updated: 09/27/2013*
+// Fix $.browser usage for jQuery >= 1.9
+
 // *Version: 1.3, Last updated: 7/21/2010*
 // 
 // Project Home - http://benalman.com/projects/jquery-hashchange-plugin/
@@ -297,7 +300,7 @@
     // vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
     // vvvvvvvvvvvvvvvvvvv REMOVE IF NOT SUPPORTING IE6/7/8 vvvvvvvvvvvvvvvvvvv
     // vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-    $.browser.msie && !supports_onhashchange && (function(){
+    (navigator.appName == 'Microsoft Internet Explorer') && !supports_onhashchange && (function(){
       // Not only do IE6/7 need the "magical" Iframe treatment, but so does IE8
       // when running in "IE7 compatibility" mode.
       

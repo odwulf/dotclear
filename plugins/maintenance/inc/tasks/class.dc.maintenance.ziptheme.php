@@ -13,12 +13,16 @@ if (!defined('DC_RC_PATH')) { return; }
 
 class dcMaintenanceZiptheme extends dcMaintenanceTask
 {
+	protected $perm = 'admin';
+	protected $blog = true;
 	protected $tab = 'backup';
 	protected $group = 'zipblog';
 
 	protected function init()
 	{
 		$this->task = __('Download active theme of current blog');
+
+		$this->description = __('It may be useful to backup the active theme before any change or update. This compress theme folder into a single zip file.');
 	}
 
 	public function execute()

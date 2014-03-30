@@ -15,6 +15,7 @@ class dcFilterIpLookup extends dcSpamFilter
 {
 	public $name = 'IP Lookup';
 	public $has_gui = true;
+	public $help = 'iplookup-filter';
 
 	private $default_bls = 'sbl-xbl.spamhaus.org , bsb.spamlookup.net';
 
@@ -64,7 +65,8 @@ class dcFilterIpLookup extends dcSpamFilter
 			try {
 				$this->core->blog->settings->addNamespace('antispam');
 				$this->core->blog->settings->antispam->put('antispam_dnsbls',$_POST['bls'],'string','Antispam DNSBL servers',true,false);
-				http::redirect($url.'&upd=1');
+				dcPage::addSuccessNotice(__('The list of DNSBL servers has been succesfully updated.'));
+				http::redirect($url);
 			} catch (Exception $e) {
 				$core->error->add($e->getMessage());
 			}
@@ -72,7 +74,7 @@ class dcFilterIpLookup extends dcSpamFilter
 
 		/* DISPLAY
 		---------------------------------------------- */
-		$res = '';
+		$res = dcPage::notices();
 
 		$res .=
 		'<form action="'.html::escapeURL($url).'" method="post" class="fieldset">'.
@@ -111,4 +113,3 @@ class dcFilterIpLookup extends dcSpamFilter
 		return false;
 	}
 }
-?>

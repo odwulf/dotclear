@@ -30,7 +30,7 @@ $d = isset($_REQUEST['d']) ? $_REQUEST['d'] : null;
 $dir = null;
 
 $page = !empty($_GET['page']) ? max(1,(integer) $_GET['page']) : 1;
-$nb_per_page =  30;
+$nb_per_page = ((integer) $core->auth->user_prefs->interface->media_by_page ? (integer) $core->auth->user_prefs->interface->media_by_page : 30);
 
 # We are on home not comming from media manager
 if ($d === null && isset($_SESSION['media_manager_dir'])) {
@@ -66,10 +66,17 @@ if (!empty($_GET['file_sort']) && in_array($_GET['file_sort'],$sort_combo)) {
 	$_SESSION['media_file_sort'] = $_GET['file_sort'];
 }
 $file_sort = !empty($_SESSION['media_file_sort']) ? $_SESSION['media_file_sort'] : null;
+$nb_per_page = !empty($_SESSION['nb_per_page']) ? (integer)$_SESSION['nb_per_page'] : $nb_per_page;
+if (!empty($_GET['nb_per_page']) && (integer)$_GET['nb_per_page'] > 0) {
+	$nb_per_page = $_SESSION['nb_per_page'] = (integer)$_GET['nb_per_page'];
+}
 
 $popup = (integer) !empty($_GET['popup']);
 
 $page_url = 'media.php?popup='.$popup.'&post_id='.$post_id;
+if (($temp = $core->callBehavior('adminMediaURL',$page_url))!='') {
+	$page_url = $temp;
+}
 
 if ($popup) {
 	$open_f = array('dcPage','openPopup');
@@ -106,7 +113,7 @@ if (!empty($_GET['zipdl']) && $core->auth->check('media_admin',$core->blog->id))
 		$zip = new fileZip($fp);
 		$zip->addExclusion('#(^|/).(.*?)_(m|s|sq|t).jpg$#');
 		$zip->addDirectory($core->media->root.'/'.$d,'',true);
-		
+
 		header('Content-Disposition: attachment;filename='.($d ? $d : 'media').'.zip');
 		header('Content-Type: application/x-zip');
 		$zip->write();
@@ -124,7 +131,11 @@ if ($dir && !empty($_POST['newdir']))
 {
 	try {
 		$core->media->makeDir($_POST['newdir']);
-		http::redirect($page_url.'&d='.rawurlencode($d).'&mkdok=1');
+		dcPage::addSuccessNotice(sprintf(
+			__('Directory "%s" has been successfully created.'),
+			html::escapeHTML($_POST['newdir']))
+		);
+		http::redirect($page_url.'&d='.rawurlencode($d));
 	} catch (Exception $e) {
 		$core->error->add($e->getMessage());
 	}
@@ -168,21 +179,49 @@ if ($dir && !empty($_FILES['upfile'])) {
 			$f_private = (isset($_POST['upfilepriv']) ? $_POST['upfilepriv'] : false);
 
 			$core->media->uploadFile($upfile['tmp_name'], $upfile['name'], $f_title, $f_private);
-			http::redirect($page_url.'&d='.rawurlencode($d).'&upok=1');
+
+			dcPage::addSuccessNotice(__('Files have been successfully uploaded.'));
+			http::redirect($page_url.'&d='.rawurlencode($d));
 		} catch (Exception $e) {
 			$core->error->add($e->getMessage());
 		}
 	}
 }
 
-# Removing item
+# Removing items
+if ($dir && !empty($_POST['medias']) && !empty($_POST['delete_medias'])) {
+	try {
+		foreach ($_POST['medias'] as $media) {
+			$core->media->removeItem(rawurldecode($media));
+		}
+		dcPage::addSuccessNotice(
+			sprintf(__('Successfully delete one media.',
+					   'Successfully delete %d medias.',
+					   count($_POST['medias'])
+					   ),
+					   count($_POST['medias'])
+			)
+		);
+		http::redirect($page_url.'&d='.rawurlencode($d));
+	} catch (Exception $e) {
+		$core->error->add($e->getMessage());
+	}
+}
+
+# Removing item from popup only
 if ($dir && !empty($_POST['rmyes']) && !empty($_POST['remove']))
 {
 	$_POST['remove'] = rawurldecode($_POST['remove']);
-	
+
 	try {
+		if (is_dir(path::real($core->media->getPwd().'/'.path::clean($_POST['remove'])))) {
+			$msg = __('Directory has been successfully removed.');
+		} else {
+			$msg = __('File has been successfully removed.');
+		}
 		$core->media->removeItem($_POST['remove']);
-		http::redirect($page_url.'&d='.rawurlencode($d).'&rmfok=1');
+		dcPage::addSuccessNotice($msg);
+		http::redirect($page_url.'&d='.rawurlencode($d));
 	} catch (Exception $e) {
 		$core->error->add($e->getMessage());
 	}
@@ -193,7 +232,12 @@ if ($dir && $core->auth->isSuperAdmin() && !empty($_POST['rebuild']))
 {
 	try {
 		$core->media->rebuild($d);
-		http::redirect($page_url.'&d='.rawurlencode($d).'&rebuildok=1');
+
+		dcPage::success(sprintf(
+			__('Directory "%s" has been successfully rebuilt.'),
+			html::escapeHTML($d))
+		);
+		http::redirect($page_url.'&d='.rawurlencode($d));
 	} catch (Exception $e) {
 		$core->error->add($e->getMessage());
 	}
@@ -207,10 +251,12 @@ if ($dir && !empty($_GET['remove']) && empty($_GET['noconfirm']))
 			array(
 				html::escapeHTML($core->blog->name) => '',
 				__('Media manager') => '',
-				'<span class="page-title">'.__('confirm removal').'</span>' => ''
-			),!$popup)
+				__('confirm removal') => ''
+			),
+			array('home_link' => !$popup)
+		)
 	);
-	
+
 	echo
 	'<form action="'.html::escapeURL($page_url).'" method="post">'.
 	'<p>'.sprintf(__('Are you sure you want to remove %s?'),
@@ -221,7 +267,7 @@ if ($dir && !empty($_GET['remove']) && empty($_GET['noconfirm']))
 	$core->formNonce().
 	form::hidden('remove',html::escapeHTML($_GET['remove'])).'</p>'.
 	'</form>';
-	
+
 	call_user_func($close_f);
 	exit;
 }
@@ -235,23 +281,32 @@ if (!isset($core->media)) {
 	$breadcrumb = dcPage::breadcrumb(
 		array(
 			html::escapeHTML($core->blog->name) => '',
-			'<span class="page-title">'.__('Media manager').'</span>' => ''
-		),!$popup);
+			__('Media manager') => ''
+		),
+		array('home_link' => !$popup)
+	);
 } else {
 	$breadcrumb_media = $core->media->breadCrumb(html::escapeURL($page_url).'&amp;d=%s','<span class="page-title">%s</span>');
 	if ($breadcrumb_media == '') {
 		$breadcrumb = dcPage::breadcrumb(
 			array(
 				html::escapeHTML($core->blog->name) => '',
-				'<span class="page-title">'.__('Media manager').'</span>' => ''
-			),!$popup);
+				__('Media manager') => ''
+			),
+			array('home_link' => !$popup)
+		);
 	} else {
 		$breadcrumb = dcPage::breadcrumb(
 			array(
 				html::escapeHTML($core->blog->name) => '',
 				__('Media manager') => html::escapeURL($page_url.'&d='),
 				$breadcrumb_media => ''
-			),!$popup);
+			),
+			array(
+				'home_link' => !$popup,
+				'hl' => false
+			)
+		);
 	}
 }
 
@@ -260,6 +315,11 @@ call_user_func($open_f,__('Media manager'),
 	($core_media_writable ? dcPage::jsUpload(array('d='.$d)) : ''),
 	$breadcrumb
 	);
+
+if ($popup) {
+	// Display notices
+	echo dcPage::notices();
+}
 
 if (!$core_media_writable) {
 	dcPage::warning(__('You do not have sufficient permissions to write to this folder.'));
@@ -295,33 +355,62 @@ if (!$dir) {
 }
 
 if ($post_id) {
-	echo '<p class="form-note info">'.sprintf(__('Choose a file to attach to entry %s by clicking on %s.'),
+	echo '<div class="form-note info"><p>'.sprintf(__('Choose a file to attach to entry %s by clicking on %s.'),
 		'<a href="'.$core->getPostAdminURL($post_type,$post_id).'">'.html::escapeHTML($post_title).'</a>',
-		'<img src="images/plus.png" alt="'.__('Attach this file to entry').'" />').'</p>';
+		'<img src="images/plus.png" alt="'.__('Attach this file to entry').'" />').'</p></div>';
 }
 if ($popup) {
-	echo '<p class="form-note info">'.sprintf(__('Choose a file to insert into entry by clicking on %s.'),
-		'<img src="images/plus.png" alt="'.__('Attach this file to entry').'" />').'</p>';
+	echo '<div class="info"><p>'.sprintf(__('Choose a file to insert into entry by clicking on %s.'),
+		'<img src="images/plus.png" alt="'.__('Attach this file to entry').'" />').'</p></div>';
 }
 
-
+// Remove hidden directories (unless DC_SHOW_HIDDEN_DIRS is set to true)
+if (!defined('DC_SHOW_HIDDEN_DIRS') || (DC_SHOW_HIDDEN_DIRS == false)) {
+	for ($i = count($dir['dirs']) - 1; $i >= 0; $i--) {
+		if ($dir['dirs'][$i]->d) {
+			if (strpos($dir['dirs'][$i]->relname,'.') !== false) {
+				unset($dir['dirs'][$i]);
+			}
+		}
+	}
+}
 $items = array_values(array_merge($dir['dirs'],$dir['files']));
+
+$fmt_form_media = '<form action="media.php" method="post" id="form-medias">'.
+	'<div class="files-group">%s</div>'.
+	'<p class="hidden">'.$core->formNonce() . form::hidden(array('d'),$d).'</p>';
+
+if (!$popup) {
+	$fmt_form_media .=
+	'<div class="medias-delete%s">'.
+	'<p class="checkboxes-helpers"></p>'.
+	'<p><input type="submit" class="delete" name="delete_medias" value="'.__('Remove selected medias').'"/></p>'.
+	'</div>';
+}
+$fmt_form_media .=
+	'</form>';
+
 echo '<div class="media-list">';
 if (count($items) == 0)
 {
-	echo '<p>'.__('No file.').'</p>';
+	echo
+	'<p>'.__('No file.').'</p>'.
+	sprintf($fmt_form_media,'',' hide'); // need for jsUpload to append new media
 }
 else
 {
 	$pager = new dcPager($page,count($items),$nb_per_page,10);
-	
+
 	echo
-	'<form action="media.php" method="get">'.
-	'<p><label for="file_sort" class="classic">'.__('Sort files:').'</label> '.
-	form::combo('file_sort',$sort_combo,$file_sort).
+	'<form action="media.php" method="get" id="filters-form">'.
+	'<p class="two-boxes"><label for="file_sort" class="classic">'.__('Sort files:').'</label> '.
+	form::combo('file_sort',$sort_combo,$file_sort).'</p>'.
+	'<p class="two-boxes"><label for="nb_per_page" class="classic">'.__('Number of elements displayed per page:').'</label> '.
+	form::field('nb_per_page',5,3,(integer) $nb_per_page).' '.
+	'<input type="submit" value="'.__('OK').'" />'.
 	form::hidden(array('popup'),$popup).
 	form::hidden(array('post_id'),$post_id).
-	'<input type="submit" value="'.__('Sort').'" /></p>'.
+	'</p>'.
 	'</form>'.
 	$pager->getLinks();
 
@@ -335,10 +424,11 @@ else
 			$fgroup .= mediaItemLine($items[$i],$j);
 		}
 	}
-	echo 
-		($dgroup != '' ? '<div class="folders-group">'.$dgroup.'</div>' : '').
-		'<div class="files-group">'.$fgroup.'</div>';
-	
+
+	echo
+	($dgroup != '' ? '<div class="folders-group">'.$dgroup.'</div>' : '').
+	sprintf($fmt_form_media,$fgroup,'');
+
 	echo $pager->getLinks();
 }
 if (!isset($pager)) {
@@ -348,12 +438,54 @@ if (!isset($pager)) {
 echo
 '</div>';
 
+$core_media_archivable = $core->auth->check('media_admin',$core->blog->id) &&
+	!(count($items) == 0 || (count($items) == 1 && $items[0]->parent));
+
+if ($core_media_writable || $core_media_archivable) {
+	echo
+	'<div class="vertical-separator">'.
+	'<h3 class="out-of-screen-if-js">'.sprintf(__('In %s:'),($d == '' ? '“'.__('Media manager').'”' : '“'.$d.'”')).'</h3>';
+}
+
+if ($core_media_writable || $core_media_archivable) {
+	echo
+	'<div class="two-boxes odd">';
+
+	# Create directory
+	if ($core_media_writable)
+	{
+		echo
+		'<form action="'.html::escapeURL($page_url).'" method="post" class="fieldset">'.
+		'<div id="new-dir-f">'.
+		'<h4 class="pretty-title">'.__('Create new directory').'</h4>'.
+		$core->formNonce().
+		'<p><label for="newdir">'.__('Directory Name:').'</label>'.
+		form::field(array('newdir','newdir'),35,255).'</p>'.
+		'<p><input type="submit" value="'.__('Create').'" />'.
+		form::hidden(array('d'),html::escapeHTML($d)).'</p>'.
+		'</div>'.
+		'</form>';
+	}
+
+	# Get zip directory
+	if ($core_media_archivable && !$popup)
+	{
+		echo
+		'<div class="fieldset">'.
+		'<h4 class="pretty-title">'.sprintf(__('Backup content of %s'),($d == '' ? '“'.__('Media manager').'”' : '“'.$d.'”')).'</h4>'.
+		'<p><a class="button submit" href="'.html::escapeURL($page_url).'&amp;zipdl=1">'.
+		__('Download zip file').'</a></p>'.
+		'</div>';
+	}
+
+	echo
+	'</div>';
+}
+
 if ($core_media_writable)
 {
-	echo 
-	'<h3 class="hidden">'.sprintf(__('In %s:'),($d == '' ? '“'.__('Media manager').'”' : '“'.$d.'”')).'</h3>'.
-	'<div class="two-boxes odd fieldset">';
-	
+	echo
+	'<div class="two-boxes fieldset even">';
 	if ($user_ui_enhanceduploader) {
 		echo
 		'<div class="enhanced_uploader">';
@@ -386,8 +518,6 @@ if ($core_media_writable)
 	'<p class="one-file"><label for="upfilepriv" class="classic">'.__('Private').'</label> '.
 	form::checkbox(array('upfilepriv','upfilepriv'),1).'</p>';
 
-
-
 	if (!$user_ui_enhanceduploader) {
 		echo
 		'<p class="one-file form-help info">'.__('To send several files at the same time, you can activate the enhanced uploader in').
@@ -407,42 +537,6 @@ if ($core_media_writable)
 	'</div>';
 }
 
-$core_media_archivable = $core->auth->check('media_admin',$core->blog->id) && 
-	!(count($items) == 0 || (count($items) == 1 && $items[0]->parent));
-
-if ($core_media_writable || $core_media_archivable) {
-
-	echo '<div class="two-boxes even fieldset">';
-
-	# Create directory
-	if ($core_media_writable)
-	{
-		echo
-		'<form action="'.html::escapeURL($page_url).'" method="post">'.
-		'<div id="new-dir-f">'.
-		'<h4>'.__('Create new directory').'</h4>'.
-		$core->formNonce().
-		'<p><label for="newdir">'.__('Directory Name:').'</label>'.
-		form::field(array('newdir','newdir'),35,255).'</p>'.
-		'<p><input type="submit" value="'.__('Create').'" />'.
-		form::hidden(array('d'),html::escapeHTML($d)).'</p>'.
-		'</div>'.
-		'</form>';
-	}
-
-	# Get zip directory
-	if ($core_media_archivable)
-	{
-		echo
-		'<h4>'.__('Backup content').'</h4>'.
-		'<p>'.__('Compress this directory with its content as a zip file and download it.').'</p>'.
-		'<p><a class="button submit" href="'.html::escapeURL($page_url).'&amp;zipdl=1">'.
-		__('Download').'</a></p>';
-	}
-
-	echo '</div>';
-}
-
 # Empty remove form (for javascript actions)
 echo
 '<form id="media-remove-hide" action="'.html::escapeURL($page_url).'" method="post" class="hidden">'.
@@ -453,17 +547,27 @@ $core->formNonce().
 '</div>'.
 '</form>';
 
+if ($core_media_writable || $core_media_archivable) {
+	echo
+	'</div>';
+}
+
+if (!$popup) {
+	echo '<div class="info"><p>'.sprintf(__('Current settings for medias and images are defined in %s'),
+	'<a href="blog_pref.php#medias-settings">'.__('Blog parameters').'</a>').'</p></div>';
+}
+
 call_user_func($close_f);
 
 /* ----------------------------------------------------- */
 function mediaItemLine($f,$i)
 {
 	global $core, $page_url, $popup, $post_id;
-	
+
 	$fname = $f->basename;
-	
+
 	$class = 'media-item media-col-'.($i%2);
-	
+
 	if ($f->d) {
 		$link = html::escapeURL($page_url).'&amp;d='.html::sanitizeURL($f->relname);
 		if ($f->parent) {
@@ -473,16 +577,22 @@ function mediaItemLine($f,$i)
 			$class .= ' media-folder';
 		}
 	} else {
-		$link =
-		'media_item.php?id='.$f->media_id.'&amp;popup='.$popup.'&amp;post_id='.$post_id;
+		$link = 'media_item.php?id='.$f->media_id.'&amp;popup='.$popup.'&amp;post_id='.$post_id;
+        if (($temp = $core->callBehavior('adminMediaURL',$link))!='') {
+            $link = $temp;
+        }
 	}
-	
+
+	$maxchars = 36;
+	if (strlen($fname) > $maxchars) {
+		$fname = substr($fname, 0, $maxchars-4).'...'.($f->d ? '' : files::getExtension($fname));
+	}
 	$res =
 	'<div class="'.$class.'"><p><a class="media-icon media-link" href="'.$link.'">'.
 	'<img src="'.$f->media_icon.'" alt="" />'.$fname.'</a></p>';
 
 	$lst = '';
-	
+
 	if (!$f->d) {
 		$lst .=
 		'<li>'.$f->media_title.'</li>'.
@@ -492,43 +602,42 @@ function mediaItemLine($f,$i)
 		'<a href="'.$f->file_url.'">'.__('open').'</a>'.
 		'</li>';
 	}
-	
+
 	$act = '';
-	
+
 	if ($post_id && !$f->d) {
-		$act .= 
-		'<form action="post_media.php" method="post">'.
-		'<input type="image" src="images/plus.png" alt="'.__('Attach this file to entry').'" '.
-		'title="'.__('Attach this file to entry').'" /> '.
-		form::hidden('media_id',$f->media_id).
-		form::hidden('post_id',$post_id).
-		form::hidden('attach',1).
-		$core->formNonce().
-		'</form>';
+		$act .=
+		'<a class="attach-media" title="'.__('Attach this file to entry').'" href="post_media.php?media_id='.$f->media_id.
+		'&amp;post_id='.$post_id.'&amp;attach=1">'.
+		'<img src="images/plus.png" alt="'.__('Attach this file to entry').'"/>'.
+		'</a>';
 	}
-	
+
 	if ($popup && !$f->d) {
 		$act .= '<a href="'.$link.'"><img src="images/plus.png" alt="'.__('Insert this file into entry').'" '.
 		'title="'.__('Insert this file into entry').'" /></a> ';
 	}
-	
+
 	if ($f->del) {
-		$act .= '<a class="media-remove" '.
-		'href="'.html::escapeURL($page_url).'&amp;d='.
-		rawurlencode($GLOBALS['d']).'&amp;remove='.rawurlencode($f->basename).'">'.
-		'<img src="images/trash.png" alt="'.__('Delete').'" title="'.__('delete').'" /></a>';
+		if (!$popup && !$f->d) {
+			$act .= form::checkbox(array('medias[]', 'media_'.rawurlencode($f->basename)),rawurlencode($f->basename));
+		} else {
+			$act .= '<a class="media-remove" '.
+			'href="'.html::escapeURL($page_url).'&amp;d='.
+			rawurlencode($GLOBALS['d']).'&amp;remove='.rawurlencode($f->basename).'">'.
+			'<img src="images/trash.png" alt="'.__('Delete').'" title="'.__('delete').'" /></a>';
+		}
 	}
-	
+
 	$lst .= ($act != '' ? '<li class="media-action">&nbsp;'.$act.'</li>' : '');
-	
+
 	if ($f->type == 'audio/mpeg3') {
 		$lst .= '<li>'.dcMedia::mp3player($f->file_url,'index.php?pf=player_mp3.swf').'</li>';
 	}
-	
+
 	$res .=	($lst != '' ? '<ul>'.$lst.'</ul>' : '');
 
 	$res .= '</div>';
-	
+
 	return $res;
 }
-?>

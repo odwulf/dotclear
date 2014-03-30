@@ -24,7 +24,7 @@ if (!empty($_POST['blog_id']))
 	} catch (Exception $e) {
 		$core->error->add($e->getMessage());
 	}
-	
+
 	if ($rs->isEmpty()) {
 		$core->error->add(__('No such blog ID'));
 	} else {
@@ -41,7 +41,9 @@ if (!$core->error->flag() && $blog_id && !empty($_POST['del']))
 	} else {
 		try {
 			$core->delBlog($blog_id);
-			http::redirect('blogs.php?del=1');
+			dcPage::addSuccessNotice(sprintf(__('Blog "%s" successfully deleted'), html::escapeHTML($blog_name)));
+
+			http::redirect('blogs.php');
 		} catch (Exception $e) {
 			$core->error->add($e->getMessage());
 		}
@@ -53,7 +55,7 @@ dcPage::open(__('Delete a blog'),'',
 		array(
 			__('System') => '',
 			__('Blogs') => 'blogs.php',
-			'<span class="page-title">'.__('Delete a blog').'</span>' => ''
+			__('Delete a blog') => ''
 		))
 );
 
@@ -64,7 +66,7 @@ if (!$core->error->flag())
 	'<p>'.sprintf(__('You are about to delete the blog %s. Every entry, comment and category will be deleted.'),
 	'<strong>'.$blog_id.' ('.$blog_name.')</strong>').'</p></div>'.
 	'<p>'.__('Please give your password to confirm the blog deletion.').'</p>';
-	
+
 	echo
 	'<form action="blog_del.php" method="post">'.
 	'<div>'.$core->formNonce().'</div>'.
@@ -76,4 +78,3 @@ if (!$core->error->flag())
 }
 
 dcPage::close();
-?>

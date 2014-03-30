@@ -22,14 +22,17 @@ if (!empty($_POST['delete'])) {
 	# Check if category to delete exists
 	$c = $core->blog->getCategory((integer) $cat_id);
 	if ($c->isEmpty()) {
-		http::redirect('categories.php?unknown=1');
+		dcPage::addErrorNotice(__('This category does not exist.'));
+		http::redirect('categories.php');
 	}
+	$name = $c->cat_title;
 	unset($c);
 
 	try {
 		# Delete category
 		$core->blog->delCategory($cat_id);
-		http::redirect('categories.php?del=1');
+		dcPage::addSuccessNotice(sprintf(__('The category "%s" has been successfully deleted.'),html::escapeHTML($name)));
+		http::redirect('categories.php');
 	} catch (Exception $e) {
 		$core->error->add($e->getMessage());
 	}
@@ -42,20 +45,23 @@ if (!empty($_POST['mov']) && !empty($_POST['mov_cat'])) {
 		$keys = array_keys($_POST['mov']);
 		$cat_id = (int) $keys[0];
 		$mov_cat = (int) $_POST['mov_cat'][$cat_id];
-		
+
 		$mov_cat = $mov_cat ? $mov_cat : null;
 		if ($mov_cat !== null) {
 			$c = $core->blog->getCategory($mov_cat);
 			if ($c->isEmpty()) {
 				throw new Exception(__('Category where to move posts does not exist'));
 			}
+			$name = $c->cat_title;
 			unset($c);
 		}
 		# Move posts
 		if ($mov_cat != $cat_id) {
 			$core->blog->changePostsCategory($cat_id,$mov_cat);
 		}
-		http::redirect('categories.php?move=1');
+		dcPage::addSuccessNotice(sprintf(__('The entries have been successfully moved to category "%s"'),
+			html::escapeHTML($name)));
+		http::redirect('categories.php');
 	} catch (Exception $e) {
 		$core->error->add($e->getMessage());
 	}
@@ -71,7 +77,8 @@ if (!empty($_POST['save_order']) && !empty($_POST['categories_order'])) {
 		}
 	}
 
-	http::redirect('categories.php?reord=1');
+	dcPage::addSuccessNotice(__('Categories have been successfully reordered.'));
+	http::redirect('categories.php');
 }
 
 # Reset order
@@ -80,7 +87,8 @@ if (!empty($_POST['reset']))
 	try
 	{
 		$core->blog->resetCategoriesOrder();
-		http::redirect('categories.php?reord=1');
+		dcPage::addSuccessNotice(__('Categories order has been successfully reset.'));
+		http::redirect('categories.php');
 	}
 	catch (Exception $e)
 	{
@@ -94,10 +102,13 @@ if (!empty($_POST['reset']))
 $rs = $core->blog->getCategories(array('post_type'=>'post'));
 
 $starting_script = "";
+
+$core->auth->user_prefs->addWorkspace('accessibility');
 if (!$core->auth->user_prefs->accessibility->nodragdrop
 	&& $core->auth->check('categories',$core->blog->id)
 	&& $rs->count()>1) {
 		$starting_script .= dcPage::jsLoad('js/jquery/jquery-ui.custom.js');
+		$starting_script .= dcPage::jsLoad('js/jquery/jquery.ui.touch-punch.js');
 		$starting_script .= dcPage::jsLoad('js/jquery/jquery.mjs.nestedSortable.js');
 }
 $starting_script .= dcPage::jsLoad('js/_categories.js');
@@ -106,7 +117,7 @@ dcPage::open(__('Categories'),$starting_script,
 	dcPage::breadcrumb(
 		array(
 			html::escapeHTML($core->blog->name) => '',
-			'<span class="page-title">'.__('Categories').'</span>' => ''
+			__('Categories') => ''
 		))
 );
 
@@ -115,9 +126,6 @@ if (!empty($_GET['del'])) {
 }
 if (!empty($_GET['reord'])) {
 	dcPage::success(__('Categories have been successfully reordered.'));
-}
-if (!empty($_GET['unknown'])) {
-	dcPage::success(__('This category does not exist.'));
 }
 if (!empty($_GET['move'])) {
 	dcPage::success(__('Entries have been successfully moved to the category you choose.'));
@@ -143,7 +151,7 @@ else
 	$ref_level = $level = $rs->level-1;
 	while ($rs->fetch())
 	{
-		$attr = 'id="cat_'.$rs->cat_id.'"';
+		$attr = 'id="cat_'.$rs->cat_id.'" class="cat-line clearfix"';
 
 		if ($rs->level > $level) {
 			echo str_repeat('<ul><li '.$attr.'>',$rs->level - $level);
@@ -156,27 +164,29 @@ else
 		}
 
 		echo
-		'<p>'.	   
-		'<label class="classic" for="cat-'.$rs->cat_id.'"><a href="category.php?id='.$rs->cat_id.'">'.html::escapeHTML($rs->cat_title).'</a></label>'.
-		' (<a href="posts.php?cat_id='.$rs->cat_id.'">'.
+		'<p class="cat-title"><label class="classic" for="cat_'.$rs->cat_id.'"><a href="category.php?id='.$rs->cat_id.'">'.html::escapeHTML($rs->cat_title).'</a></label> </p>'.
+		'<p class="cat-nb-posts">(<a href="posts.php?cat_id='.$rs->cat_id.'">'.
 		sprintf(($rs->nb_post > 1 ? __('%d entries') : __('%d entry') ),$rs->nb_post).'</a>'.
-		', '.__('total:').' '.$rs->nb_total.') '.
-			'<span class="cat-url">'.__('URL:').' <code>'.html::escapeHTML($rs->cat_url).'</code></span>';
+		', '.__('total:').' '.$rs->nb_total.')</p>'.
+		'<p class="cat-url">'.__('URL:').' <code>'.html::escapeHTML($rs->cat_url).'</code></p>';
 
+		echo
+		'<p class="cat-buttons">';
 		if ($rs->nb_total>0) {
 			// remove current category
-			echo			   
-			form::combo('mov_cat['.$rs->cat_id.']',array_filter($categories_combo, create_function('$cat', 'return $cat->value!=$GLOBALS[\'rs\']->cat_id;')),'','').
-			'<input type="submit" class="" name="mov['.$rs->cat_id.']" value="'.__('Ok').'"/>';
-		   
+			echo
+			'<label>'.__('Move entries to').'</label> '.
+			form::combo(array('mov_cat['.$rs->cat_id.']', 'mov_cat_'.$rs->cat_id),array_filter($categories_combo, create_function('$cat', 'return $cat->value!=$GLOBALS[\'rs\']->cat_id;')),'','').
+			' <input type="submit" class="reset" name="mov['.$rs->cat_id.']" value="'.__('OK').'"/>';
+
 			$attr_disabled = ' disabled="disabled"';
 			$input_class = 'disabled ';
 		} else {
 			$attr_disabled = '';
 			$input_class = '';
 		}
-		echo 
-		'<input type="submit"'.$attr_disabled.' class="'.$input_class.'delete" name="delete['.$rs->cat_id.']" value="'.__('Delete category').'"/>'.
+		echo
+		' <input type="submit"'.$attr_disabled.' class="'.$input_class.'delete" name="delete['.$rs->cat_id.']" value="'.__('Delete category').'"/>'.
 		'</p>';
 
 		$level = $rs->level;
@@ -188,23 +198,23 @@ else
 	echo
 	'</div>';
 
-	echo '<div class="fieldset"><h3 class="clear hidden-if-no-js">'.__('Categories order').'</h3>';
+	echo '<div class="clear">';
 
 	if ($core->auth->check('categories',$core->blog->id) && $rs->count()>1) {
 		if (!$core->auth->user_prefs->accessibility->nodragdrop) {
-			echo '<p class="hidden-if-no-js">'.__('To rearrange categories order, move items by drag and drop, then click on “Save categories order” button.').'</p>';
+			echo '<p class="form-note hidden-if-no-js">'.__('To rearrange categories order, move items by drag and drop, then click on “Save categories order” button.').'</p>';
 		}
 		echo
-		'<p class="hidden-if-no-js">'.
+		'<p><span class="hidden-if-no-js">'.
 		'<input type="hidden" id="categories_order" name="categories_order" value=""/>'.
 		'<input type="submit" name="save_order" id="save-set-order" value="'.__('Save categories order').'" />'.
-		'</p>';
+		'</span> ';
+	} else {
+		echo '<p>';
 	}
 
 	echo
-	'<p class="hidden-if-js right"><input type="submit" name="reset" value="'.__('Reorder all categories on the top level and delete selected categories').'" />'.
-	$core->formNonce().'</p>'.
-	'<p class="hidden-if-no-js"><input type="submit" name="reset" value="'.__('Reorder all categories on the top level').'" />'.
+	'<input type="submit" class="reset" name="reset" value="'.__('Reorder all categories on the top level').'" />'.
 	$core->formNonce().'</p>'.
 	'</div></form>';
 }
@@ -213,4 +223,3 @@ echo '</div>';
 
 dcPage::helpBlock('core_categories');
 dcPage::close();
-?>

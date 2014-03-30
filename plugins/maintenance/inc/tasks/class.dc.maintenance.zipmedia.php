@@ -13,12 +13,16 @@ if (!defined('DC_RC_PATH')) { return; }
 
 class dcMaintenanceZipmedia extends dcMaintenanceTask
 {
+	protected $perm = 'admin';
+	protected $blog = true;
 	protected $tab = 'backup';
 	protected $group = 'zipblog';
 
 	protected function init()
 	{
 		$this->task = __('Download media folder of current blog');
+
+		$this->description = __('It may be useful to backup your media folder. This compress all content of media folder into a single zip file. Notice : with some hosters, the media folder cannot be compressed with this plugin if it is too big.');
 	}
 
 	public function execute()

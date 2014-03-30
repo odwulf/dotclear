@@ -118,7 +118,7 @@ if ($sortby !== '' && in_array($sortby,$sortby_combo)) {
 	} else {
 		$order = 'desc';
 	}
-	
+
 	if ($sortby != 'comment_dt' || $order != 'desc') {
 		$show_filters = true;
 	}
@@ -130,23 +130,16 @@ if ($sortby !== '' && in_array($sortby,$sortby_combo)) {
 # Actions combo box
 $combo_action = array();
 $default = '';
-if ($core->auth->check('publish,contentadmin',$core->blog->id))
+if ($core->auth->check('delete,contentadmin',$core->blog->id) && $status == -2)
 {
-	$combo_action[__('Publish')] = 'publish';
-	$combo_action[__('Unpublish')] = 'unpublish';
-	$combo_action[__('Mark as pending')] = 'pending';
-	$combo_action[__('Mark as junk')] = 'junk';
-}
-if ($core->auth->check('delete,contentadmin',$core->blog->id))
-{
-	$combo_action[__('Delete')] = 'delete';
-	if ($status == -2) {
-		$default = 'delete';
-	}
+	$default = 'delete';
 }
 
-# --BEHAVIOR-- adminCommentsActionsCombo
-$core->callBehavior('adminCommentsActionsCombo',array(&$combo_action));
+$comments_actions_page = new dcCommentsActionsPage($core,'comments.php');
+
+if ($comments_actions_page->process()) {
+	return;
+}
 
 /* Get comments
 -------------------------------------------------------- */
@@ -160,20 +153,31 @@ try {
 
 /* DISPLAY
 -------------------------------------------------------- */
-$starting_script = dcPage::jsLoad('js/_comments.js');
-if (!$show_filters) {
-	$starting_script .= dcPage::jsLoad('js/filter-controls.js');
-}
-# --BEHAVIOR-- adminCommentsHeaders
-$starting_script .= $core->callBehavior('adminCommentsHeaders');
+
+$form_filter_title = __('Show filters and display options');
+$starting_script  = dcPage::jsLoad('js/_comments.js');
+$starting_script .= dcPage::jsLoad('js/filter-controls.js');
+$starting_script .=
+	'<script type="text/javascript">'."\n".
+	"//<![CDATA["."\n".
+	dcPage::jsVar('dotclear.msg.show_filters', $show_filters ? 'true':'false')."\n".
+	dcPage::jsVar('dotclear.msg.filter_posts_list',$form_filter_title)."\n".
+	dcPage::jsVar('dotclear.msg.cancel_the_filter',__('Cancel filters and display options'))."\n".
+	"//]]>".
+	"</script>";
 
 dcPage::open(__('Comments and trackbacks'),$starting_script,
 	dcPage::breadcrumb(
 		array(
 			html::escapeHTML($core->blog->name) => '',
-			'<span class="page-title">'.__('Comments and trackbacks').'</span>' => ''
+			__('Comments and trackbacks') => ''
 		))
 );
+if (!empty($_GET['upd'])) {
+	dcPage::success(__('Selected comments have been successfully updated.'));
+} elseif (!empty($_GET['del'])) {
+	dcPage::success(__('Selected comments have been successfully deleted.'));
+}
 
 if (!$core->error->flag())
 {
@@ -181,11 +185,11 @@ if (!$core->error->flag())
 		dcPage::message(__('Spam comments have been successfully deleted.'));
 		unset($_SESSION['comments_del_spam']);
 	}
-	
+
 	$spam_count = $core->blog->getComments(array('comment_status'=>-2),true)->f(0);
 	if ($spam_count > 0) {
-		
-		echo 
+
+		echo
 			'<form action="comments.php" method="post" class="fieldset">';
 
 		if (!$with_spam || ($status != -2)) {
@@ -197,7 +201,7 @@ if (!$core->error->flag())
 				'<a href="comments.php?status=-2">'.__('Show them.').'</a>.</p>';
 			}
 		}
-		
+
 		echo
 			'<p class="no-margin">'.
 			$core->formNonce().
@@ -209,12 +213,6 @@ if (!$core->error->flag())
 		echo '</form>';
 	}
 
-	# Filters
-	if (!$show_filters) {
-		echo '<p><a id="filter-control" class="form-control" href="#">'.
-		__('Filter comments and trackbacks list').'</a></p>';
-	}
-	
 	echo
 	'<form action="comments.php" method="get" id="filters-form">'.
 	'<h3 class="hidden">'.__('Filter comments and trackbacks list').'</h3>'.
@@ -227,14 +225,14 @@ if (!$core->error->flag())
 	'<p><label for="status" class="ib">'.__('Status:').'</label> '.
 	form::combo('status',$status_combo,$status).'</p>'.
 	'</div>'.
-	
+
 	'<div class="cell filters-sibling-cell">'.
 	'<p><label for="author" class="ib">'.__('Author:').'</label> '.
 	form::field('author',20,255,html::escapeHTML($author)).'</p>'.
 	'<p><label for="ip" class="ib">'.__('IP address:').'</label> '.
 	form::field('ip',20,39,html::escapeHTML($ip)).'</p>'.
 	'</div>'.
-	
+
 	'<div class="cell filters-options">'.
 	'<h4>'.__('Display options').'</h4>'.
 	'<p><label for="sortby" class="ib">'.__('Order by:').'</label> '.
@@ -245,23 +243,23 @@ if (!$core->error->flag())
 	form::field('nb',3,3,$nb_per_page).' '.
 	__('comments per page').'</label></p>'.
 	'</div>'.
-	
+
 	'</div>'.
 	'<p><input type="submit" value="'.__('Apply filters and display options').'" />'.
 	'<br class="clear" /></p>'. //Opera sucks
 	'</form>';
-	
+
 	# Show comments
 	$comment_list->display($page,$nb_per_page,
-	'<form action="comments_actions.php" method="post" id="form-comments">'.
-	
+	'<form action="comments.php" method="post" id="form-comments">'.
+
 	'%s'.
-	
+
 	'<div class="two-cols">'.
 	'<p class="col checkboxes-helpers"></p>'.
-	
+
 	'<p class="col right"><label for="action" class="classic">'.__('Selected comments action:').'</label> '.
-	form::combo('action',$combo_action,$default,'','','','title="'.__('Actions').'"').
+	form::combo('action',$comments_actions_page->getCombo(),$default,'','','','title="'.__('Actions').'"').
 	$core->formNonce().
 	'<input type="submit" value="'.__('ok').'" /></p>'.
 	form::hidden(array('type'),$type).
@@ -273,11 +271,11 @@ if (!$core->error->flag())
 	form::hidden(array('page'),$page).
 	form::hidden(array('nb'),$nb_per_page).
 	'</div>'.
-	
-	'</form>'
+
+	'</form>',
+	$show_filters
 	);
 }
 
 dcPage::helpBlock('core_comments');
 dcPage::close();
-?>

@@ -702,7 +702,7 @@ msgstr "Descripció:"
 msgid "Entry does not exist."
 msgstr ""
 
-msgid "No comment"
+msgid "No comments"
 msgstr "Sense comentaris"
 
 msgid "You can't edit this comment."
@@ -2683,7 +2683,7 @@ msgid "An error occurred during module deletion."
 msgstr ""
 
 #, php-format
-msgid "Unable to upgrade \"%s\". (same version)"
+msgid "Unable to upgrade \"%s\". (older or same version)"
 msgstr ""
 
 msgid "Unable to read new _define.php file"

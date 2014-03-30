@@ -54,7 +54,7 @@ if (!$core->error->flag())
 	$categories_combo = array_merge(
 		array(
 			new formSelectOption('-',''),
-			new formSelectOption(__('(No cat)'),'NULL')),		
+			new formSelectOption(__('(No cat)'),'NULL')),
 		dcAdminCombos::getCategoriesCombo($categories,false)
 	);
 	$categories_values = array();
@@ -63,38 +63,46 @@ if (!$core->error->flag())
 			$categories_values[$cat->value]=true;
 		}
 	}
-	
+
 	$status_combo = array_merge(
 		array('-' => ''),
-		dcAdminCombos::getPostStatusesCombo()	
+		dcAdminCombos::getPostStatusesCombo()
 	);
-	
+
 	$selected_combo = array(
 	'-' => '',
 	__('Selected') => '1',
 	__('Not selected') => '0'
 	);
-	
+
+	$attachment_combo = array(
+	'-' => '',
+	__('With attachments') => '1',
+	__('Without attachments') => '0'
+	);
+
 	# Months array
 	$dt_m_combo = array_merge(
 		array('-' => ''),
 		dcAdminCombos::getDatesCombo($dates)
 	);
-	
+
 	$lang_combo = array_merge(
 		array('-' => ''),
-		dcAdminCombos::getLangsCombo($langs,false)	
+		dcAdminCombos::getLangsCombo($langs,false)
 	);
-	
+
 	$sortby_combo = array(
 	__('Date') => 'post_dt',
 	__('Title') => 'post_title',
 	__('Category') => 'cat_title',
 	__('Author') => 'user_id',
 	__('Status') => 'post_status',
-	__('Selected') => 'post_selected'
+	__('Selected') => 'post_selected',
+	__('Number of comments') => 'nb_comment',
+	__('Number of trackbacks') => 'nb_trackback'
 	);
-	
+
 	$order_combo = array(
 	__('Descending') => 'desc',
 	__('Ascending') => 'asc'
@@ -102,35 +110,12 @@ if (!$core->error->flag())
 }
 
 # Actions combo box
-$combo_action = array();
-if ($core->auth->check('publish,contentadmin',$core->blog->id))
-{
-	$combo_action[__('Status')] = array(
-		__('Publish') => 'publish',
-		__('Unpublish') => 'unpublish',
-		__('Schedule') => 'schedule',
-		__('Mark as pending') => 'pending'
-	);
-}
-$combo_action[__('Mark')] = array(
-	__('Mark as selected') => 'selected',
-	__('Mark as unselected') => 'unselected'
-);
-$combo_action[__('Change')] = array(
-	__('Change category') => 'category',
-	__('Change language') => 'lang');
-if ($core->auth->check('admin',$core->blog->id))
-{
-	$combo_action[__('Change')] = array_merge($combo_action[__('Change')],
-		array(__('Change author') => 'author'));
-}
-if ($core->auth->check('delete,contentadmin',$core->blog->id))
-{
-	$combo_action[__('Delete')] = array(__('Delete') => 'delete');
-}
 
-# --BEHAVIOR-- adminPostsActionsCombo
-$core->callBehavior('adminPostsActionsCombo',array(&$combo_action));
+$posts_actions_page = new dcPostsActionsPage($core,'posts.php');
+
+if ($posts_actions_page->process()) {
+	return;
+}
 
 /* Get posts
 -------------------------------------------------------- */
@@ -138,6 +123,7 @@ $user_id = !empty($_GET['user_id']) ?	$_GET['user_id'] : '';
 $cat_id = !empty($_GET['cat_id']) ?	$_GET['cat_id'] : '';
 $status = isset($_GET['status']) ?	$_GET['status'] : '';
 $selected = isset($_GET['selected']) ?	$_GET['selected'] : '';
+$attachment = isset($_GET['attachment']) ?	$_GET['attachment'] : '';
 $month = !empty($_GET['month']) ?		$_GET['month'] : '';
 $lang = !empty($_GET['lang']) ?		$_GET['lang'] : '';
 $sortby = !empty($_GET['sortby']) ?	$_GET['sortby'] : 'post_dt';
@@ -190,6 +176,15 @@ if ($selected !== '' && in_array($selected,$selected_combo)) {
 	$selected='';
 }
 
+# - Selected filter
+if ($attachment !== '' && in_array($attachment,$attachment_combo)) {
+	$params['media'] = $attachment;
+	$params['link_type'] = 'attachment';
+	$show_filters = true;
+} else {
+	$attachment='';
+}
+
 # - Month filter
 if ($month !== '' && in_array($month,$dt_m_combo)) {
 	$params['post_month'] = substr($month,4,2);
@@ -214,7 +209,7 @@ if ($sortby !== '' && in_array($sortby,$sortby_combo)) {
 	} else {
 		$order='desc';
 	}
-	
+
 	if ($sortby != 'post_dt' || $order != 'desc') {
 		$show_filters = true;
 	}
@@ -234,16 +229,24 @@ try {
 
 /* DISPLAY
 -------------------------------------------------------- */
-$starting_script = dcPage::jsLoad('js/_posts_list.js');
-if (!$show_filters) {
-	$starting_script .= dcPage::jsLoad('js/filter-controls.js');
-}
+
+$form_filter_title = __('Show filters and display options');
+$starting_script  = dcPage::jsLoad('js/_posts_list.js');
+$starting_script .= dcPage::jsLoad('js/filter-controls.js');
+$starting_script .=
+	'<script type="text/javascript">'."\n".
+	"//<![CDATA["."\n".
+	dcPage::jsVar('dotclear.msg.show_filters', $show_filters ? 'true':'false')."\n".
+	dcPage::jsVar('dotclear.msg.filter_posts_list',$form_filter_title)."\n".
+	dcPage::jsVar('dotclear.msg.cancel_the_filter',__('Cancel filters and display options'))."\n".
+	"//]]>".
+	"</script>";
 
 dcPage::open(__('Entries'),$starting_script,
 	dcPage::breadcrumb(
 		array(
 			html::escapeHTML($core->blog->name) => '',
-			'<span class="page-title">'.__('Entries').'</span>' => ''
+			__('Entries') => ''
 		))
 );
 if (!empty($_GET['upd'])) {
@@ -254,16 +257,9 @@ if (!empty($_GET['upd'])) {
 if (!$core->error->flag())
 {
 	echo
-	'<p class="top-add"><a class="button add" href="post.php">'.__('New entry').'</a></p>';
-	
-	if (!$show_filters) {
-		echo '<p><a id="filter-control" class="form-control" href="#">'.
-		__('Filter posts list').'</a></p>';
-	}
-	
-	echo
+	'<p class="top-add"><a class="button add" href="post.php">'.__('New entry').'</a></p>'.
 	'<form action="posts.php" method="get" id="filters-form">'.
-	'<h3 class="hidden">'.__('Filter posts list').'</h3>'.
+	'<h3 class="out-of-screen-if-js">'.$form_filter_title.'</h3>'.
 
 	'<div class="table">'.
 	'<div class="cell">'.
@@ -275,16 +271,18 @@ if (!$core->error->flag())
 	'<p><label for="status" class="ib">'.__('Status:').'</label> ' .
 	form::combo('status',$status_combo,$status).'</p> '.
 	'</div>'.
-	
+
 	'<div class="cell filters-sibling-cell">'.
 	'<p><label for="selected" class="ib">'.__('Selected:').'</label> '.
 	form::combo('selected',$selected_combo,$selected).'</p>'.
+	'<p><label for="attachment" class="ib">'.__('Attachments:').'</label> '.
+	form::combo('attachment',$attachment_combo,$attachment).'</p>'.
 	'<p><label for="month" class="ib">'.__('Month:').'</label> '.
 	form::combo('month',$dt_m_combo,$month).'</p>'.
 	'<p><label for="lang" class="ib">'.__('Lang:').'</label> '.
 	form::combo('lang',$lang_combo,$lang).'</p> '.
 	'</div>'.
-	
+
 	'<div class="cell filters-options">'.
 	'<h4>'.__('Display options').'</h4>'.
 	'<p><label for="sortby" class="ib">'.__('Order by:').'</label> '.
@@ -300,23 +298,24 @@ if (!$core->error->flag())
 	'<p><input type="submit" value="'.__('Apply filters and display options').'" />'.
 	'<br class="clear" /></p>'. //Opera sucks
 	'</form>';
-	
+
 	# Show posts
 	$post_list->display($page,$nb_per_page,
-	'<form action="posts_actions.php" method="post" id="form-entries">'.
-	
+	'<form action="posts.php" method="post" id="form-entries">'.
+
 	'%s'.
-	
+
 	'<div class="two-cols">'.
 	'<p class="col checkboxes-helpers"></p>'.
-	
+
 	'<p class="col right"><label for="action" class="classic">'.__('Selected entries action:').'</label> '.
-	form::combo('action',$combo_action).
+	form::combo('action',$posts_actions_page->getCombo()).
 	'<input type="submit" value="'.__('ok').'" /></p>'.
 	form::hidden(array('user_id'),$user_id).
 	form::hidden(array('cat_id'),$cat_id).
 	form::hidden(array('status'),$status).
 	form::hidden(array('selected'),$selected).
+	form::hidden(array('attachment'),$attachment).
 	form::hidden(array('month'),$month).
 	form::hidden(array('lang'),$lang).
 	form::hidden(array('sortby'),$sortby).
@@ -325,10 +324,10 @@ if (!$core->error->flag())
 	form::hidden(array('nb'),$nb_per_page).
 	$core->formNonce().
 	'</div>'.
-	'</form>'
+	'</form>',
+	$show_filters
 	);
 }
 
 dcPage::helpBlock('core_posts');
 dcPage::close();
-?>

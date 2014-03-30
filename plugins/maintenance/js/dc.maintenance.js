@@ -30,11 +30,11 @@ $(function(){
 					$('.step-msg',box).text(
 						$('rsp>step',data).attr('title')
 					);
-					var code = $('rsp>step',data).attr('code'); 
+					var code = $('rsp>step',data).attr('code');
 					if (code > 0){
 						dcMaintenanceStep(box,code);
 					} else {
-						$('.step-msg',box).addClass('success');
+						$('#content h2').after($('<div/>').addClass('success').append($('.step-msg',box)));
 						$('.step-wait',box).remove();
 						$('.step-back',box).show();
 					}

@@ -18,7 +18,7 @@ $href = !empty($_GET['href']) ? $_GET['href'] : '';
 $hreflang = !empty($_GET['hreflang']) ? $_GET['hreflang'] : '';
 $title = !empty($_GET['title']) ? $_GET['title'] : '';
 
-dcPage::openPopup(__('Add a link'),dcPage::jsLoad('js/jsToolBar/popup_link.js'));
+dcPage::openPopup(__('Add a link'),$core->callBehavior('adminPopupLink'));
 
 echo '<h2 class="page-title">'.__('Add a link').'</h2>';
 
@@ -30,8 +30,8 @@ echo
 '<form id="link-insert-form" action="#" method="get">'.
 '<p><label class="required" for="href"><abbr title="'.__('Required field').'">*</abbr> '.__('Link URL:').'</label> '.
 form::field('href',35,512,html::escapeHTML($href)).'</p>'.
-'<p><label for="title">'.__('Link title:').'</label> '. 
-form::field('title',35,512,html::escapeHTML($title)).'</p>'. 
+'<p><label for="title">'.__('Link title:').'</label> '.
+form::field('title',35,512,html::escapeHTML($title)).'</p>'.
 '<p><label for="hreflang">'.__('Link language:').'</label> '.
 form::combo('hreflang',$lang_combo,$hreflang).
 '</p>'.
@@ -48,4 +48,3 @@ form::combo('hreflang',$lang_combo,$hreflang).
 '</script>'."\n";
 
 dcPage::closePopup();
-?>

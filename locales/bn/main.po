@@ -675,7 +675,7 @@ msgstr "বিবরণ:"
 msgid "Entry does not exist."
 msgstr "এই এন্ট্রিটি নেই।"
 
-msgid "No comment"
+msgid "No comments"
 msgstr "শূণ্য মন্তব্য"
 
 msgid "You can't edit this comment."
@@ -2596,7 +2596,7 @@ msgid "An error occurred during module deletion."
 msgstr ""
 
 #, php-format
-msgid "Unable to upgrade \"%s\". (same version)"
+msgid "Unable to upgrade \"%s\". (older or same version)"
 msgstr ""
 
 msgid "Unable to read new _define.php file"

@@ -11,7 +11,7 @@
 # -- END LICENSE BLOCK -----------------------------------------
 if (!defined('DC_CONTEXT_ADMIN')) { return; }
 
-$tag = (!empty($_REQUEST['tag']) || $_REQUEST['tag'] == '0') ? $_REQUEST['tag'] : '';
+$tag = isset($_REQUEST['tag']) ? $_REQUEST['tag'] : '';
 
 $this_url = $p_url.'&amp;m=tag_posts&amp;tag='.rawurlencode($tag);
 
@@ -20,12 +20,13 @@ $page = !empty($_GET['page']) ? max(1,(integer) $_GET['page']) : 1;
 $nb_per_page =  30;
 
 # Rename a tag
-if (!empty($_POST['new_tag_id']) || $_POST['new_tag_id'] == '0')
+if (isset($_POST['new_tag_id']))
 {
 	$new_id = dcMeta::sanitizeMetaID($_POST['new_tag_id']);
 	try {
 		if ($core->meta->updateMeta($tag,$new_id,'tag')) {
-			http::redirect($p_url.'&m=tag_posts&tag='.$new_id.'&renamed=1');
+			dcPage::addSuccessNotice(__('Tag has been successfully renamed'));
+			http::redirect($p_url.'&m=tag_posts&tag='.$new_id);
 		}
 	} catch (Exception $e) {
 		$core->error->add($e->getMessage());
@@ -37,7 +38,8 @@ if (!empty($_POST['delete']) && $core->auth->check('publish,contentadmin',$core-
 {
 	try {
 		$core->meta->delMeta($tag,'tag');
-		http::redirect($p_url.'&m=tags&del=1');
+		dcPage::addSuccessNotice(__('Tag has been successfully removed'));
+		http::redirect($p_url.'&m=tags');
 	} catch (Exception $e) {
 		$core->error->add($e->getMessage());
 	}
@@ -60,34 +62,11 @@ try {
 	$core->error->add($e->getMessage());
 }
 
-# Actions combo box
-$combo_action = array();
-if ($core->auth->check('publish,contentadmin',$core->blog->id))
-{
-	$combo_action[__('Status')] = array(
-		__('Publish') => 'publish',
-		__('Unpublish') => 'unpublish',
-		__('Schedule') => 'schedule',
-		__('Mark as pending') => 'pending'
-	);
-}
-$combo_action[__('Mark')] = array(
-	__('Mark as selected') => 'selected',
-	__('Mark as unselected') => 'unselected'
-);
-$combo_action[__('Change')] = array(__('Change category') => 'category');
-if ($core->auth->check('admin',$core->blog->id))
-{
-	$combo_action[__('Change')] = array_merge($combo_action[__('Change')],
-		array(__('Change author') => 'author'));
-}
-if ($core->auth->check('delete,contentadmin',$core->blog->id))
-{
-	$combo_action[__('Delete')] = array(__('Delete') => 'delete');
-}
+$posts_actions_page = new dcPostsActionsPage($core,'plugin.php',array('p'=>'tags', 'm'=>'tag_posts', 'tag'=> $tag));
 
-# --BEHAVIOR-- adminPostsActionsCombo
-$core->callBehavior('adminPostsActionsCombo',array(&$combo_action));
+if ($posts_actions_page->process()) {
+	return;
+}
 
 ?>
 <html>
@@ -113,15 +92,12 @@ echo dcPage::breadcrumb(
 	array(
 		html::escapeHTML($core->blog->name) => '',
 		__('Tags') => $p_url.'&amp;m=tags',
-		'<span class="page-title">'.__('Tag').' &ldquo;'.html::escapeHTML($tag).'&rdquo;'.'</span>' => ''
-	));
+		__('Tag').' &ldquo;'.html::escapeHTML($tag).'&rdquo;' => ''
+	)).
+	dcPage::notices();
 ?>
 
 <?php
-if (!empty($_GET['renamed'])) {
-	dcPage::success(__('Tag has been successfully renamed'));
-}
-
 echo '<p><a class="back" href="'.$p_url.'&amp;m=tags">'.__('Back to tags list').'</a></p>';
 
 if (!$core->error->flag())
@@ -129,46 +105,47 @@ if (!$core->error->flag())
 	if (!$posts->isEmpty())
 	{
 		echo
-		'<div class="fieldset">'.
+		'<div class="tag-actions vertical-separator">'.
+		'<h3>'.html::escapeHTML($tag).'</h3>'.
 		'<form action="'.$this_url.'" method="post">'.
-		'<h3>'.__('Actions').'</h3>'.
-		'<p><label for="new_tag_id">'.__('Edit tag name:').'</label>'.
+		'<p><label for="new_tag_id" class="classic">'.__('Rename').'</label> '.
 		form::field('new_tag_id',20,255,html::escapeHTML($tag)).
-		'<input type="submit" value="'.__('Rename').'" />'.
+		'<input type="submit" value="'.__('OK').'" />'.
 		$core->formNonce().
 		'</p></form>';
 		# Remove tag
 		if (!$posts->isEmpty() && $core->auth->check('contentadmin',$core->blog->id)) {
 			echo
 			'<form id="tag_delete" action="'.$this_url.'" method="post">'.
-			'<p>'.__('Delete this tag:').' '.
-			'<input type="submit" class="delete" name="delete" value="'.__('Delete').'" />'.
+			'<p><input type="submit" class="delete" name="delete" value="'.__('Delete this tag').'" />'.
 			$core->formNonce().
 			'</p></form>';
 		}
 		echo '</div>';
 	}
-	
+
 	# Show posts
-	echo '<h3>'.sprintf(__('List of entries with the tag “%s”'),html::escapeHTML($tag)).'</h3>';
+	echo '<h4 class="vertical-separator pretty-title">'.sprintf(__('List of entries with the tag “%s”'),html::escapeHTML($tag)).'</h4>';
 	$post_list->display($page,$nb_per_page,
-	'<form action="posts_actions.php" method="post" id="form-entries">'.
-	
+	'<form action="plugin.php" method="post" id="form-entries">'.
+
 	'%s'.
-	
+
 	'<div class="two-cols">'.
 	'<p class="col checkboxes-helpers"></p>'.
-	
+
 	'<p class="col right"><label for="action" class="classic">'.__('Selected entries action:').'</label> '.
-	form::combo('action',$combo_action).
+	form::combo('action',$posts_actions_page->getCombo()).
 	'<input type="submit" value="'.__('OK').'" /></p>'.
 	form::hidden('post_type','').
-	form::hidden('redir',$p_url.'&amp;m=tag_posts&amp;tag='.
-		str_replace('%','%%',rawurlencode($tag)).'&amp;page='.$page).
+	form::hidden('p','tags').
+	form::hidden('m','tag_posts').
+	form::hidden('tag',$tag).
 	$core->formNonce().
 	'</div>'.
 	'</form>');
 }
+dcPage::helpBlock('tag_posts');
 ?>
 </body>
 </html>

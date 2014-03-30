@@ -26,7 +26,7 @@ $cat_title = '';
 if (!empty($_POST['import_links']) && !empty($_FILES['links_file']))
 {
 	$default_tab = 'import-links';
-	
+
 	try
 	{
 		files::uploadStatus($_FILES['links_file']);
@@ -34,7 +34,7 @@ if (!empty($_POST['import_links']) && !empty($_FILES['links_file']))
 		if (!move_uploaded_file($_FILES['links_file']['tmp_name'],$ifile)) {
 			throw new Exception(__('Unable to move uploaded file.'));
 		}
-		
+
 		require_once dirname(__FILE__).'/class.dc.importblogroll.php';
 		try {
 			$imported = dcImportBlogroll::loadFile($ifile);
@@ -43,8 +43,8 @@ if (!empty($_POST['import_links']) && !empty($_FILES['links_file']))
 			@unlink($ifile);
 			throw $e;
 		}
-		
-		
+
+
 		if (empty($imported)) {
 			unset($imported);
 			throw new Exception(__('Nothing to import'));
@@ -68,12 +68,14 @@ if (!empty($_POST['import_links_do'])) {
 			$default_tab = 'import-links';
 		}
 	}
-	http::redirect($p_url.'&importlinks=1');	
+
+	dcPage::addSuccessNotice(__('links have been successfully imported.'));
+	http::redirect($p_url);
 }
 
 if (!empty($_POST['cancel_import'])) {
 	$core->error->add(__('Import operation cancelled.'));
-	$default_tab = 'import-links';	
+	$default_tab = 'import-links';
 }
 
 # Add link
@@ -83,10 +85,12 @@ if (!empty($_POST['add_link']))
 	$link_href = $_POST['link_href'];
 	$link_desc = $_POST['link_desc'];
 	$link_lang = $_POST['link_lang'];
-	
+
 	try {
 		$blogroll->addLink($link_title,$link_href,$link_desc,$link_lang);
-		http::redirect($p_url.'&addlink=1');
+
+		dcPage::addSuccessNotice(__('Link has been successfully created.'));
+		http::redirect($p_url);
 	} catch (Exception $e) {
 		$core->error->add($e->getMessage());
 		$default_tab = 'add-link';
@@ -97,10 +101,11 @@ if (!empty($_POST['add_link']))
 if (!empty($_POST['add_cat']))
 {
 	$cat_title = $_POST['cat_title'];
-	
+
 	try {
 		$blogroll->addCategory($cat_title);
-		http::redirect($p_url.'&addcat=1');
+		dcPage::addSuccessNotice(__('category has been successfully created.'));
+		http::redirect($p_url);
 	} catch (Exception $e) {
 		$core->error->add($e->getMessage());
 		$default_tab = 'add-cat';
@@ -118,9 +123,10 @@ if (!empty($_POST['removeaction']) && !empty($_POST['remove'])) {
 			break;
 		}
 	}
-	
+
 	if (!$core->error->flag()) {
-		http::redirect($p_url.'&removed=1');
+		dcPage::addSuccessNotice(__('Items have been successfully removed.'));
+		http::redirect($p_url);
 	}
 }
 
@@ -138,16 +144,17 @@ if (!empty($_POST['saveorder']) && !empty($order))
 {
 	foreach ($order as $pos => $l) {
 		$pos = ((integer) $pos)+1;
-		
+
 		try {
 			$blogroll->updateOrder($l,$pos);
 		} catch (Exception $e) {
 			$core->error->add($e->getMessage());
 		}
 	}
-	
+
 	if (!$core->error->flag()) {
-		http::redirect($p_url.'&neworder=1');
+		dcPage::addSuccessNotice(__('Items order has been successfully updated'));
+		http::redirect($p_url);
 	}
 }
 
@@ -164,11 +171,12 @@ try {
 <head>
   <title><?php echo __('Blogroll'); ?></title>
   <?php echo dcPage::jsConfirmClose('links-form','add-link-form','add-category-form'); ?>
-  <?php 
+  <?php
 	$core->auth->user_prefs->addWorkspace('accessibility');
 	if (!$core->auth->user_prefs->accessibility->nodragdrop) {
 	echo
 		dcPage::jsLoad('js/jquery/jquery-ui.custom.js').
+		dcPage::jsLoad('js/jquery/jquery.ui.touch-punch.js').
 		dcPage::jsLoad('index.php?pf=blogroll/blogroll.js');
 	}
   ?>
@@ -180,38 +188,18 @@ try {
 	echo dcPage::breadcrumb(
 		array(
 			html::escapeHTML($core->blog->name) => '',
-			'<span class="page-title">'.__('Blogroll').'</span>' => ''
-		));
+			__('Blogroll') => ''
+		)).
+		dcPage::notices();
 ?>
 
-<?php
-if (!empty($_GET['neworder'])) {
-	dcPage::success(__('Items order has been successfully updated'));
-}
-
-if (!empty($_GET['removed'])) {
-	dcPage::success(__('Items have been successfully removed.'));
-}
-
-if (!empty($_GET['addlink'])) {
-	dcPage::success(__('Link has been successfully created.'));
-}
-
-if (!empty($_GET['addcat'])) {
-	dcPage::success(__('category has been successfully created.'));
-}
-
-if (!empty($_GET['importlinks'])) {
-	dcPage::success(__('links have been successfully imported.'));
-}
-?>
-
-<div class="multi-part" title="<?php echo __('Blogroll'); ?>">
+<div class="multi-part" id="main-list" title="<?php echo __('Blogroll'); ?>">
 
 <?php if (!$rs->isEmpty()) { ?>
 
 <form action="plugin.php" method="post" id="links-form">
-<table class="maximal dragable">
+<div class="table-outer">
+<table class="dragable">
 <thead>
 <tr>
   <th colspan="3"><?php echo __('Title'); ?></th>
@@ -225,13 +213,13 @@ if (!empty($_GET['importlinks'])) {
 while ($rs->fetch())
 {
 	$position = (string) $rs->index()+1;
-	
+
 	echo
 	'<tr class="line" id="l_'.$rs->link_id.'">'.
 	'<td class="handle minimal">'.form::field(array('order['.$rs->link_id.']'),2,5,$position,'position','',false,'title="'.__('position').'"').'</td>'.
 	'<td class="minimal">'.form::checkbox(array('remove[]'),$rs->link_id,'','','',false,'title="'.__('select this link').'"').'</td>';
-	
-	
+
+
 	if ($rs->is_cat)
 	{
 		echo
@@ -247,24 +235,24 @@ while ($rs->fetch())
 		'<td>'.html::escapeHTML($rs->link_href).'</td>'.
 		'<td>'.html::escapeHTML($rs->link_lang).'</td>';
 	}
-	
+
 	echo '</tr>';
 }
 ?>
 </tbody>
-</table>
+</table></div>
 
 <div class="two-cols">
 <p class="col">
 <?php
-	echo 
+	echo
 	form::hidden('links_order','').
 	form::hidden(array('p'),'blogroll').
 	$core->formNonce();
 ?>
 <input type="submit" name="saveorder" value="<?php echo __('Save order'); ?>" /></p>
 <p class="col right"><input type="submit" class="delete" name="removeaction"
-	 value="<?php echo __('Delete selected links'); ?>" 
+	 value="<?php echo __('Delete selected links'); ?>"
 	 onclick="return window.confirm('
 	 <?php echo html::escapeJS(__('Are you sure you want to delete selected links?')); ?>');" /></p>
 </div>
@@ -342,14 +330,14 @@ else {
 		'<th colspan="2">'.__('Title').'</th>'.
 		'<th>'.__('Description').'</th>'.
 		'</tr>';
-		
+
 		$i = 0;
 		foreach ($imported as $entry) {
 			$url   = html::escapeHTML($entry->link);
 			$title = html::escapeHTML($entry->title);
 			$desc  = html::escapeHTML($entry->desc);
-			
-			echo 
+
+			echo
 			'<tr><td>'.form::checkbox(array('entries[]'),$i,'','','').'</td>'.
 			'<td nowrap><a href="'.$url.'">'.$title.'</a>'.
 			'<input type="hidden" name="url['.$i.']" value="'.$url.'" />'.
@@ -357,14 +345,14 @@ else {
 			'</td>'.
 			'<td>'.$desc.
 			'<input type="hidden" name="desc['.$i.']" value="'.$desc.'" />'.
-			'</td></tr>'."\n";			
+			'</td></tr>'."\n";
 			$i++;
 		}
 		echo
 		'</table>'.
 		'<div class="two-cols">'.
 		'<p class="col checkboxes-helpers"></p>'.
-		
+
 		'<p class="col right">'.
 		form::hidden(array('p'),'blogroll').
 		$core->formNonce().
