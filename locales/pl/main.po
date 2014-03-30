@@ -670,7 +670,7 @@ msgstr "pozycja:"
 msgid "Entry does not exist."
 msgstr "Wpis nie istnieje."
 
-msgid "No comment"
+msgid "No comments"
 msgstr "Brak komentarzy"
 
 msgid "You can't edit this comment."
@@ -2570,7 +2570,7 @@ msgid "An error occurred during module deletion."
 msgstr "Wystąpił błąd podczas usuwania modułu."
 
 #, php-format
-msgid "Unable to upgrade \"%s\". (same version)"
+msgid "Unable to upgrade \"%s\". (older or same version)"
 msgstr "Nie można uaktualnić \"%s\". (ta sama wersja)"
 
 msgid "Unable to read new _define.php file"

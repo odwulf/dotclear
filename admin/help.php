@@ -22,12 +22,12 @@ function helpPage()
 	if (empty($args)) {
 		return $ret;
 	};
-	
+
 	global $__resources;
 	if (empty($__resources['help'])) {
 		return $ret;
 	}
-	
+
 	$content = '';
 	$title = '';
 	foreach ($args as $v)
@@ -36,7 +36,7 @@ function helpPage()
 			$content .= $v->content;
 			continue;
 		}
-		
+
 		if (!isset($__resources['help'][$v])) {
 			continue;
 		}
@@ -44,7 +44,7 @@ function helpPage()
 		if (!file_exists($f) || !is_readable($f)) {
 			continue;
 		}
-		
+
 		$fc = file_get_contents($f);
 		if (preg_match('|<body[^>]*?>(.*?)</body>|ms',$fc,$matches)) {
 			$content .= $matches[1];
@@ -55,11 +55,11 @@ function helpPage()
 			$content .= $fc;
 		}
 	}
-	
+
 	if (trim($content) == '') {
 		return $ret;
 	}
-	
+
 	$ret['content'] = $content;
 	if ($title != '') {
 		$ret['title'] = $title;
@@ -76,20 +76,18 @@ if ($content_array['title'] != '') {
 	$breadcrumb = dcPage::breadcrumb(
 		array(
 			__('Global help') => 'help.php',
-			'<span class="page-title">'.$content_array['title'].'</span>' => ''
+			$content_array['title'] => ''
 		));
 } else {
 	$breadcrumb = dcPage::breadcrumb(
 		array(
-			'<span class="page-title">'.__('Global help').'</span>' => ''
+			__('Global help') => ''
 		));
 }
 
 /* DISPLAY
 -------------------------------------------------------- */
 dcPage::open(__('Global help'),
-	# --BEHAVIOR-- adminPostHeaders
-	$core->callBehavior('adminPostHeaders').
 	dcPage::jsPageTabs('first-step'),
 	$breadcrumb
 );
@@ -100,4 +98,3 @@ echo $content_array['content'];
 $GLOBALS['__resources']['ctxhelp'] = true;
 
 dcPage::close();
-?>

@@ -20,13 +20,19 @@ Every task of maintenance must extend this class.
 */
 class dcMaintenanceTask
 {
+	protected $maintenance;
 	protected $core;
 	protected $p_url;
 	protected $code;
-	protected $ts = 604800; // one week
+	protected $ts = 0;
+	protected $expired = 0;
+	protected $ajax = false;
+	protected $blog = false;
+	protected $perm = null;
 
 	protected $id;
 	protected $name;
+	protected $description;
 	protected $tab = 'maintenance';
 	protected $group = 'other';
 
@@ -41,15 +47,22 @@ class dcMaintenanceTask
 	 * If your task required something on construct,
 	 * use method init() to do it.
 	 *
-	 * @param	core	<b>dcCore</b>	dcCore instance
+	 * @param	maintenance	<b>dcMaintenance</b>	dcMaintenance instance
 	 * @param	p_url	<b>string</b>	Maintenance plugin url
 	 */
-	public function __construct($core, $p_url)
+	public function __construct($maintenance)
 	{
-		$this->core =& $core;
+		$this->maintenance = $maintenance;
+		$this->core = $maintenance->core;
 		$this->init();
+		$this->id = null;
 
-		$this->p_url = $p_url;
+		if ($this->perm() === null && !$this->core->auth->isSuperAdmin()
+		|| !$this->core->auth->check($this->perm(), $this->core->blog->id)) {
+			return null;
+		}
+
+		$this->p_url = $maintenance->p_url;
 		$this->id = get_class($this);
 
 		if (!$this->name) {
@@ -61,6 +74,13 @@ class dcMaintenanceTask
 		if (!$this->success) {
 			$this->success = __('Task successfully executed.');
 		}
+
+		$this->core->blog->settings->addNamespace('maintenance');
+		$ts = $this->core->blog->settings->maintenance->get('ts_'.$this->id);
+
+		$this->ts = abs((integer) $ts);
+
+		return true;
 	}
 
 	/**
@@ -72,6 +92,31 @@ class dcMaintenanceTask
 	protected function init()
 	{
 		return null;
+	}
+
+	/**
+	 * Get task permission.
+	 *
+	 * Return user permission required to run this task
+	 * or null for super admin.
+	 *
+	 * @return <b>mixed</b> Permission.
+	 */
+	public function perm()
+	{
+		return $this->perm;
+	}
+
+	/**
+	 * Get task scope.
+	 *.
+	 * Is task limited to current blog.
+	 *
+	 * @return <b>boolean</b> Limit to blog
+	 */
+	public function blog()
+	{
+		return $this->blog;
 	}
 
 	/**
@@ -91,7 +136,39 @@ class dcMaintenanceTask
 	 */
 	public function ts()
 	{
-		return abs((integer) $this->ts);
+		return $this->ts === false ? false : abs((integer) $this->ts);
+	}
+
+	/**
+	 * Get task expired.
+	 *
+	 * This return:
+	 * - Timstamp of last update if it expired
+	 * - False if it not expired or has no recall time
+	 * - Null if it has never been executed
+	 *
+	 * @return	<b>mixed</b>	Last update
+	 */
+	public function expired()
+	{
+		if ($this->expired === 0) {
+			if (!$this->ts()) {
+				$this->expired = false;
+			}
+			else {
+				$this->expired = null;
+				$logs = array();
+				foreach($this->maintenance->getLogs() as $id => $log)
+				{
+					if ($id != $this->id() || $this->blog && !$log['blog']) {
+						continue;
+					}
+
+					$this->expired = $log['ts'] + $this->ts() < time() ? $log['ts'] : false;
+				}
+			}
+		}
+		return $this->expired;
 	}
 
 	/**
@@ -115,6 +192,16 @@ class dcMaintenanceTask
 	}
 
 	/**
+	 * Get task description.
+	 *
+	 * @return	<b>string</b>	Description
+	 */
+	public function description()
+	{
+		return $this->description;
+	}
+
+	/**
 	 * Get task tab.
 	 *
 	 * @return	<b>mixed</b>	Task tab ID or null
@@ -127,14 +214,27 @@ class dcMaintenanceTask
 	/**
 	 * Get task group.
 	 *
-	 * If task required a full tab, 
+	 * If task required a full tab,
 	 * this must be returned null.
-	 * 
+	 *
 	 * @return	<b>mixed</b>	Task group ID or null
 	 */
 	public function group()
 	{
 		return $this->group;
+	}
+
+	/**
+	 * Use ajax
+	 *
+	 * Is task use maintenance ajax script
+	 * for steps process.
+	 *
+	 * @return	<b>boolean</b>	Use ajax
+	 */
+	public function ajax()
+	{
+		return (boolean) $this->ajax;
 	}
 
 	/**
@@ -225,13 +325,17 @@ class dcMaintenanceTask
 	/**
 	 * Log task execution.
 	 *
-	 * Sometimes we need to log task execution 
+	 * Sometimes we need to log task execution
 	 * direct from task itself.
 	 *
 	 */
 	protected function log()
 	{
-		$maintenance = new dcMaintenance($this->core);
-		$maintenance->setLog($this->id);
+		$this->maintenance->setLog($this->id);
+	}
+
+	public function help()
+	{
+		return null;
 	}
 }

@@ -17,9 +17,11 @@ class dcMaintenanceCountcomments extends dcMaintenanceTask
 
 	protected function init()
 	{
-		$this->task 		= __('Reset comments and ping counters');
+		$this->task 		= __('Count again comments and trackbacks');
 		$this->success 		= __('Comments and trackback counted.');
-		$this->error 		= __('Failed to reset comments and ping counters.');
+		$this->error 		= __('Failed to count comments and trackbacks.');
+
+		$this->description = __('Count again comments and trackbacks allows to check their exact numbers. This operation can be useful when importing from another blog platform (or when migrating from dotclear 1 to dotclear 2).');
 	}
 
 	public function execute()

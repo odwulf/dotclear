@@ -36,9 +36,9 @@ if (isset($rs) && !$rs->is_cat && !empty($_POST['edit_link']))
 	$link_href = $_POST['link_href'];
 	$link_desc = $_POST['link_desc'];
 	$link_lang = $_POST['link_lang'];
-	
+
 	$link_xfn = '';
-		
+
 	if (!empty($_POST['identity']))
 	{
 		$link_xfn .= $_POST['identity'];
@@ -64,10 +64,11 @@ if (isset($rs) && !$rs->is_cat && !empty($_POST['edit_link']))
 			$link_xfn .= ' '.implode(' ',$_POST['romantic']);
 		}
 	}
-	
+
 	try {
 		$blogroll->updateLink($id,$link_title,$link_href,$link_desc,$link_lang,trim($link_xfn));
-		http::redirect($p_url.'&edit=1&id='.$id.'&upd=1');
+		dcPage::addSuccessNotice(__('Link has been successfully updated'));
+		http::redirect($p_url.'&edit=1&id='.$id);
 	} catch (Exception $e) {
 		$core->error->add($e->getMessage());
 	}
@@ -78,10 +79,11 @@ if (isset($rs) && !$rs->is_cat && !empty($_POST['edit_link']))
 if (isset($rs) && $rs->is_cat && !empty($_POST['edit_cat']))
 {
 	$link_desc = $_POST['link_desc'];
-	
+
 	try {
 		$blogroll->updateCategory($id,$link_desc);
-		http::redirect($p_url.'&edit=1&id='.$id.'&upd=1');
+		dcPage::addSuccessNotice(__('Category has been successfully updated'));
+		http::redirect($p_url.'&edit=1&id='.$id);
 	} catch (Exception $e) {
 		$core->error->add($e->getMessage());
 	}
@@ -98,8 +100,9 @@ if (isset($rs) && $rs->is_cat && !empty($_POST['edit_cat']))
 	echo dcPage::breadcrumb(
 		array(
 			html::escapeHTML($core->blog->name) => '',
-			'<span class="page-title">'.__('Blogroll').'</span>' => $p_url
-		));
+			__('Blogroll') => $p_url
+		)).
+		dcPage::notices();
 ?>
 
 <?php echo '<p><a class="back" href="'.$p_url.'">'.__('Return to blogroll').'</a></p>'; ?>
@@ -107,17 +110,13 @@ if (isset($rs) && $rs->is_cat && !empty($_POST['edit_cat']))
 <?php
 if (isset($rs) && $rs->is_cat)
 {
-	if (!empty($_GET['upd'])) {
-		dcPage::success(__('Category has been successfully updated'));
-	}
-	
 	echo
 	'<form action="'.$p_url.'" method="post">'.
 	'<h3>'.__('Edit category').'</h3>'.
-	
+
 	'<p><label for="link_desc" class="required classic"><abbr title="'.__('Required field').'">*</abbr> '.__('Title:').'</label> '.
 	form::field('link_desc',30,255,html::escapeHTML($link_desc)).
-	
+
 	form::hidden('edit',1).
 	form::hidden('id',$id).
 	$core->formNonce().
@@ -126,42 +125,40 @@ if (isset($rs) && $rs->is_cat)
 }
 if (isset($rs) && !$rs->is_cat)
 {
-	if (!empty($_GET['upd'])) {
-		dcPage::success(__('Link has been successfully updated'));
-	}
-	
+
 	echo
 	'<form action="plugin.php" method="post" class="two-cols fieldset">'.
 
 	'<div class="col30 first-col">'.
 	'<h3>'.__('Edit link').'</h3>'.
-	
+
 	'<p><label for="link_title" class="required"><abbr title="'.__('Required field').'">*</abbr> '.__('Title:').'</label> '.
 	form::field('link_title',30,255,html::escapeHTML($link_title)).'</p>'.
-	
+
 	'<p><label for="link_href" class="required"><abbr title="'.__('Required field').'">*</abbr> '.__('URL:').'</label> '.
 	form::field('link_href',30,255,html::escapeHTML($link_href)).'</p>'.
-	
+
 	'<p><label for="link_desc">'.__('Description:').'</label> '.
 	form::field('link_desc',30,255,html::escapeHTML($link_desc)).'</p>'.
-	
+
 	'<p><label for="link_lang">'.__('Language:').'</label> '.
 	form::field('link_lang',5,5,html::escapeHTML($link_lang)).'</p>'.
 	'</div>'.
-	
-	
+
+
 	# XFN nightmare
 	'<div class="col70 last-col">'.
 	'<h3>'.__('XFN information').'</h3>'.
+	'<div class="table-outer">'.
 	'<table class="noborder">'.
-	
+
 	'<tr class="line">'.
 	'<th>'.__('_xfn_Me').'</th>'.
 	'<td><p>'.'<label class="classic">'.
 	form::checkbox(array('identity'), 'me', ($link_xfn == 'me')).' '.
 	__('_xfn_Another link for myself').'</label></p></td>'.
 	'</tr>'.
-	
+
 	'<tr class="line">'.
 	'<th>'.__('_xfn_Friendship').'</th>'.
 	'<td><p>'.
@@ -174,7 +171,7 @@ if (isset($rs) && !$rs->is_cat)
 	'<label class="classic">'.form::radio(array('friendship'),'').__('None').'</label>'.
 	'</p></td>'.
 	'</tr>'.
-	
+
 	'<tr class="line">'.
 	'<th>'.__('_xfn_Physical').'</th>'.
 	'<td><p>'.
@@ -182,7 +179,7 @@ if (isset($rs) && !$rs->is_cat)
 	strpos($link_xfn,'met') !== false).__('_xfn_Met').'</label>'.
 	'</p></td>'.
 	'</tr>'.
-	
+
 	'<tr class="line">'.
 	'<th>'.__('_xfn_Professional').'</th>'.
 	'<td><p>'.
@@ -192,7 +189,7 @@ if (isset($rs) && !$rs->is_cat)
 	strpos($link_xfn,'colleague') !== false).__('_xfn_Colleague').'</label>'.
 	'</p></td>'.
 	'</tr>'.
-	
+
 	'<tr class="line">'.
 	'<th>'.__('_xfn_Geographical').'</th>'.
 	'<td><p>'.
@@ -203,7 +200,7 @@ if (isset($rs) && !$rs->is_cat)
 	'<label class="classic">'.form::radio(array('geographical'),'').__('None').'</label>'.
 	'</p></td>'.
 	'</tr>'.
-	
+
 	'<tr class="line">'.
 	'<th>'.__('_xfn_Family').'</th>'.
 	'<td><p>'.
@@ -220,7 +217,7 @@ if (isset($rs) && !$rs->is_cat)
 	'<label class="classic">'.form::radio(array('family'),'').__('None').'</label>'.
 	'</p></td>'.
 	'</tr>'.
-	
+
 	'<tr class="line">'.
 	'<th>'.__('_xfn_Romantic').'</th>'.
 	'<td><p>'.
@@ -234,15 +231,15 @@ if (isset($rs) && !$rs->is_cat)
 	strpos($link_xfn,'sweetheart') !== false).__('_xfn_Sweetheart').'</label> '.
 	'</p></td>'.
 	'</tr>'.
-	'</table>'.
-	
+	'</table></div>'.
+
 	'</div>'.
 	'<p class="clear">'.form::hidden('p','blogroll').
 	form::hidden('edit',1).
 	form::hidden('id',$id).
 	$core->formNonce().
 	'<input type="submit" name="edit_link" value="'.__('Save').'"/></p>'.
-	
+
 	'</form>';
 }
 ?>

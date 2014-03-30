@@ -697,7 +697,7 @@ msgstr "MP3 beosztása"
 msgid "Entry does not exist."
 msgstr "A bejegyzés nem létezik."
 
-msgid "No comment"
+msgid "No comments"
 msgstr "Nincs hozzászólás"
 
 msgid "You can't edit this comment."
@@ -2659,7 +2659,7 @@ msgid "An error occurred during module deletion."
 msgstr "Hiba történt a modul törlése közben."
 
 #, php-format
-msgid "Unable to upgrade \"%s\". (same version)"
+msgid "Unable to upgrade \"%s\". (older or same version)"
 msgstr "Nem lehet \"%s\"-re frissíteni (ugyanaz a verzió)"
 
 msgid "Unable to read new _define.php file"

@@ -107,9 +107,9 @@ if (!empty($_POST))
 	try
 	{
 		$blowup_user['body_txt_f'] = $_POST['body_txt_f'];
-		$blowup_user['body_txt_s'] = blowupConfig::adjustFontSize($_POST['body_txt_s']);
-		$blowup_user['body_txt_c'] = blowupConfig::adjustColor($_POST['body_txt_c']);
-		$blowup_user['body_line_height'] = blowupConfig::adjustFontSize($_POST['body_line_height']);
+		$blowup_user['body_txt_s'] = dcThemeConfig::adjustFontSize($_POST['body_txt_s']);
+		$blowup_user['body_txt_c'] = dcThemeConfig::adjustColor($_POST['body_txt_c']);
+		$blowup_user['body_line_height'] = dcThemeConfig::adjustFontSize($_POST['body_line_height']);
 
 		$blowup_user['blog_title_hide'] = (integer) !empty($_POST['blog_title_hide']);
 		$update_blog_title = !$blowup_user['blog_title_hide'] && (
@@ -121,51 +121,51 @@ if (!empty($_POST))
 		if ($update_blog_title)
 		{
 			$blowup_user['blog_title_f'] = $_POST['blog_title_f'];
-			$blowup_user['blog_title_s'] = blowupConfig::adjustFontSize($_POST['blog_title_s']);
-			$blowup_user['blog_title_c'] = blowupConfig::adjustColor($_POST['blog_title_c']);
+			$blowup_user['blog_title_s'] = dcThemeConfig::adjustFontSize($_POST['blog_title_s']);
+			$blowup_user['blog_title_c'] = dcThemeConfig::adjustColor($_POST['blog_title_c']);
 			$blowup_user['blog_title_a'] = preg_match('/^(left|center|right)$/',$_POST['blog_title_a']) ? $_POST['blog_title_a'] : null;
-			$blowup_user['blog_title_p'] = blowupConfig::adjustPosition($_POST['blog_title_p']);
+			$blowup_user['blog_title_p'] = dcThemeConfig::adjustPosition($_POST['blog_title_p']);
 		}
 
-		$blowup_user['body_link_c'] = blowupConfig::adjustColor($_POST['body_link_c']);
-		$blowup_user['body_link_f_c'] = blowupConfig::adjustColor($_POST['body_link_f_c']);
-		$blowup_user['body_link_v_c'] = blowupConfig::adjustColor($_POST['body_link_v_c']);
+		$blowup_user['body_link_c'] = dcThemeConfig::adjustColor($_POST['body_link_c']);
+		$blowup_user['body_link_f_c'] = dcThemeConfig::adjustColor($_POST['body_link_f_c']);
+		$blowup_user['body_link_v_c'] = dcThemeConfig::adjustColor($_POST['body_link_v_c']);
 
 		$blowup_user['sidebar_text_f'] = $_POST['sidebar_text_f'];
-		$blowup_user['sidebar_text_s'] = blowupConfig::adjustFontSize($_POST['sidebar_text_s']);
-		$blowup_user['sidebar_text_c'] = blowupConfig::adjustColor($_POST['sidebar_text_c']);
+		$blowup_user['sidebar_text_s'] = dcThemeConfig::adjustFontSize($_POST['sidebar_text_s']);
+		$blowup_user['sidebar_text_c'] = dcThemeConfig::adjustColor($_POST['sidebar_text_c']);
 		$blowup_user['sidebar_title_f'] = $_POST['sidebar_title_f'];
-		$blowup_user['sidebar_title_s'] = blowupConfig::adjustFontSize($_POST['sidebar_title_s']);
-		$blowup_user['sidebar_title_c'] = blowupConfig::adjustColor($_POST['sidebar_title_c']);
+		$blowup_user['sidebar_title_s'] = dcThemeConfig::adjustFontSize($_POST['sidebar_title_s']);
+		$blowup_user['sidebar_title_c'] = dcThemeConfig::adjustColor($_POST['sidebar_title_c']);
 		$blowup_user['sidebar_title2_f'] = $_POST['sidebar_title2_f'];
-		$blowup_user['sidebar_title2_s'] = blowupConfig::adjustFontSize($_POST['sidebar_title2_s']);
-		$blowup_user['sidebar_title2_c'] = blowupConfig::adjustColor($_POST['sidebar_title2_c']);
-		$blowup_user['sidebar_line_c'] = blowupConfig::adjustColor($_POST['sidebar_line_c']);
-		$blowup_user['sidebar_link_c'] = blowupConfig::adjustColor($_POST['sidebar_link_c']);
-		$blowup_user['sidebar_link_f_c'] = blowupConfig::adjustColor($_POST['sidebar_link_f_c']);
-		$blowup_user['sidebar_link_v_c'] = blowupConfig::adjustColor($_POST['sidebar_link_v_c']);
+		$blowup_user['sidebar_title2_s'] = dcThemeConfig::adjustFontSize($_POST['sidebar_title2_s']);
+		$blowup_user['sidebar_title2_c'] = dcThemeConfig::adjustColor($_POST['sidebar_title2_c']);
+		$blowup_user['sidebar_line_c'] = dcThemeConfig::adjustColor($_POST['sidebar_line_c']);
+		$blowup_user['sidebar_link_c'] = dcThemeConfig::adjustColor($_POST['sidebar_link_c']);
+		$blowup_user['sidebar_link_f_c'] = dcThemeConfig::adjustColor($_POST['sidebar_link_f_c']);
+		$blowup_user['sidebar_link_v_c'] = dcThemeConfig::adjustColor($_POST['sidebar_link_v_c']);
 
 		$blowup_user['sidebar_position'] = ($_POST['sidebar_position'] == 'left') ? 'left' : null;
 
 		$blowup_user['date_title_f'] = $_POST['date_title_f'];
-		$blowup_user['date_title_s'] = blowupConfig::adjustFontSize($_POST['date_title_s']);
-		$blowup_user['date_title_c'] = blowupConfig::adjustColor($_POST['date_title_c']);
+		$blowup_user['date_title_s'] = dcThemeConfig::adjustFontSize($_POST['date_title_s']);
+		$blowup_user['date_title_c'] = dcThemeConfig::adjustColor($_POST['date_title_c']);
 
 		$blowup_user['post_title_f'] = $_POST['post_title_f'];
-		$blowup_user['post_title_s'] = blowupConfig::adjustFontSize($_POST['post_title_s']);
-		$blowup_user['post_title_c'] = blowupConfig::adjustColor($_POST['post_title_c']);
-		$blowup_user['post_comment_c'] = blowupConfig::adjustColor($_POST['post_comment_c']);
-		$blowup_user['post_commentmy_c'] = blowupConfig::adjustColor($_POST['post_commentmy_c']);
+		$blowup_user['post_title_s'] = dcThemeConfig::adjustFontSize($_POST['post_title_s']);
+		$blowup_user['post_title_c'] = dcThemeConfig::adjustColor($_POST['post_title_c']);
+		$blowup_user['post_comment_c'] = dcThemeConfig::adjustColor($_POST['post_comment_c']);
+		$blowup_user['post_commentmy_c'] = dcThemeConfig::adjustColor($_POST['post_commentmy_c']);
 
 
 		$blowup_user['footer_f'] = $_POST['footer_f'];
-		$blowup_user['footer_s'] = blowupConfig::adjustFontSize($_POST['footer_s']);
-		$blowup_user['footer_c'] = blowupConfig::adjustColor($_POST['footer_c']);
-		$blowup_user['footer_l_c'] = blowupConfig::adjustColor($_POST['footer_l_c']);
-		$blowup_user['footer_bg_c'] = blowupConfig::adjustColor($_POST['footer_bg_c']);
+		$blowup_user['footer_s'] = dcThemeConfig::adjustFontSize($_POST['footer_s']);
+		$blowup_user['footer_c'] = dcThemeConfig::adjustColor($_POST['footer_c']);
+		$blowup_user['footer_l_c'] = dcThemeConfig::adjustColor($_POST['footer_l_c']);
+		$blowup_user['footer_bg_c'] = dcThemeConfig::adjustColor($_POST['footer_bg_c']);
 
 
-		$blowup_user['extra_css'] = blowupConfig::cleanCSS($_POST['extra_css']);
+		$blowup_user['extra_css'] = dcThemeConfig::cleanCSS($_POST['extra_css']);
 
 		if ($can_write_images)
 		{
@@ -182,11 +182,11 @@ if (!empty($_POST))
 
 			$blowup_user['top_image'] = in_array($_POST['top_image'],$top_images) ? $_POST['top_image'] : 'default';
 
-			$blowup_user['body_bg_c'] = blowupConfig::adjustColor($_POST['body_bg_c']);
+			$blowup_user['body_bg_c'] = dcThemeConfig::adjustColor($_POST['body_bg_c']);
 			$blowup_user['body_bg_g'] = in_array($_POST['body_bg_g'],$gradient_types) ? $_POST['body_bg_g'] : '';
-			$blowup_user['post_comment_bg_c'] = blowupConfig::adjustColor($_POST['post_comment_bg_c']);
-			$blowup_user['post_commentmy_bg_c'] = blowupConfig::adjustColor($_POST['post_commentmy_bg_c']);
-			$blowup_user['prelude_c'] = blowupConfig::adjustColor($_POST['prelude_c']);
+			$blowup_user['post_comment_bg_c'] = dcThemeConfig::adjustColor($_POST['post_comment_bg_c']);
+			$blowup_user['post_commentmy_bg_c'] = dcThemeConfig::adjustColor($_POST['post_commentmy_bg_c']);
+			$blowup_user['prelude_c'] = dcThemeConfig::adjustColor($_POST['prelude_c']);
 			blowupConfig::createImages($blowup_user,$uploaded);
 		}
 
@@ -199,7 +199,8 @@ if (!empty($_POST))
 		$core->blog->settings->themes->put('blowup_style',serialize($blowup_user));
 		$core->blog->triggerBlog();
 
-		http::redirect($p_url.'&upd=1');
+		dcPage::addSuccessNotice(__('Theme configuration has been successfully updated.'));
+		http::redirect($p_url);
 	}
 	catch (Exception $e)
 	{
@@ -230,8 +231,8 @@ echo dcPage::breadcrumb(
 	array(
 		html::escapeHTML($core->blog->name) => '',
 		__('Blog appearance') => 'blog_theme.php',
-		'<span class="page-title">'.__('Blowup configuration').'</span>' => ''
-	));
+		__('Blowup configuration') => ''
+	)).dcPage::notices();
 
 echo
 '<p><a class="back" href="blog_theme.php">'.__('Back to Blog appearance').'</a></p>';
@@ -240,10 +241,6 @@ echo
 if (!$can_write_images) {
 	dcPage::message(__('For the following reasons, images cannot be created. You won\'t be able to change some background properties.').
 		$notices,false,true);
-}
-
-if (!empty($_GET['upd'])) {
-	dcPage::success(__('Theme configuration has been successfully updated.'));
 }
 
 echo '<form id="theme_config" action="'.$p_url.'" method="post" enctype="multipart/form-data">';
@@ -292,8 +289,8 @@ if ($can_write_images) {
 }
 
 echo
-'<p class="field"><label for="blog_title_hide">'.__('Hide main title').' '.
-form::checkbox('blog_title_hide',1,$blowup_user['blog_title_hide']).'</label></p>'.
+'<p class="field"><label for="blog_title_hide">'.__('Hide main title').'</label> '.
+form::checkbox('blog_title_hide',1,$blowup_user['blog_title_hide']).'</p>'.
 
 '<p class="field"><label for="blog_title_f">'.__('Main title font:').'</label> '.
 form::combo('blog_title_f',blowupConfig::fontsList(),$blowup_user['blog_title_f']).'</p>'.
@@ -318,7 +315,7 @@ if ($can_write_images) {
 	}
 
 	echo
-	'<h4 class="border-top">'.__('Top image').'</h4>'.
+	'<h5 class="pretty-title">'.__('Top image').'</h5>'.
 	'<p class="field"><label for="top_image">'.__('Top image').'</label> '.
 	form::combo('top_image',$top_images,($blowup_user['top_image'] ? $blowup_user['top_image'] : 'default')).'</p>'.
 	'<p>'.__('Choose "Custom..." to upload your own image.').'</p>'.

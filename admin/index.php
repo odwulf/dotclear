@@ -73,59 +73,31 @@ if (!$core->auth->user_prefs->toggles->prefExists('unfolded_sections')) {
 # Dashboard icons
 $__dashboard_icons = new ArrayObject();
 
-# Dashboard favorites
-$post_count = $core->blog->getPosts(array(),true)->f(0);
-$str_entries = ($post_count > 1) ? __('%d entries') : __('%d entry');
+$favs = $core->favs->getUserFavorites();
+$core->favs->appendDashboardIcons($__dashboard_icons);
 
-$comment_count = $core->blog->getComments(array(),true)->f(0);
-$str_comments = ($comment_count > 1) ? __('%d comments') : __('%d comment');
-
-$ws = $core->auth->user_prefs->addWorkspace('favorites');
-$count = 0;
-foreach ($ws->dumpPrefs() as $k => $v) {
-	// User favorites only
-	if (!$v['global']) {
-		$fav = unserialize($v['value']);
-		if (($fav['permissions'] == '*') || $core->auth->check($fav['permissions'],$core->blog->id)) {
-			if (dc_valid_fav($fav['url'])) {
-				$count++;
-				$title = ($fav['name'] == 'posts' ? sprintf($str_entries,$post_count) : 
-					($fav['name'] == 'comments' ? sprintf($str_comments,$comment_count) : $fav['title']));
-				$__dashboard_icons[$fav['name']] = new ArrayObject(array(__($title),$fav['url'],$fav['large-icon']));
-
-				# Let plugins set their own title for favorite on dashboard
-				$core->callBehavior('adminDashboardFavsIcon',$core,$fav['name'],$__dashboard_icons[$fav['name']]);
-			}
-		}
-	}
-}	
-if (!$count) {
-	// Global favorites if any
-	foreach ($ws->dumpPrefs() as $k => $v) {
-		$fav = unserialize($v['value']);
-		if (($fav['permissions'] == '*') || $core->auth->check($fav['permissions'],$core->blog->id)) {
-			if (dc_valid_fav($fav['url'])) {
-				$count++;
-				$title = ($fav['name'] == 'posts' ? sprintf($str_entries,$post_count) : 
-					($fav['name'] == 'comments' ? sprintf($str_comments,$comment_count) : $fav['title']));
-				$__dashboard_icons[$fav['name']] = new ArrayObject(array(__($title),$fav['url'],$fav['large-icon']));
-
-				# Let plugins set their own title for favorite on dashboard
-				$core->callBehavior('adminDashboardFavsIcon',$core,$fav['name'],$__dashboard_icons[$fav['name']]);
-			}
-		}
+# Check plugins and themes update from repository
+function dc_check_store_update($mod, $url, $img, $icon)
+{
+	$repo = new dcStore($mod, $url);
+	$upd = $repo->get(true);
+	if (!empty($upd)) {
+		$icon[0] .= '<br />'.sprintf(__('An update is available', '%s updates are available.', count($upd)),count($upd));
+		$icon[1] .= '#update';
+		$icon[2] = 'images/menu/'.$img.'-b-update.png';
 	}
 }
-if (!$count) {
-	// No user or global favorites, add "user pref" and "new entry" fav
-	if ($core->auth->check('usage,contentadmin',$core->blog->id)) {
-		$__dashboard_icons['new_post'] = new ArrayObject(array(__('New entry'),'post.php','images/menu/edit-b.png'));
-	}
-	$__dashboard_icons['prefs'] = new ArrayObject(array(__('My preferences'),'preferences.php','images/menu/user-pref-b.png'));
+if (isset($__dashboard_icons['plugins'])) {
+	dc_check_store_update($core->plugins, $core->blog->settings->system->store_plugin_url, 'plugins', $__dashboard_icons['plugins']);
+}
+if (isset($__dashboard_icons['blog_theme'])) {
+	$themes = new dcThemes($core);
+	$themes->loadModules($core->blog->themes_path, null);
+	dc_check_store_update($themes, $core->blog->settings->system->store_theme_url, 'blog-theme', $__dashboard_icons['blog_theme']);
 }
 
 # Latest news for dashboard
-$__dashboard_items = new ArrayObject(array(new ArrayObject,new ArrayObject));
+$__dashboard_items = new ArrayObject(array(new ArrayObject(),new ArrayObject()));
 
 $dashboardItem = 0;
 
@@ -135,7 +107,7 @@ if ($core->auth->user_prefs->dashboard->dcnews) {
 		if (empty($__resources['rss_news'])) {
 			throw new Exception();
 		}
-	
+
 		$feed_reader = new feedReader;
 		$feed_reader->setCacheDir(DC_TPL_CACHE);
 		$feed_reader->setTimeout(2);
@@ -143,13 +115,13 @@ if ($core->auth->user_prefs->dashboard->dcnews) {
 		$feed = $feed_reader->parse($__resources['rss_news']);
 		if ($feed)
 		{
-			$latest_news = '<h3>'.__('Dotclear news').'</h3><dl id="news">';
+			$latest_news = '<div class="box medium dc-box"><h3>'.__('Dotclear news').'</h3><dl id="news">';
 			$i = 1;
 			foreach ($feed->items as $item)
 			{
-				$dt = isset($item->link) ? '<a href="'.$item->link.'" title="'.$item->title.' ('.__('new window').')">'.
+				$dt = isset($item->link) ? '<a href="'.$item->link.'" class="outgoing" title="'.$item->title.'">'.
 					$item->title.' <img src="images/outgoing-blue.png" alt="" /></a>' : $item->title;
-			
+
 				if ($i < 3) {
 					$latest_news .=
 					'<dt>'.$dt.'</dt>'.
@@ -163,7 +135,7 @@ if ($core->auth->user_prefs->dashboard->dcnews) {
 				$i++;
 				if ($i > 2) { break; }
 			}
-			$latest_news .= '</dl>';
+			$latest_news .= '</dl></div>';
 			$__dashboard_items[$dashboardItem][] = $latest_news;
 			$dashboardItem++;
 		}
@@ -175,14 +147,14 @@ if ($core->auth->user_prefs->dashboard->dcnews) {
 if ($core->auth->user_prefs->dashboard->doclinks) {
 	if (!empty($__resources['doc']))
 	{
-		$doc_links = '<h3>'.__('Documentation and support').'</h3><ul>';
-	
+		$doc_links = '<div class="box small dc-box"><h3>'.__('Documentation and support').'</h3><ul>';
+
 		foreach ($__resources['doc'] as $k => $v) {
-			$doc_links .= '<li><a href="'.$v.'" title="'.$k.' ('.__('new window').')">'.$k.
+			$doc_links .= '<li><a class="outgoing" href="'.$v.'" title="'.$k.'">'.$k.
 			' <img src="images/outgoing-blue.png" alt="" /></a></li>';
 		}
-	
-		$doc_links .= '</ul>';
+
+		$doc_links .= '</ul></div>';
 		$__dashboard_items[$dashboardItem][] = $doc_links;
 		$dashboardItem++;
 	}
@@ -198,15 +170,16 @@ $core->callBehavior('adminDashboardContents', $core, $__dashboard_contents);
 /* DISPLAY
 -------------------------------------------------------- */
 dcPage::open(__('Dashboard'),
-	dcPage::jsToolBar().
 	dcPage::jsLoad('js/_index.js').
+	$core->callBehavior('adminPostEditor').
 	# --BEHAVIOR-- adminDashboardHeaders
 	$core->callBehavior('adminDashboardHeaders'),
 	dcPage::breadcrumb(
 		array(
-		'<span class="page-title">'.__('Dashboard').' : '.html::escapeHTML($core->blog->name).'</span>' => ''
+		__('Dashboard').' : '.html::escapeHTML($core->blog->name) => ''
 		),
-		false)
+		array('home_link' =>false)
+	)
 );
 
 # Dotclear updates notifications
@@ -227,7 +200,7 @@ if ($core->auth->isSuperAdmin() && is_readable(DC_DIGESTS))
 	}
 }
 
-if ($core->auth->getInfo('user_default_blog') != $core->blog->id && $core->auth->blog_count > 1) {
+if ($core->auth->getInfo('user_default_blog') != $core->blog->id && $core->auth->getBlogCount() > 1) {
 	echo
 	'<p><a href="index.php?default_blog=1" class="button">'.__('Make this blog my default blog').'</a></p>';
 }
@@ -280,14 +253,14 @@ if ( $core->auth->isSuperAdmin() ) {
 
 # Error list
 if (count($err) > 0) {
-	echo '<div class="error"><p><strong>Erreur&nbsp;:</strong></p>'.
+	echo '<div class="error"><p><strong>'.__('Error:').'</strong></p>'.
 	'<ul><li>'.implode("</li><li>",$err).'</li></ul></div>';
 }
 
 # Plugins install messages
 if (!empty($plugins_install['success']))
 {
-	echo '<div class="static-msg">'.__('Following plugins have been installed:').'<ul>';
+	echo '<div class="success">'.__('Following plugins have been installed:').'<ul>';
 	foreach ($plugins_install['success'] as $k => $v) {
 		echo '<li>'.$k.'</li>';
 	}
@@ -304,15 +277,11 @@ if (!empty($plugins_install['failure']))
 # Errors modules notifications
 if ($core->auth->isSuperAdmin())
 {
-	$list = array();
-	foreach ($core->plugins->getErrors() as $k => $error) {
-		$list[] = '<li>'.$error.'</li>';
-	}
-	
-	if (count($list) > 0) {
-		echo 
-		'<div class="error" id="module-errors" class="error"><p>'.__('Some plugins are installed twice:').'</p> '.
-		'<ul>'.implode("\n",$list).'</ul></div>';
+	$list = $core->plugins->getErrors();
+	if (!empty($list)) {
+		echo
+		'<div class="error" id="module-errors" class="error"><p>'.__('Errors have occured with following plugins:').'</p> '.
+		'<ul><li>'.implode("</li>\n<li>", $list).'</li></ul></div>';
 	}
 }
 
@@ -320,19 +289,22 @@ if ($core->auth->isSuperAdmin())
 $dashboardItems = '';
 
 foreach ($__dashboard_items as $i)
-{	
+{
 	if ($i->count() > 0)
 	{
-		$dashboardItems .= '<div class="box dc-box">';
+		$dashboardItems .= '';
 		foreach ($i as $v) {
 			$dashboardItems .= $v;
 		}
-		$dashboardItems .= '</div>';
+		$dashboardItems .= '';
 	}
 }
 
+# Dashboard elements
+echo '<div id="dashboard-main">';
+
 # Dashboard icons
-echo '<div id="dashboard-main"><div id="icons">';
+echo '<div id="icons">';
 foreach ($__dashboard_icons as $i)
 {
 	echo
@@ -348,7 +320,7 @@ if ($core->auth->user_prefs->dashboard->quickentry) {
 		$categories_combo = dcAdminCombos::getCategoriesCombo(
 			$core->blog->getCategories(array('post_type'=>'post'))
 		);
-	
+
 		echo
 		'<div id="quick">'.
 		'<h3>'.__('Quick entry').'</h3>'.
@@ -359,7 +331,7 @@ if ($core->auth->user_prefs->dashboard->quickentry) {
 		'</p>'.
 		'<p class="area"><label class="required" '.
 		'for="post_content"><abbr title="'.__('Required field').'">*</abbr> '.__('Content:').'</label> '.
-		form::textarea('post_content',50,7).
+		form::textarea('post_content',50,10).
 		'</p>'.
 		'<p><label for="cat_id" class="classic">'.__('Category:').'</label> '.
 		form::combo('cat_id',$categories_combo).'</p>'.
@@ -391,34 +363,24 @@ if ($core->auth->user_prefs->dashboard->quickentry) {
 }
 
 foreach ($__dashboard_contents as $i)
-{	
+{
 	if ($i->count() > 0)
 	{
-		$dashboardContents .= '<div class="box">';
+		$dashboardContents .= '';
 		foreach ($i as $v) {
 			$dashboardContents .= $v;
 		}
-		$dashboardContents .= '</div>';
+		$dashboardContents .= '';
 	}
 }
 
-//$class = ' '.(($dashboardItems != '') && ($dashboardContents != '') ? 'two-boxes' : 'one-box');
-
 if ($dashboardContents != '' || $dashboardItems != '') {
-	echo 
-	//'<hr />'.
-	'<div id="dashboard-boxes">';
-		echo 
-			'<div class="db-items">'.
-				$dashboardItems.$dashboardContents.
-			'</div>';
-		//echo ($dashboardContents ? '<div class="db-contents'.$class.'">'.$dashboardContents.'</div>' : '');
-		//echo ($dashboardItems ? '<div class="db-items'.$class.'">'.$dashboardItems.'</div>' : '');
 	echo
-	'</div>';		
+	'<div id="dashboard-boxes">'.
+	'<div class="db-items">'.$dashboardItems.$dashboardContents.'</div>'.
+	'</div>';
 }
 
-echo '</div>';
-
+echo '</div>'; #end dashboard-main
+dcPage::helpBlock('core_dashboard');
 dcPage::close();
-?>

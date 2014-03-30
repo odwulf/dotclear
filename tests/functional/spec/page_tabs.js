@@ -1,92 +1,190 @@
 describe("tabs method (admin/js/pageTabs.js)", function() {
-	
-	it("Construct tabs using div content", function() {
-		
+	it("Must construct tabs using div content", function() {
 		loadFixtures('tabs.html');
-		
-		expect($('#tab-1')).toBeVisible();
-		expect($('#tab-2')).toBeVisible();
-		expect($('#tab-3')).toBeVisible();
-		
+		loadStyleFixtures('default.css');
+
+		expect($('#user-options')).toBeVisible();
+		expect($('#user-profile')).toBeVisible();
+		expect($('#user-favorites')).toBeVisible();
 		expect($('.part-tabs')).not.toExist();
+ 
+		$.pageTabs('user-favorites');
+		expect($('#part-user-options')).not.toBeVisible();
+		expect($('#part-user-profile')).not.toBeVisible();
+		expect($('#part-user-favorites')).toBeVisible();
+ 
+		expect($('.part-tabs')).toExist();
+		expect($('.part-tabs ul li#part-tabs-user-options')).toExist();
+		expect($('.part-tabs ul li#part-tabs-user-profile')).toExist();
+		expect($('.part-tabs ul li#part-tabs-user-favorites')).toExist();
+		expect($('#part-tabs-user-favorites')).toHaveClass('part-tabs-active');
+	});
+
+	it("Must open first part if pageTabs called without argument", function() {
+		loadFixtures('tabs.html');
+		loadStyleFixtures('default.css');
+
+		$.pageTabs();
+		expect($('#part-user-options')).toBeVisible();
+		expect($('#part-user-profile')).not.toBeVisible();
+		expect($('#part-user-favorites')).not.toBeVisible();		
+		expect($('#part-tabs-user-options')).toHaveClass('part-tabs-active');
+	});
+ 
+	it("Must change visible part when clicking another tab", function() {
+		loadFixtures('tabs.html');
+		loadStyleFixtures('default.css');
 		
-		$.pageTabs('tab-1');
+		$.pageTabs('user-options');
+		expect($('#part-user-options')).toBeVisible();
+		expect($('#part-user-profile')).not.toBeVisible();
+		expect($('#part-user-favorites')).not.toBeVisible();
+
+		$.pageTabs.clickTab('user-profile');
+		expect($('#part-tabs-user-profile')).toHaveClass('part-tabs-active');		
+		expect($('#part-user-options')).not.toBeVisible();
+		expect($('#part-user-profile')).toBeVisible();
+	});
+
+	it("Must change opened part if corresponding anchor is in url", function() {
+		loadFixtures('tabs.html');
+		loadStyleFixtures('default.css');
+
+		spyOn(jQuery.pageTabs, 'getLocationHash').andReturn('user-favorites');
+		$.pageTabs();
+		expect($('#part-user-options')).not.toBeVisible();
+		expect($('#part-user-profile')).not.toBeVisible();
+		expect($('#part-user-favorites')).toBeVisible();		
+	});
+
+	it("Must trigger event onetabload only the first time the tab is loaded", function() {
+		loadFixtures('tabs.html');
+		loadStyleFixtures('default.css');
+
+		var user_option_count_call = user_profile_count_call = user_favorites_count_call = 0;
+		spyOn(jQuery.fn, 'onetabload').andCallThrough();
+		$('#user-options').onetabload(function() {user_option_count_call++;});
+		$('#user-profile').onetabload(function() {user_profile_count_call++;});
+		$('#user-favorites').onetabload(function() {user_favorites_count_call++;});
+
+		$.pageTabs('user-options');
+		expect(jQuery.fn.onetabload).toHaveBeenCalled();
+		$.pageTabs.clickTab('user-profile');
+		$.pageTabs.clickTab('user-options');
+
+		expect(user_option_count_call).toBe(1);
+		expect(user_profile_count_call).toBe(1);
+		expect(user_favorites_count_call).toBe(0);
+	});
+
+	it("Must trigger event tabload every first time the tab is loaded", function() {
+		loadFixtures('tabs.html');
+		loadStyleFixtures('default.css');
 		
-		expect($('#tab-1')).toBeVisible();
-		expect($('#tab-2')).not.toBeVisible();
-		expect($('#tab-3')).not.toBeVisible();
-		
-		expect($('.part-tabs ul li#part-tabs-tab-1 a[href=#tab-1]')).toExist();
-		expect($('.part-tabs ul li#part-tabs-tab-2 a[href=#tab-2]')).toExist();
-		expect($('.part-tabs ul li#part-tabs-tab-3 a[href=#tab-3]')).toExist();
+		spyOn(jQuery.fn, 'tabload').andCallThrough();
+
+		var user_option_count_call = user_profile_count_call = user_favorites_count_call = 0;
+		$('#user-options').tabload(function() {user_option_count_call++;});
+		$('#user-profile').tabload(function() {user_profile_count_call++;});
+		$('#user-favorites').tabload(function() {user_favorites_count_call++;});
 	
-		expect($('.part-tabs ul li#part-tabs-tab-1')).toHaveClass('part-tabs-active');
+		$.pageTabs('user-options');
+		$.pageTabs.clickTab('user-profile');
+		$.pageTabs.clickTab('user-options');
+
+		expect(user_option_count_call).toBe(2);
+		expect(user_profile_count_call).toBe(1);
+		expect(user_favorites_count_call).toBe(0);
+	});
+
+	it("Must keeps history of navigation in tabs", function() {
+		loadFixtures('tabs.html');
+		loadStyleFixtures('default.css');
+
+		var navigation = ['user-options', 'user-profile', 'user-favorites'];
+		var current_index = 0;
+
+		$.pageTabs(navigation[current_index]);
+		current_index++;
+		expect($('#part-user-options')).toBeVisible();
+		expect($('#part-user-profile')).not.toBeVisible();
+		expect($('#part-user-favorites')).not.toBeVisible();
 		
+		$.pageTabs.clickTab(navigation[current_index]);
+		current_index++;
+		expect($('#part-user-options')).not.toBeVisible();
+		expect($('#part-user-profile')).toBeVisible();
+		expect($('#part-user-favorites')).not.toBeVisible();
+
+		$.pageTabs.clickTab(navigation[current_index]);
+		expect($('#part-user-options')).not.toBeVisible();
+		expect($('#part-user-profile')).not.toBeVisible();
+		expect($('#part-user-favorites')).toBeVisible();
+
+		// simulate back : window.history.back();
+		current_index--;
+		spyOn(jQuery.pageTabs, 'getLocationHash').andReturn(navigation[current_index]);
+		jQuery.event.trigger('hashchange');
+		
+		expect($('#part-user-options')).not.toBeVisible();
+		expect($('#part-user-profile')).toBeVisible();
+		expect($('#part-user-favorites')).not.toBeVisible();
+	});
+
+	it("Must open first tab when clicking back until hash is empty", function() {
+		loadFixtures('tabs.html');
+		loadStyleFixtures('default.css');
+
+		var navigation = ['', 'user-profile', 'user-favorites'];
+		var current_index = 0;
+
+		$.pageTabs();
+		current_index++;
+		$.pageTabs.clickTab(navigation[current_index]);
+		// tab is now user-profile
+
+		// simulate back : window.history.back();
+		current_index--;
+		spyOn(jQuery.pageTabs, 'getLocationHash').andReturn(navigation[current_index]);
+		jQuery.event.trigger('hashchange');
+
+		expect($('#part-user-options')).toBeVisible();
+		expect($('#part-user-profile')).not.toBeVisible();
+		expect($('#part-user-favorites')).not.toBeVisible();
 	});
 	
-	it("Change tabs when changing the hash", function() {
+	/* ticket 1723 and 1794
+	 *
+	 * The problem occurs when cliking an anchor in the page 
+	 */
+	it("Must try to find tab to open in page when hash refer ton an anchor and not to an existing div content", function() {
+		loadFixtures('tabs.html');
+		loadStyleFixtures('default.css');
 		
-		runs(function() {        
-            loadFixtures('tabs-iframe.html');
-        });
+		var anchor_name = 'anchor-in-favorites';
+		$('<div id="anchor-in-favorites"></div>').appendTo($('#user-favorites'));
 		
-		waitsFor(function() {
-            return $("#testtab").contents().find('#tab-3').get(0);
-        }, 10000);
-		
-		runs(function() {
-			f$ = $("#testtab").get(0).contentWindow.$;
-			f$.pageTabs('tab-1');
+		$.pageTabs('user-profile');
+		expect($('#part-user-options')).not.toBeVisible();
+		expect($('#part-user-profile')).toBeVisible();
+		expect($('#part-user-favorites')).not.toBeVisible();
 
-			expect(f$('#tab-1').get(0)).toBeVisible();
-			expect(f$('#tab-2').get(0)).not.toBeVisible();
-			
-			expect(f$('.part-tabs ul li#part-tabs-tab-1').get(0)).toHaveClass('part-tabs-active');
-			expect(f$('.part-tabs ul li#part-tabs-tab-2').get(0)).not.toHaveClass('part-tabs-active');
-
-            $("#testtab").attr('src', $("#testtab").attr('src')+'#tab-2');
-        });
-		
-		waitsFor(function() {
-			f$ = $("#testtab").get(0).contentWindow.$;
-            return f$('#tab-1').is(':not(:visible)');
-        }, 10000);
-		
-		runs(function() {
-			f$ = $("#testtab").get(0).contentWindow.$;
-			
-    		expect(f$('#tab-2').get(0)).toBeVisible();
-
-			expect(f$('.part-tabs ul li#part-tabs-tab-1').get(0)).not.toHaveClass('part-tabs-active');
-			expect(f$('.part-tabs ul li#part-tabs-tab-2').get(0)).toHaveClass('part-tabs-active');
-			
-        });
-		
+		spyOn(jQuery.pageTabs, 'getLocationHash').andReturn(anchor_name);
+		jQuery.event.trigger('hashchange');
+		expect($('#part-user-options')).not.toBeVisible();
+		expect($('#part-user-profile')).not.toBeVisible();
+		expect($('#part-user-favorites')).toBeVisible();
 	});
-	
-	it("Load the correct tab with the correct hash", function() {
-		
-		runs(function() {        
-            loadFixtures('tabs-iframe.html');
-            $("#testtab").attr('src', $("#testtab").attr('src')+'#tab-3');
-        });
-		
-		waitsFor(function() {
-			cond1 = $("#testtab").attr('src').split('#')[1] != '';
-			cond2 = $("#testtab").contents().find('#tab-3').get(0);
-            return cond1 && cond2;
-        }, 10000);
-		
-		runs(function() {
-			f$ = $("#testtab").get(0).contentWindow.$;
-			f$.pageTabs('tab-1');
-			
-			expect(f$('#tab-1').get(0)).not.toBeVisible();
-			expect(f$('#tab-3').get(0)).toBeVisible();
-			
-			expect(f$('.part-tabs ul li#part-tabs-tab-1').get(0)).not.toHaveClass('part-tabs-active');
-			expect(f$('.part-tabs ul li#part-tabs-tab-3').get(0)).toHaveClass('part-tabs-active');
-        });
-		
-	});
+
+	it("Must open first tab when hash does not refer to an existing div content", function() {
+		loadFixtures('tabs.html');
+		loadStyleFixtures('default.css');
+
+		spyOn(jQuery.pageTabs, 'getLocationHash').andReturn('dummy');
+		$.pageTabs();
+		expect($('#part-user-options')).toBeVisible();
+		expect($('#part-user-profile')).not.toBeVisible();
+		expect($('#part-user-favorites')).not.toBeVisible();
+	});	
 });
+

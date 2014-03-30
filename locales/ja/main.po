@@ -682,7 +682,7 @@ msgstr "MP3 の配置"
 msgid "Entry does not exist."
 msgstr "エントリは存在しません。"
 
-msgid "No comment"
+msgid "No comments"
 msgstr "コメントはありません"
 
 msgid "You can't edit this comment."
@@ -2631,7 +2631,7 @@ msgid "An error occurred during module deletion."
 msgstr "モジュールを削除中にエラーが発生しました。"
 
 #, php-format
-msgid "Unable to upgrade \"%s\". (same version)"
+msgid "Unable to upgrade \"%s\". (older or same version)"
 msgstr "\"%s\" の更新はできません。（同一バージョン）"
 
 msgid "Unable to read new _define.php file"

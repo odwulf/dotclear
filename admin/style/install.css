@@ -1,7 +1,7 @@
 /*
 	loader.css
 	Simple CSS rules for NetInstall
-	
+
 	(c) 2008 - Olivier Meunier & contributors - All rights reserved.
 	Please see http://dotclear.net/ for more details.
 */
@@ -37,7 +37,7 @@ body.install h1 {
 	margin: 0 0 0.75em 0;
 }
 body.install h2 {
-	color: #ff6000;
+	color: #f90;
 }
 body.install h3 {
 	margin-top:0;
@@ -96,7 +96,7 @@ label.required {
 	font-weight : bold;
 }
 label.required abbr {
-	color: #dd0000;
+	color: #900;
 	font-size: 1.3em;
 }
 
@@ -161,18 +161,17 @@ input[type=submit]:focus {
 
 /* --------------------------------------------------------------- password indcator */
 .pw-table {
-	display: table;
-	margin-bottom: 1em;
+	display: block;
+	margin-bottom: .25em;
 }
 .pw-cell {
-	display: table-cell;
-	margin-bottom: 1em;
+	display: block;
+	margin-bottom: .25em;
 }
 #pwindicator {
-	display: table-cell;
+	display: block;
 	vertical-align: bottom;
 	padding-left: 1.5em;
-	height: 3.8em;
 }
 #pwindicator .bar {
 	height: 6px;
@@ -187,11 +186,11 @@ input[type=submit]:focus {
 	width: 60px;
 }
 .pw-mediocre .bar {
-	background: #f60;
+	background: #f90;
 	width: 90px;
 }
 .pw-strong .bar {
-	background: #060;
+	background: #080;
 	width: 120px;
 }
 .pw-very-strong .bar {

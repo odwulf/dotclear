@@ -673,7 +673,7 @@ msgstr "Allineamento MP3"
 msgid "Entry does not exist."
 msgstr "Questo articolo non esiste."
 
-msgid "No comment"
+msgid "No comments"
 msgstr "Nessun commento"
 
 msgid "You can't edit this comment."
@@ -2597,7 +2597,7 @@ msgid "An error occurred during module deletion."
 msgstr "Si è verificato un errore durante l'eliminazione del modulo."
 
 #, php-format
-msgid "Unable to upgrade \"%s\". (same version)"
+msgid "Unable to upgrade \"%s\". (older or same version)"
 msgstr "Impossibile aggiornare \"%s\". (stessa versione)"
 
 msgid "Unable to read new _define.php file"

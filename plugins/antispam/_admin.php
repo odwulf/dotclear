@@ -23,14 +23,18 @@ $core->addBehavior('coreAfterCommentUpdate',array('dcAntispam','trainFilters'));
 $core->addBehavior('adminAfterCommentDesc',array('dcAntispam','statusMessage'));
 $core->addBehavior('adminDashboardIcons',array('dcAntispam','dashboardIcon'));
 
-$core->addBehavior('adminDashboardFavs','antispamDashboardFavs');
+$core->addBehavior('adminDashboardFavorites','antispamDashboardFavorites');
 $core->addBehavior('adminDashboardFavsIcon','antispamDashboardFavsIcon');
 
-function antispamDashboardFavs($core,$favs)
+function antispamDashboardFavorites($core,$favs)
 {
-	$favs['antispam'] = new ArrayObject(array('antispam','Antispam','plugin.php?p=antispam',
-		'index.php?pf=antispam/icon.png','index.php?pf=antispam/icon-big.png',
-		'admin',null,null));
+	$favs->register('antispam', array(
+		'title' => __('Antispam'),
+		'url' => 'plugin.php?p=antispam',
+		'small-icon' => 'index.php?pf=antispam/icon.png',
+		'large-icon' => 'index.php?pf=antispam/icon-big.png',
+		'permissions' => 'admin')
+	);
 }
 
 function antispamDashboardFavsIcon($core,$name,$icon)
@@ -49,10 +53,26 @@ if (!DC_ANTISPAM_CONF_SUPER || $core->auth->isSuperAdmin()) {
 	$core->addBehavior('adminBlogPreferencesForm',array('antispamBehaviors','adminBlogPreferencesForm'));
 	$core->addBehavior('adminBeforeBlogSettingsUpdate',array('antispamBehaviors','adminBeforeBlogSettingsUpdate'));
 	$core->addBehavior('adminCommentsSpamForm',array('antispamBehaviors','adminCommentsSpamForm'));
+	$core->addBehavior('adminPageHelpBlock',array('antispamBehaviors','adminPageHelpBlock'));
 }
 
 class antispamBehaviors
 {
+	public static function adminPageHelpBlock($blocks)
+	{
+		$found = false;
+		foreach($blocks as $block) {
+			if ($block == 'core_comments') {
+				$found = true;
+				break;
+			}
+		}
+		if (!$found) {
+			return null;
+		}
+		$blocks[] = 'antispam_comments';
+	}
+
 	public static function adminCommentsSpamForm($core)
 	{
 		$ttl = $core->blog->settings->antispam->antispam_moderation_ttl;
@@ -72,13 +92,13 @@ class antispamBehaviors
 		form::field('antispam_moderation_ttl', 3, 3, $ttl).
 		' '.__('days').
 		'</label></p>'.
+		'<p><a href="plugin.php?p=antispam">'.__('Set spam filters.').'</a></p>'.
 		'</div>';
 	}
-	
+
 	public static function adminBeforeBlogSettingsUpdate($settings)
 	{
 		$settings->addNamespace('antispam');
 		$settings->antispam->put('antispam_moderation_ttl',(integer)$_POST['antispam_moderation_ttl']);
 	}
 }
-?>

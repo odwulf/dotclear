@@ -14,8 +14,8 @@ require dirname(__FILE__).'/../inc/admin/prepend.php';
 
 dcPage::check('usage,contentadmin');
 
-$q = !empty($_GET['q']) ? $_GET['q'] : (!empty($_GET['qx']) ? $_GET['qx'] : null);
-$qtype = !empty($_GET['qtype']) ? $_GET['qtype'] : 'p';
+$q = !empty($_REQUEST['q']) ? $_REQUEST['q'] : (!empty($_REQUEST['qx']) ? $_REQUEST['qx'] : null);
+$qtype = !empty($_REQUEST['qtype']) ? $_REQUEST['qtype'] : 'p';
 if ($qtype != 'c' && $qtype != 'p') {
 	$qtype = 'p';
 }
@@ -29,17 +29,17 @@ $nb_per_page =  30;
 if ($q)
 {
 	$params = array();
-	
+
 	# Get posts
 	if ($qtype == 'p')
 	{
 		$starting_scripts .= dcPage::jsLoad('js/_posts_list.js');
-		
+
 		$params['search'] = $q;
 		$params['limit'] = array((($page-1)*$nb_per_page),$nb_per_page);
 		$params['no_content'] = true;
 		$params['order'] = 'post_dt DESC';
-		
+
 		try {
 			$posts = $core->blog->getPosts($params);
 			$counter = $core->blog->getPosts($params,true);
@@ -52,12 +52,12 @@ if ($q)
 	elseif ($qtype == 'c')
 	{
 		$starting_scripts .= dcPage::jsLoad('js/_comments.js');
-		
+
 		$params['search'] = $q;
 		$params['limit'] = array((($page-1)*$nb_per_page),$nb_per_page);
 		$params['no_content'] = true;
 		$params['order'] = 'comment_dt DESC';
-		
+
 		try {
 			$comments = $core->blog->getComments($params);
 			$counter = $core->blog->getComments($params,true);
@@ -68,12 +68,25 @@ if ($q)
 	}
 }
 
+if ($qtype == 'p') {
+	$posts_actions_page = new dcPostsActionsPage($core,'search.php',array('q'=>$q,'qtype'=>$qtype));
+
+	if ($posts_actions_page->process()) {
+		return;
+	}
+} else {
+	$comments_actions_page = new dcCommentsActionsPage($core,'search.php',array('q'=>$q,'qtype'=>$qtype));
+
+	if ($comments_actions_page->process()) {
+		return;
+	}
+}
 
 dcPage::open(__('Search'),$starting_scripts,
 	dcPage::breadcrumb(
 		array(
 			html::escapeHTML($core->blog->name) => '',
-			'<span class="page-title">'.__('Search').'</span>' => ''
+			__('Search') => ''
 		))
 );
 
@@ -90,50 +103,30 @@ echo
 if ($q && !$core->error->flag())
 {
 	$redir = html::escapeHTML($_SERVER['REQUEST_URI']);
-	
+
 	# Show posts
 	if ($qtype == 'p')
 	{
-		# Actions combo box
-		$combo_action = array();
-		if ($core->auth->check('publish,contentadmin',$core->blog->id))
-		{
-			$combo_action[__('publish')] = 'publish';
-			$combo_action[__('unpublish')] = 'unpublish';
-			$combo_action[__('schedule')] = 'schedule';
-			$combo_action[__('mark as pending')] = 'pending';
-		}
-		$combo_action[__('change category')] = 'category';
-		if ($core->auth->check('admin',$core->blog->id)) {
-			$combo_action[__('change author')] = 'author';
-		}
-		if ($core->auth->check('delete,contentadmin',$core->blog->id))
-		{
-			$combo_action[__('Delete')] = 'delete';
-		}
-		
-		# --BEHAVIOR-- adminPostsActionsCombo
-		$core->callBehavior('adminPostsActionsCombo',array(&$combo_action));
-		
+
 		if ($counter->f(0) > 0) {
 			printf('<h3>'.
 			($counter->f(0) == 1 ? __('%d entry found') : __('%d entries found')).
 			'</h3>',$counter->f(0));
 		}
-		
+
 		$post_list->display($page,$nb_per_page,
-		'<form action="posts_actions.php" method="post" id="form-entries">'.
-		
+		'<form action="search.php" method="post" id="form-entries">'.
+
 		'%s'.
-		
+
 		'<div class="two-cols">'.
 		'<p class="col checkboxes-helpers"></p>'.
-		
+
 		'<p class="col right"><label for="action1" class="classic">'.__('Selected entries action:').'</label> '.
-		form::combo(array('action','action1'),$combo_action).
+		form::combo(array('action','action1'),$posts_actions_page->getCombo()).
 		'<input type="submit" value="'.__('ok').'" /></p>'.
-		form::hidden('redir',preg_replace('/%/','%%',$redir)).
 		$core->formNonce().
+		$posts_actions_page->getHiddenFields().
 		'</div>'.
 		'</form>'
 		);
@@ -142,44 +135,31 @@ if ($q && !$core->error->flag())
 	elseif ($qtype == 'c')
 	{
 		# Actions combo box
-		$combo_action = array();
-		if ($core->auth->check('publish,contentadmin',$core->blog->id))
-		{
-			$combo_action[__('publish')] = 'publish';
-			$combo_action[__('unpublish')] = 'unpublish';
-			$combo_action[__('mark as pending')] = 'pending';
-			$combo_action[__('mark as junk')] = 'junk';
-		}
-		if ($core->auth->check('delete,contentadmin',$core->blog->id))
-		{
-			$combo_action[__('Delete')] = 'delete';
-		}
-		
+
 		if ($counter->f(0) > 0) {
 			printf('<h3>'.
 			($counter->f(0) == 1 ? __('%d comment found') : __('%d comments found')).
 			'</h3>',$counter->f(0));
 		}
-		
+
 		$comment_list->display($page,$nb_per_page,
-		'<form action="comments_actions.php" method="post" id="form-comments">'.
-		
+		'<form action="search.php" method="post" id="form-comments">'.
+
 		'%s'.
-		
+
 		'<div class="two-cols">'.
 		'<p class="col checkboxes-helpers"></p>'.
-		
+
 		'<p class="col right"><label for="action2" class="classic">'.__('Selected comments action:').'</label> '.
-		form::combo(array('action','action2'),$combo_action).
+		form::combo(array('action','action2'),$comments_actions_page->getCombo()).
 		'<input type="submit" value="'.__('ok').'" /></p>'.
-		form::hidden('redir',preg_replace('/%/','%%',$redir)).
 		$core->formNonce().
+		$comments_actions_page->getHiddenFields().
 		'</div>'.
 		'</form>'
 		);
 	}
 }
 
-
+dcPage::helpBlock('core_search');
 dcPage::close();
-?>

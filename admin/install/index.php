@@ -63,7 +63,7 @@ if ($can_install && !empty($_POST))
 	$u_login = !empty($_POST['u_login']) ? $_POST['u_login'] : null;
 	$u_pwd = !empty($_POST['u_pwd']) ? $_POST['u_pwd'] : null;
 	$u_pwd2 = !empty($_POST['u_pwd2']) ? $_POST['u_pwd2'] : null;
-	
+
 	try
 	{
 		# Check user information
@@ -76,7 +76,7 @@ if ($can_install && !empty($_POST))
 		if ($u_email && !text::isEmail($u_email)) {
 			throw new Exception(__('Invalid email address'));
 		}
-		
+
 		if (empty($u_pwd)) {
 			throw new Exception(__('No password given'));
 		}
@@ -86,7 +86,7 @@ if ($can_install && !empty($_POST))
 		if (strlen($u_pwd) < 6) {
 			throw new Exception(__('Password must contain at least 6 characters.'));
 		}
-		
+
 		# Try to guess timezone
 		$default_tz = 'Europe/London';
 		if (!empty($_POST['u_date']) && function_exists('timezone_open'))
@@ -103,14 +103,14 @@ if ($can_install && !empty($_POST))
 				unset($_tz);
 			}
 		}
-		
+
 		# Create schema
 		$_s = new dbStruct($core->con,$core->prefix);
 		require dirname(__FILE__).'/../../inc/dbschema/db-schema.php';
-		
+
 		$si = new dbStruct($core->con,$core->prefix);
 		$changes = $si->synchronize($_s);
-		
+
 		# Create user
 		$cur = $core->con->openCursor($core->prefix.'user');
 		$cur->user_id = $u_login;
@@ -125,12 +125,12 @@ if ($can_install && !empty($_POST))
 		$cur->user_upddt = date('Y-m-d H:i:s');
 		$cur->user_options = serialize($core->userDefaults());
 		$cur->insert();
-		
+
 		$core->auth->checkUser($u_login);
-		
+
 		$admin_url = preg_replace('%install/index.php$%','',$_SERVER['REQUEST_URI']);
 		$root_url = preg_replace('%/admin/install/index.php$%','',$_SERVER['REQUEST_URI']);
-		
+
 		# Create blog
 		$cur = $core->con->openCursor($core->prefix.'blog');
 		$cur->blog_id = 'default';
@@ -138,24 +138,43 @@ if ($can_install && !empty($_POST))
 		$cur->blog_name = __('My first blog');
 		$core->addBlog($cur);
 		$core->blogDefaults($cur->blog_id);
-		
+
 		$blog_settings = new dcSettings($core,'default');
 		$blog_settings->addNamespace('system');
 		$blog_settings->system->put('blog_timezone',$default_tz);
 		$blog_settings->system->put('lang',$dlang);
 		$blog_settings->system->put('public_url',$root_url.'/public');
 		$blog_settings->system->put('themes_url',$root_url.'/themes');
-		$blog_settings->system->put('date_format',__('%A, %B %e %Y'));
-		
+
+		# date and time formats
+		$formatDate = __('%A, %B %e %Y');
+		$date_formats = array('%Y-%m-%d','%m/%d/%Y','%d/%m/%Y','%Y/%m/%d','%d.%m.%Y','%b %e %Y','%e %b %Y','%Y %b %e',
+		'%a, %Y-%m-%d','%a, %m/%d/%Y','%a, %d/%m/%Y','%a, %Y/%m/%d','%B %e, %Y','%e %B, %Y','%Y, %B %e','%e. %B %Y',
+		'%A, %B %e, %Y','%A, %e %B, %Y','%A, %Y, %B %e','%A, %Y, %B %e','%A, %e. %B %Y');
+		$time_formats = array('%H:%M','%I:%M','%l:%M','%Hh%M','%Ih%M','%lh%M');
+		if (strtoupper(substr(PHP_OS, 0, 3)) == 'WIN') {
+			$formatDate = preg_replace('#(?<!%)((?:%%)*)%e#','\1%#d',$formatDate);
+			$date_formats = array_map(create_function('$f',
+									  'return str_replace(\'%e\',\'%#d\',$f);'
+									  ),$date_formats);
+		}
+		$blog_settings->system->put('date_format',$formatDate);
+		$blog_settings->system->put('date_formats',serialize($date_formats),'string','Date formats examples',true,true);
+		$blog_settings->system->put('time_formats',serialize($time_formats),'string','Time formats examples',true,true);
+
+		# Add repository URL for themes and plugins
+		$blog_settings->system->put('store_plugin_url','http://update.dotaddict.org/dc2/plugins.xml','string','Plugins XML feed location',true,true);
+		$blog_settings->system->put('store_theme_url','http://update.dotaddict.org/dc2/themes.xml','string','Themes XML feed location',true,true);
+
 		# Add Dotclear version
 		$cur = $core->con->openCursor($core->prefix.'version');
 		$cur->module = 'core';
 		$cur->version = (string) DC_VERSION;
 		$cur->insert();
-		
+
 		# Create first post
 		$core->setBlog('default');
-		
+
 		$cur = $core->con->openCursor($core->prefix.'post');
 		$cur->user_id = $u_login;
 		$cur->post_format = 'xhtml';
@@ -168,7 +187,7 @@ if ($can_install && !empty($_POST))
 		$cur->post_open_comment = 1;
 		$cur->post_open_tb = 0;
 		$post_id = $core->blog->addPost($cur);
-		
+
 		# Add a comment to it
 		$cur = $core->con->openCursor($core->prefix.'comment');
 		$cur->post_id = $post_id;
@@ -179,12 +198,12 @@ if ($can_install && !empty($_POST))
 		$cur->comment_content = __("<p>This is a comment.</p>\n<p>To delete it, log in and ".
 			"view your blog's comments. Then you might remove or edit it.</p>");
 		$core->blog->addComment($cur);
-		
+
 		#  Plugins initialization
 		define('DC_CONTEXT_ADMIN',true);
 		$core->plugins->loadModules(DC_PLUGINS_ROOT);
 		$plugins_install = $core->plugins->installModules();
-		
+
 		# Add dashboard module options
 		$core->auth->user_prefs->addWorkspace('dashboard');
 		$core->auth->user_prefs->dashboard->put('doclinks',true,'boolean','',null,true);
@@ -200,34 +219,10 @@ if ($can_install && !empty($_POST))
 		$core->auth->user_prefs->interface->put('enhanceduploader',true,'boolean','',null,true);
 
 		# Add default favorites
-		$core->auth->user_prefs->addWorkspace('favorites');
+		$core->favs = new dcFavorites($core);
+		$init_favs = array('posts','new_post','newpage','comments','categories','media','blog_theme','widgets','simpleMenu','prefs','help');
+		$core->favs->setFavoriteIDs($init_favs,true);
 
-		$init_fav = array();
-		
-		$init_fav['new_post'] = array('new_post','New entry','post.php',
-			'images/menu/edit.png','images/menu/edit-b.png',
-			'usage,contentadmin',null,'menu-new-post');
-		$init_fav['newpage'] = array('newpage','New page','plugin.php?p=pages&amp;act=page',
-			'index.php?pf=pages/icon-np.png','index.php?pf=pages/icon-np-big.png',
-			'contentadmin,pages',null,null);
-		$init_fav['media'] = array('media','Media manager','media.php',
-			'images/menu/media.png','images/menu/media-b.png',
-			'media,media_admin',null,null);
-		$init_fav['widgets'] = array('widgets','Presentation widgets','plugin.php?p=widgets',
-			'index.php?pf=widgets/icon.png','index.php?pf=widgets/icon-big.png',
-			'admin',null,null);
-		$init_fav['blog_theme'] = array('blog_theme','Blog appearance','blog_theme.php',
-			'images/menu/themes.png','images/menu/blog-theme-b.png',
-			'admin',null,null);
-
-		$count = 0;
-		foreach ($init_fav as $k => $f) {
-			$t = array('name' => $f[0],'title' => $f[1],'url' => $f[2], 'small-icon' => $f[3],
-				'large-icon' => $f[4],'permissions' => $f[5],'id' => $f[6],'class' => $f[7]);
-			$core->auth->user_prefs->favorites->put(sprintf("g%03s",$count),serialize($t),'string',null,true,true);
-			$count++;
-		}
-		
 		$step = 1;
 	}
 	catch (Exception $e)
@@ -252,8 +247,8 @@ xml:lang="en" lang="en">
   <meta name="ROBOTS" content="NOARCHIVE,NOINDEX,NOFOLLOW" />
   <meta name="GOOGLEBOT" content="NOSNIPPET" />
   <title><?php echo __('Dotclear Install'); ?></title>
-  
-	<link rel="stylesheet" href="../style/install.css" type="text/css" media="screen" /> 
+
+	<link rel="stylesheet" href="../style/install.css" type="text/css" media="screen" />
 
   <script type="text/javascript" src="../js/jquery/jquery.js"></script>
   <?php echo dcPage::jsLoad('../js/jquery/jquery.pwstrength.js'); ?>
@@ -268,16 +263,16 @@ xml:lang="en" lang="en">
     $('#u_login').keyup(function() {
       $(this).val(this.value.replace(login_re,''));
     });
-    
+
 	<?php echo "\$('#u_pwd').pwstrength({texts: ['".
 				sprintf(__('Password strength: %s'),__('very weak'))."', '".
 				sprintf(__('Password strength: %s'),__('weak'))."', '".
 				sprintf(__('Password strength: %s'),__('mediocre'))."', '".
 				sprintf(__('Password strength: %s'),__('strong'))."', '".
 				sprintf(__('Password strength: %s'),__('very strong'))."']});\n"; ?>
-    
+
     $('#u_login').parent().after($('<input type="hidden" name="u_date" value="' + Date().toLocaleString() + '" />'));
-    
+
     var password_link = $('<a href="#" id="obfus"><?php echo(__('show')); ?></a>').click(function() {
 			$('#password').show();
 			$(this).remove();
@@ -312,9 +307,9 @@ if ($can_install && $step == 0)
 {
 	echo
 	'<h2>'.__('User information').'</h2>'.
-	
+
 	'<p>'.__('Please provide the following information needed to create the first user.').'</p>'.
-	
+
 	'<form action="index.php" method="post">'.
 	'<fieldset><legend>'.__('User information').'</legend>'.
 	'<p><label for="u_firstname">'.__('First Name:').'</label> '.
@@ -324,7 +319,7 @@ if ($can_install && $step == 0)
 	'<p><label for="u_email">'.__('Email:').'</label> '.
 	form::field('u_email',30,255,html::escapeHTML($u_email)).'</p>'.
 	'</fieldset>'.
-	
+
 	'<fieldset><legend>'.__('Username and password').'</legend>'.
 	'<p><label for="u_login" class="required"><abbr title="'.__('Required field').'">*</abbr> '.__('Username:').' '.
 	form::field('u_login',30,32,html::escapeHTML($u_login)).'</label></p>'.
@@ -341,7 +336,7 @@ if ($can_install && $step == 0)
 	'<p><label for="u_pwd2" class="required"><abbr title="'.__('Required field').'">*</abbr> '.__('Confirm password:').' '.
 	form::password('u_pwd2',30,255).'</label></p>'.
 	'</fieldset>'.
-	
+
 	'<p><input type="submit" value="'.__('Save').'" /></p>'.
 	'</form>';
 }
@@ -365,26 +360,26 @@ elseif ($can_install && $step == 1)
 		}
 		$plugins_install_result .= '</ul></div>';
 	}
-	
+
 	echo
 	'<h2>'.__('All done!').'</h2>'.
-	
+
 	$plugins_install_result.
-	
+
 	'<p class="success">'.__('Dotclear has been successfully installed. Here is some useful information you should keep.').'</p>'.
-	
+
 	'<h3>'.__('Your account').'</h3>'.
 	'<ul>'.
 	'<li>'.__('Username:').' <strong>'.html::escapeHTML($u_login).'</strong></li>'.
 	'<li>'.__('Password:').' <strong id="password">'.html::escapeHTML($u_pwd).'</strong></li>'.
 	'</ul>'.
-	
+
 	'<h3>'.__('Your blog').'</h3>'.
 	'<ul>'.
 	'<li>'.__('Blog address:').' <strong>'.html::escapeHTML(http::getHost().$root_url).'/index.php?</strong></li>'.
 	'<li>'.__('Administration interface:').' <strong>'.html::escapeHTML(http::getHost().$admin_url).'</strong></li>'.
 	'</ul>'.
-	
+
 	'<form action="../auth.php" method="post">'.
 	'<p><input type="submit" value="'.__('Manage your blog now').'" />'.
 	form::hidden(array('user_id'),html::escapeHTML($u_login)).

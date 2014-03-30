@@ -1,20 +1,5 @@
-dotclear.commentExpander = function(line) {
-	var td = line.firstChild;
-
-	var img = document.createElement('img');
-	img.src = dotclear.img_plus_src;
-	img.alt = dotclear.img_plus_alt;
-	img.className = 'expand';
-	$(img).css('cursor','pointer');
-	img.line = line;
-	img.onclick = function() { dotclear.viewCommentContent(this,this.line); };
-
-	td.insertBefore(img,td.firstChild);
-};
-
-dotclear.viewCommentContent = function(img,line) {
-	var commentId = line.id.substr(1);
-
+dotclear.viewCommentContent = function(line,action) {
+	var commentId = $(line).attr('id').substr(1);
 	var tr = document.getElementById('ce'+commentId);
 
 	if (!tr) {
@@ -24,9 +9,6 @@ dotclear.viewCommentContent = function(img,line) {
 		td.colSpan = 6;
 		td.className = 'expand';
 		tr.appendChild(td);
-
-		img.src = dotclear.img_minus_src;
-		img.alt = dotclear.img_minus_alt;
 
 		// Get comment content
 		$.get('services.php',{f:'getCommentById',id: commentId},function(data) {
@@ -59,50 +41,15 @@ dotclear.viewCommentContent = function(img,line) {
 	{
 		$(tr).toggle();
 		$(line).toggleClass('expand');
-		img.src = dotclear.img_minus_src;
-		img.alt = dotclear.img_minus_alt;
 	}
 	else
 	{
 		$(tr).toggle();
 		$(line).toggleClass('expand');
-		img.src = dotclear.img_plus_src;
-		img.alt = dotclear.img_plus_alt;
 	}
 };
 
 $(function() {
-	if (!document.getElementById) { return; }
-
-	if (document.getElementById('edit-entry'))
-	{
-		// Get document format and prepare toolbars
-		var formatField = $('#post_format').get(0);
-		var last_post_format = $(formatField).val();
-		$(formatField).change(function() {
-			// Confirm post format change
-			if(window.confirm(dotclear.msg.confirm_change_post_format_noconvert)){
-				excerptTb.switchMode(this.value);
-				contentTb.switchMode(this.value);
-				last_post_format = $(this).val();
-			}else{
-				// Restore last format if change cancelled
-				$(this).val(last_post_format);
-			}
-			
-			$('.format_control > *').addClass('hide');
-			$('.format_control:not(.control_no_'+$(this).val()+') > *').removeClass('hide');
-		});
-
-		var excerptTb = new jsToolBar(document.getElementById('post_excerpt'));
-		var contentTb = new jsToolBar(document.getElementById('post_content'));
-		excerptTb.context = contentTb.context = 'post';
-	}
-
-	if (document.getElementById('comment_content')) {
-		var commentTb = new jsToolBar(document.getElementById('comment_content'));
-	}
-
 	// Post preview
 	$('#post-preview').modalWeb($(window).width()-40,$(window).height()-40);
 
@@ -119,70 +66,6 @@ $(function() {
 		$('input[name="delete"]').click(function() {
 			return window.confirm(dotclear.msg.confirm_delete_post);
 		});
-
-		// Markup validator
-		var v = $('<div class="format_control"><p><a id="a-validator"></a></p><div/>').get(0);
-		$('.format_control').before(v);
-		var a = $('#a-validator').get(0);
-		a.href = '#';
-		a.className = 'button ';
-		$(a).click(function() {
-			
-			excerpt_content = $('#post_excerpt').css('display') != 'none' ? $('#post_excerpt').val() : $('#excerpt-area iframe').contents().find('body').html();
-			post_content    = $('#post_content').css('display') != 'none' ? $('#post_content').val() : $('#content-area iframe').contents().find('body').html();
-			
-			var params = {
-				xd_check: dotclear.nonce,
-				f: 'validatePostMarkup',
-				excerpt: excerpt_content,
-				content: post_content,
-				format: $('#post_format').get(0).value,
-				lang: $('#post_lang').get(0).value
-			};
-
-			$.post('services.php',params,function(data) {
-				if ($(data).find('rsp').attr('status') != 'ok') {
-					alert($(data).find('rsp message').text());
-					return false;
-				}
-					
-				$('.message, .success, .error, .warning-msg').remove();
-
-				if ($(data).find('valid').text() == 1) {
-					var p = document.createElement('p');
-					p.id = 'markup-validator';
-					
-					$(p).addClass('success');
-					$(p).text(dotclear.msg.xhtml_valid);
-					$('#entry-content h3').after(p);
-					$(p).backgroundFade({sColor:'#9BCA1C',eColor:'#bee74b',steps:20});
-				} else {
-					var div = document.createElement('div');
-					div.id = 'markup-validator';
-					
-					$(div).addClass('error');
-					$(div).html('<p><strong>' + dotclear.msg.xhtml_not_valid + '</strong></p>' + $(data).find('errors').text());
-					$('#entry-content h3').after(div);
-					$(div).backgroundFade({sColor:'#ffdec8',eColor:'#ffbaba',steps:20});
-				}
-				
-				if ( $('#post_excerpt').text() != excerpt_content || $('#post_content').text() != post_content ) {
-					var pn = document.createElement('p');
-					$(pn).addClass('warning-msg');
-					$(pn).text(dotclear.msg.warning_validate_no_save_content);
-					$('#entry-content h3').after(pn);
-				}
-
-				return false;
-			});
-
-			return false;
-		});
-
-		a.appendChild(document.createTextNode(dotclear.msg.xhtml_validator));
-		
-		$('.format_control > *').addClass('hide');
-		$('.format_control:not(.control_no_'+last_post_format+') > *').removeClass('hide');
 
 		// Hide some fields
 		$('#notes-area label').toggleWithLegend($('#notes-area').children().not('label'),{
@@ -234,10 +117,6 @@ $(function() {
 			hide: $('#post_excerpt').val() == ''
 		});
 
-		// Load toolbars
-		contentTb.switchMode(formatField.value);
-		excerptTb.switchMode(formatField.value);
-
 		// Replace attachment remove links by a POST form submit
 		$('a.attachment-remove').click(function() {
 			this.href = '';
@@ -249,22 +128,26 @@ $(function() {
 			}
 			return false;
 		});
-
-		// Check unsaved changes before XHTML conversion
-		var excerpt = $('#post_excerpt').val();
-		var content = $('#post_content').val();
-		$('#convert-xhtml').click(function() {
-			if (excerpt != $('#post_excerpt').val() || content != $('#post_content').val()) {
-				return window.confirm(dotclear.msg.confirm_change_post_format);
-			}
-		});
 	});
 
 	$('#comments').onetabload(function() {
-		$('.comments-list tr.line').each(function() {
-			dotclear.commentExpander(this);
+		$.expandContent({
+			lines:$('#form-comments .comments-list tr.line'),
+			callback:dotclear.viewCommentContent
 		});
-		$('.checkboxes-helpers').each(function() {
+		$('#form-comments .checkboxes-helpers').each(function() {
+			dotclear.checkboxesHelpers(this);
+		});
+
+		dotclear.commentsActionsHelper();
+	});
+
+	$('#trackbacks').onetabload(function() {
+		$.expandContent({
+			lines:$('#form-trackbacks .comments-list tr.line'),
+			callback:dotclear.viewCommentContent
+		});
+		$('#form-trackbacks .checkboxes-helpers').each(function() {
 			dotclear.checkboxesHelpers(this);
 		});
 

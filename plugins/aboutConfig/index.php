@@ -29,15 +29,16 @@ if (!empty($_POST['s']) && is_array($_POST['s']))
 		foreach ($_POST['s'] as $ns => $s)
 		{
 			$core->blog->settings->addNamespace($ns);
-			
+
 			foreach ($s as $k => $v) 	{
 				$core->blog->settings->$ns->put($k,$v);
 			}
-			
+
 			$core->blog->triggerBlog();
 		}
-		
-		http::redirect($p_url.'&upd=1');
+
+		dcPage::addSuccessNotice(__('Configuration successfully updated'));
+		http::redirect($p_url);
 	}
 	catch (Exception $e)
 	{
@@ -53,15 +54,16 @@ if (!empty($_POST['gs']) && is_array($_POST['gs']))
 		foreach ($_POST['gs'] as $ns => $s)
 		{
 			$core->blog->settings->addNamespace($ns);
-			
+
 			foreach ($s as $k => $v) 	{
 				$core->blog->settings->$ns->put($k,$v,null,null,true,true);
 			}
-			
+
 			$core->blog->triggerBlog();
 		}
-		
-		http::redirect($p_url.'&upd=1&part=global');
+
+		dcPage::addSuccessNotice(__('Configuration successfully updated'));
+		http::redirect($p_url.'&part=global');
 	}
 	catch (Exception $e)
 	{
@@ -74,18 +76,18 @@ $part = !empty($_GET['part']) && $_GET['part'] == 'global' ? 'global' : 'local';
 function settingLine($id,$s,$ns,$field_name,$strong_label)
 {
 	if ($s['type'] == 'boolean') {
-		$field = form::combo(array($field_name.'['.$ns.']['.$id.']',$field_name.'_'.$id),
+		$field = form::combo(array($field_name.'['.$ns.']['.$id.']',$field_name.'_'.$ns.'_'.$id),
 		array(__('yes') => 1, __('no') => 0),$s['value'] ? 1 : 0);
 	} else {
-		$field = form::field(array($field_name.'['.$ns.']['.$id.']',$field_name.'_'.$id),40,null,
+		$field = form::field(array($field_name.'['.$ns.']['.$id.']',$field_name.'_'.$ns.'_'.$id),40,null,
 		html::escapeHTML($s['value']));
 	}
-	
+
 	$slabel = $strong_label ? '<strong>%s</strong>' : '%s';
-	
+
 	return
 	'<tr class="line">'.
-	'<td scope="row"><label for="s_'.$id.'">'.sprintf($slabel,html::escapeHTML($id)).'</label></td>'.
+	'<td scope="row"><label for="'.$field_name.'_'.$ns.'_'.$id.'">'.sprintf($slabel,html::escapeHTML($id)).'</label></td>'.
 	'<td>'.$field.'</td>'.
 	'<td>'.$s['type'].'</td>'.
 	'<td>'.html::escapeHTML($s['label']).'</td>'.
@@ -118,22 +120,16 @@ echo dcPage::breadcrumb(
 	array(
 		__('System') => '',
 		html::escapeHTML($core->blog->name) => '',
-		'<span class="page-title">'.__('about:config').'</span>' => ''
-	));
-if (!empty($_GET['upd'])) {
-	dcPage::success(__('Configuration successfully updated'));
-}
-
-if (!empty($_GET['upda'])) {
-	dcPage::success(__('Settings definition successfully updated'));
-}
+		__('about:config') => ''
+	)).
+	dcPage::notices();
 ?>
 
 <div id="local" class="multi-part" title="<?php echo sprintf(__('Settings for %s'),html::escapeHTML($core->blog->name)); ?>">
-
+<h3 class="out-of-screen-if-js"><?php echo sprintf(__('Settings for %s'),html::escapeHTML($core->blog->name)); ?></h3>
 
 <?php
-$table_header = '<table class="settings" id="%s"><caption class="as_h3">%s</caption>'.
+$table_header = '<div class="table-outer"><table class="settings" id="%s"><caption class="as_h3">%s</caption>'.
 '<thead>'.
 '<tr>'."\n".
 '  <th class="nowrap">Setting ID</th>'."\n".
@@ -143,7 +139,7 @@ $table_header = '<table class="settings" id="%s"><caption class="as_h3">%s</capt
 '</tr>'."\n".
 '</thead>'."\n".
 '<tbody>';
-$table_footer = '</tbody></table>';
+$table_footer = '</tbody></table></div>';
 
 $settings = array();
 foreach ($core->blog->settings->dumpNamespaces() as $ns => $namespace) {
@@ -157,7 +153,7 @@ if (count($settings) > 0) {
 	foreach ($settings as $ns => $s) {
 		$ns_combo[$ns] = '#l_'.$ns;
 	}
-	echo 
+	echo
 		'<form action="plugin.php" method="post">'.
 		'<p class="anchor-nav">'.
 		'<label for="ls_nav" class="classic">'.__('Goto:').'</label> '.form::combo('ls_nav',$ns_combo).
@@ -189,6 +185,7 @@ foreach ($settings as $ns => $s)
 </div>
 
 <div id="global" class="multi-part" title="<?php echo __('Global settings'); ?>">
+<h3 class="out-of-screen-if-js"><?php echo __('Global settings'); ?></h3>
 
 <?php
 $settings = array();
@@ -206,7 +203,7 @@ if (count($settings) > 0) {
 	foreach ($settings as $ns => $s) {
 		$ns_combo[$ns] = '#g_'.$ns;
 	}
-	echo 
+	echo
 		'<form action="plugin.php" method="post">'.
 		'<p class="anchor-nav">'.
 		'<label for="gs_nav" class="classic">'.__('Goto:').'</label> '.form::combo('gs_nav',$ns_combo).' '.
@@ -236,6 +233,8 @@ foreach ($settings as $ns => $s)
 <?php echo $core->formNonce(); ?></p>
 </form>
 </div>
+
+<?php dcPage::helpBlock('aboutConfig'); ?>
 
 </body>
 </html>
