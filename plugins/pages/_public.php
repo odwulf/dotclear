@@ -116,12 +116,18 @@ class urlPages extends dcUrlHandlers
 
 					if ($content != '')
 					{
-						if ($core->blog->settings->system->wiki_comments) {
-							$core->initWikiComment();
+						# --BEHAVIOR-- publicBeforeCommentTransform
+						$buffer = $core->callBehavior('publicBeforeCommentTransform',$content);
+						if ($buffer != '') {
+							$content = $buffer;
 						} else {
-							$core->initWikiSimpleComment();
+							if ($core->blog->settings->system->wiki_comments) {
+								$core->initWikiComment();
+							} else {
+								$core->initWikiSimpleComment();
+							}
+							$content = $core->wikiTransform($content);
 						}
-						$content = $core->wikiTransform($content);
 						$content = $core->HTMLfilter($content);
 					}
 
@@ -188,7 +194,13 @@ class urlPages extends dcUrlHandlers
 				if ($_ctx->posts->trackbacksActive()) {
 					header('X-Pingback: '.$core->blog->url.$core->url->getURLFor("xmlrpc",$core->blog->id));
 				}
-				$core->tpl->setPath($core->tpl->getPath(), dirname(__FILE__).'/default-templates');
+
+				$tplset = $core->themes->moduleInfo($core->blog->settings->system->theme,'tplset');
+				if (!empty($tplset) && is_dir(dirname(__FILE__).'/default-templates/'.$tplset)) {
+					$core->tpl->setPath($core->tpl->getPath(), dirname(__FILE__).'/default-templates/'.$tplset);
+				} else {
+					$core->tpl->setPath($core->tpl->getPath(), dirname(__FILE__).'/default-templates/'.DC_DEFAULT_TPLSET);
+				}
 				self::serveDocument('page.html');
 			}
 		}
@@ -255,10 +267,7 @@ class tplPages
 			return;
 		}
 
-		$res =
-		($w->content_only ? '' : '<div class="pages'.($w->class ? ' '.html::escapeHTML($w->class) : '').'">').
-		($w->title ? '<h2>'.html::escapeHTML($w->title).'</h2>' : '').
-		'<ul>';
+		$res = ($w->title ? $w->renderTitle(html::escapeHTML($w->title)) : '').'<ul>';
 
 		while ($rs->fetch()) {
 			$class = '';
@@ -269,8 +278,8 @@ class tplPages
 			html::escapeHTML($rs->post_title).'</a></li>';
 		}
 
-		$res .= '</ul>'.($w->content_only ? '' : '</div>');
+		$res .= '</ul>';
 
-		return $res;
+		return $w->renderDiv($w->content_only,'pages '.$w->class,'',$res);
 	}
 }

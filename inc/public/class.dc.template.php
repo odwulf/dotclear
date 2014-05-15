@@ -234,104 +234,6 @@ class dcTemplate extends template
 		return self::$_r;
 	}
 
-	protected function compileFile($file)
-	{
-		$fc = file_get_contents($file);
-
-		$this->compile_stack[] = $file;
-
-		# Remove every PHP tags
-		if ($this->remove_php)
-		{
-			$fc = preg_replace('/<\?(?=php|=|\s).*?\?>/ms','',$fc);
-		}
-
-		# Transform what could be considered as PHP short tags
-		$fc = preg_replace('/(<\?(?!php|=|\s))(.*?)(\?>)/ms',
-		'<?php echo "$1"; ?>$2<?php echo "$3"; ?>',$fc);
-
-		# Remove template comments <!-- #... -->
-		$fc = preg_replace('/(^\s*)?<!-- #(.*?)-->/ms','',$fc);
-
-		# Lexer part : split file into small pieces
-		# each array entry will be either a tag or plain text
-		$blocks = preg_split(
-			'#(<tpl:\w+[^>]*>)|(</tpl:\w+>)|({{tpl:\w+[^}]*}})#msu',$fc,-1,
-			PREG_SPLIT_DELIM_CAPTURE|PREG_SPLIT_NO_EMPTY);
-
-		# Next : build semantic tree from tokens.
-		$rootNode = new tplNode();
-		$node = $rootNode;
-		$errors = array();
-		foreach ($blocks as $id => $block) {
-			$isblock = preg_match('#<tpl:(\w+)(?:(\s+.*?)>|>)|</tpl:(\w+)>|{{tpl:(\w+)(\s(.*?))?}}#ms',$block,$match);
-			if ($isblock == 1) {
-				if (substr($match[0],1,1) == '/') {
-					// Closing tag, check if it matches current opened node
-					$tag = $match[3];
-					if (($node instanceof tplNodeBlock) && $node->getTag() == $tag) {
-						$node->setClosing();
-						$node = $node->getParent();
-					} else {
-						// Closing tag does not match opening tag
-						// Search if it closes a parent tag
-						$search = $node;
-						while($search->getTag() != 'ROOT' && $search->getTag() != $tag) {
-							$search = $search->getParent();
-						}
-						if ($search->getTag() == $tag) {
-							$errors[] = sprintf(
-								__('Did not find closing tag for block <tpl:%s>. Content has been ignored.'),
-								html::escapeHTML($node->getTag()));
-							$search->setClosing();
-							$node = $search->getParent();
-						} else {
-							$errors[]=sprintf(
-								__('Unexpected closing tag </tpl:%s> found.'),
-								$tag);;
-						}
-					}
-				} elseif (substr($match[0],0,1) == '{') {
-					// Value tag
-					$tag = $match[4];
-					$str_attr = '';
-					$attr = array();
-					if (isset($match[6])) {
-						$str_attr = $match[6];
-						$attr = $this->getAttrs($match[6]);
-					}
-					$node->addChild(new tplNodeValue($tag,$attr,$str_attr));
-				} else {
-					// Opening tag, create new node and dive into it
-					$tag = $match[1];
-					$newnode = new tplNodeBlock($tag,isset($match[2])?$this->getAttrs($match[2]):array());
-					$node->addChild($newnode);
-					$node = $newnode;
-				}
-			} else {
-				// Simple text
-				$node->addChild(new tplNodeText($block));
-			}
-		}
-
-		if (($node instanceof tplNodeBlock) && !$node->isClosed()) {
-			$errors[] = sprintf(
-				__('Did not find closing tag for block <tpl:%s>. Content has been ignored.'),
-				html::escapeHTML($node->getTag()));
-		}
-
-		$err = "";
-		if (count($errors) > 0) {
-			$err = "\n\n<!-- \n".
-				__('WARNING: the following errors have been found while parsing template file :').
-				"\n * ".
-				join("\n * ",$errors).
-				"\n -->\n";
-		}
-
-		return $rootNode->compile($this).$err;
-	}
-
 	public function compileBlockNode($tag,$attr,$content)
 	{
 		$this->current_tag = $tag;
@@ -342,11 +244,7 @@ class dcTemplate extends template
 		# --BEHAVIOR-- templateInsideBlock
 		$this->core->callBehavior('templateInsideBlock',$this->core,$this->current_tag,$attr,array(&$content));
 
-		if (isset($this->blocks[$this->current_tag])) {
-			$res .= call_user_func($this->blocks[$this->current_tag],$attr,$content);
-		} elseif ($this->unknown_block_handler != null) {
-			$res .= call_user_func($this->unknown_block_handler,$this->current_tag,$attr,$content);
-		}
+		$res .= parent::compileBlockNode($this->current_tag,$attr,$content);
 
 		# --BEHAVIOR-- templateAfterBlock
 		$res .= $this->core->callBehavior('templateAfterBlock',$this->core,$this->current_tag,$attr);
@@ -362,30 +260,12 @@ class dcTemplate extends template
 		# --BEHAVIOR-- templateBeforeValue
 		$res = $this->core->callBehavior('templateBeforeValue',$this->core,$this->current_tag,$attr);
 
-		if (isset($this->values[$this->current_tag])) {
-			$res .= call_user_func($this->values[$this->current_tag],$attr,ltrim($str_attr));
-		} elseif ($this->unknown_value_handler != null) {
-			$res .= call_user_func($this->unknown_value_handler,$this->current_tag,$attr,$str_attr);
-		}
+		$res .= parent::compileValueNode($this->current_tag,$attr,$str_attr);
 
 		# --BEHAVIOR-- templateAfterValue
 		$res .= $this->core->callBehavior('templateAfterValue',$this->core,$this->current_tag,$attr);
 
 		return $res;
-	}
-
-	public function setUnknownValueHandler($callback)
-	{
-		if (is_callable($callback)) {
-			$this->unknown_value_handler = $callback;
-		}
-	}
-
-	public function setUnknownBlockHandler($callback)
-	{
-		if (is_callable($callback)) {
-			$this->unknown_block_handler = $callback;
-		}
 	}
 
 	public function getFilters($attr)
@@ -395,6 +275,7 @@ class dcTemplate extends template
 		$p[2] = '0';	# cut_string
 		$p[3] = '0';	# lower_case
 		$p[4] = '0';	# upper_case or capitalize
+		$p[5] = '0';    # encode_url
 
 		$p[0] = (integer) (!empty($attr['encode_xml']) || !empty($attr['encode_html']));
 		$p[1] = (integer) !empty($attr['remove_html']);
@@ -406,6 +287,7 @@ class dcTemplate extends template
 		$p[3] = (integer) !empty($attr['lower_case']);
 		$p[4] = (integer) !empty($attr['upper_case']);
 		$p[4] = (!empty($attr['capitalize']) ? 2 : $p[4]);
+		$p[5] = (integer) !empty($attr['encode_url']);
 
 		return "context::global_filter(%s,".implode(",",$p).",'".addslashes($this->current_tag)."')";
 	}
@@ -504,6 +386,35 @@ class dcTemplate extends template
 		return '';
 	}
 
+	public function displayCounter($variable,$values,$attr,$count_only_by_default=false) {
+		if (isset($attr['count_only'])) {
+			$count_only=($attr['count_only']==1);
+		} else {
+			$count_only = $count_only_by_default;
+		}
+		if ($count_only) {
+			return "<?php echo ".$variable."; ?>";
+		} else {
+			$v=$values;
+			if (isset($attr['none'])) {
+				$v['none'] = addslashes($attr['none']);
+			}
+			if (isset($attr['one'])) {
+				$v['one'] = addslashes($attr['one']);
+			}
+			if (isset($attr['more'])) {
+				$v['more'] = addslashes($attr['more']);
+			}
+			return
+				"<?php if (".$variable." == 0) {\n".
+				"  printf(__('".$v['none']."'),".$variable.");\n".
+				"} elseif (".$variable." == 1) {\n".
+				"  printf(__('".$v['one']."'),".$variable.");\n".
+				"} else {\n".
+				"  printf(__('".$v['more']."'),".$variable.");\n".
+				"} ?>";
+		}
+	}
 	/* TEMPLATE FUNCTIONS
 	------------------------------------------------------- */
 
@@ -664,7 +575,16 @@ class dcTemplate extends template
 	public function ArchiveEntriesCount($attr)
 	{
 		$f = $this->getFilters($attr);
-		return '<?php echo '.sprintf($f,'$_ctx->archives->nb_post').'; ?>';
+		return $this->displayCounter(
+			sprintf($f,'$_ctx->archives->nb_post'),
+			array(
+				'none' => 'no archive',
+				'one'  => 'one archive',
+				'more' => '%d archives'
+			),
+			$attr,
+			true
+		);
 	}
 
 	/*dtd
@@ -1140,7 +1060,16 @@ class dcTemplate extends template
 	public function CategoryEntriesCount($attr)
 	{
 		$f = $this->getFilters($attr);
-		return '<?php echo '.sprintf($f,'$_ctx->categories->nb_post').'; ?>';
+		return $this->displayCounter(
+			sprintf($f,'$_ctx->categories->nb_post'),
+			array(
+				'none' => 'No post',
+				'one'  => 'One post',
+				'more' => '%d posts'
+			),
+			$attr,
+			true
+		);
 	}
 
 	/* Entries -------------------------------------------- */
@@ -1172,15 +1101,20 @@ class dcTemplate extends template
 		$p = 'if (!isset($_page_number)) { $_page_number = 1; }'."\n";
 
 		if ($lastn != 0) {
+			// Set limit (aka nb of entries needed)
 			if ($lastn > 0) {
+				// nb of entries per page specified in template -> regular pagination
 				$p .= "\$params['limit'] = ".$lastn.";\n";
 			} else {
-				$p .= "\$params['limit'] = \$_ctx->nb_entry_per_page;\n";
+				// nb of entries per page not specified -> use ctx settings
+				$p .= "\$params['limit'] = (\$_page_number == 1 ? \$_ctx->nb_entry_first_page : \$_ctx->nb_entry_per_page);\n";
 			}
-
+			// Set offset (aka index of first entry)
 			if (!isset($attr['ignore_pagination']) || $attr['ignore_pagination'] == "0") {
-				$p .= "\$params['limit'] = array(((\$_page_number-1)*\$params['limit']),\$params['limit']);\n";
+				// standard pagination, set offset
+				$p .= "\$params['limit'] = array((\$_page_number == 1 ? 0 : (\$_page_number - 2) * \$_ctx->nb_entry_per_page + \$_ctx->nb_entry_first_page),\$params['limit']);\n";
 			} else {
+				// no pagination, get all posts from 0 to limit
 				$p .= "\$params['limit'] = array(0, \$params['limit']);\n";
 			}
 		}
@@ -1834,6 +1768,9 @@ class dcTemplate extends template
 		"<?php endif; ?>";
 	}
 
+
+
+
 	/*dtd
 	<!ELEMENT tpl:EntryCommentCount - O -- Number of comments for entry -->
 	<!ATTLIST tpl:EntryCommentCount
@@ -1845,34 +1782,22 @@ class dcTemplate extends template
 	*/
 	public function EntryCommentCount($attr)
 	{
-		$none = 'no comment';
-		$one = 'one comment';
-		$more = '%d comments';
-
-		if (isset($attr['none'])) {
-			$none = addslashes($attr['none']);
-		}
-		if (isset($attr['one'])) {
-			$one = addslashes($attr['one']);
-		}
-		if (isset($attr['more'])) {
-			$more = addslashes($attr['more']);
-		}
-
 		if (empty($attr['count_all'])) {
 			$operation = '$_ctx->posts->nb_comment';
 		} else {
 			$operation = '($_ctx->posts->nb_comment + $_ctx->posts->nb_trackback)';
 		}
 
-		return
-		"<?php if (".$operation." == 0) {\n".
-		"  printf(__('".$none."'),".$operation.");\n".
-		"} elseif (".$operation." == 1) {\n".
-		"  printf(__('".$one."'),".$operation.");\n".
-		"} else {\n".
-		"  printf(__('".$more."'),".$operation.");\n".
-		"} ?>";
+		return $this->displayCounter(
+			$operation,
+			array(
+				'none' => 'no comments',
+				'one'  => 'one comment',
+				'more' => '%d comments'
+				),
+			$attr,
+			false
+		);
 	}
 
 	/*dtd
@@ -1885,28 +1810,16 @@ class dcTemplate extends template
 	*/
 	public function EntryPingCount($attr)
 	{
-		$none = 'no trackback';
-		$one = 'one trackback';
-		$more = '%d trackbacks';
-
-		if (isset($attr['none'])) {
-			$none = addslashes($attr['none']);
-		}
-		if (isset($attr['one'])) {
-			$one = addslashes($attr['one']);
-		}
-		if (isset($attr['more'])) {
-			$more = addslashes($attr['more']);
-		}
-
-		return
-		"<?php if (\$_ctx->posts->nb_trackback == 0) {\n".
-		"  printf(__('".$none."'),(integer) \$_ctx->posts->nb_trackback);\n".
-		"} elseif (\$_ctx->posts->nb_trackback == 1) {\n".
-		"  printf(__('".$one."'),(integer) \$_ctx->posts->nb_trackback);\n".
-		"} else {\n".
-		"  printf(__('".$more."'),(integer) \$_ctx->posts->nb_trackback);\n".
-		"} ?>";
+		return $this->displayCounter(
+			'$_ctx->posts->nb_trackback',
+			array(
+				'none' => 'no trackback',
+				'one'  => 'one trackback',
+				'more' => '%d trackbacks'
+				),
+			$attr,
+			false
+		);
 	}
 
 	/*dtd

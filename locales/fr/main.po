@@ -398,6 +398,10 @@ msgid "Display smilies on entries and comments"
 msgstr "Afficher des émoticônes dans les billets, pages et commentaires"
 
 #, php-format
+msgid "Display %s entries on home page"
+msgstr "Afficher %s billets sur la page d'accueil"
+
+#, php-format
 msgid "Display %s entries per page"
 msgstr "Afficher %s billets par page"
 
@@ -766,7 +770,7 @@ msgstr "Ce billet n'existe pas."
 msgid "Comment has been successfully created."
 msgstr "Le commentaire a été créé."
 
-msgid "No comment"
+msgid "No comments"
 msgstr "Aucun commentaire"
 
 msgid "Comment has been successfully updated."
@@ -2024,6 +2028,9 @@ msgstr "Ce choix sera appliqué pour tous les utilisateurs"
 
 msgid "Edition"
 msgstr "Édition"
+
+msgid "Preferred editor:"
+msgstr "Editeur préféré :"
 
 msgid "Preferred format:"
 msgstr "Format d'édition préféré :"
@@ -3655,6 +3662,12 @@ msgstr "<p>Cela signifie soit que les informations d'identifiant ou de mot de pa
 
 msgid "The following error was encountered while trying to read the database:"
 msgstr "L'erreur suivante a été rencontrée lors de la tentative d'accès à la base de données :"
+
+msgid "Choose an active editor in %s."
+msgstr "Choisissez un éditeur dans %s."
+
+msgid "your preferences"
+msgstr "vos préférences"
 
 #~ msgid "You don't have permissions to deactivate this plugin."
 #~ msgstr "Vous n'avez pas les permissions pour désactiver ce plugin."
