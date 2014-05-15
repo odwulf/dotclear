@@ -3,7 +3,7 @@
 #
 # This file is part of Dotclear 2.
 #
-# Copyright (c) 2003-2013 Olivier Meunier & Association Dotclear
+# Copyright (c) 2003-2014 Olivier Meunier & Association Dotclear
 # Licensed under the GPL version 2.0 license.
 # See LICENSE file or
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
@@ -26,6 +26,9 @@ $user_tz = $core->auth->getInfo('user_tz');
 $user_post_status = $core->auth->getInfo('user_post_status');
 
 $user_options = $core->auth->getOptions();
+if (empty($user_options['editor'])) {
+    $user_options['editor'] = '';
+}
 
 $core->auth->user_prefs->addWorkspace('dashboard');
 $user_dm_doclinks = $core->auth->user_prefs->dashboard->doclinks;
@@ -57,8 +60,21 @@ if (($default_tab != 'user-profile') && ($default_tab != 'user-options') && ($de
 	$default_tab = 'user-profile';
 }
 
+# Editors combo
+$editors_combo = dcAdminCombos::getEditorsCombo();
+$editors = array_keys($editors_combo);
+
 # Formaters combo
 $formaters_combo = dcAdminCombos::getFormatersCombo();
+$formaters_combo_editor = array();
+
+if (!empty($user_options['editor']) && !empty($formaters_combo[$user_options['editor']])) {
+    $formaters_combo_editor = $formaters_combo[$user_options['editor']];
+} elseif (count($editors)!=0) {
+    $formaters_combo_editor = $formaters_combo[$editors[0]];
+} else {
+    $formaters_combo = array();
+}
 
 $status_combo = dcAdminCombos::getPostStatusescombo();
 
@@ -154,6 +170,7 @@ if (isset($_POST['user_post_format']))
 			$user_options['edit_size'] = 10;
 		}
 		$user_options['post_format'] = $_POST['user_post_format'];
+		$user_options['editor'] = $_POST['user_editor'];
 		$user_options['enable_wysiwyg'] = !empty($_POST['user_wysiwyg']);
 
 		$cur->user_options = new ArrayObject($user_options);
@@ -304,6 +321,7 @@ dcPage::open($page_title,
 	dcPage::jsLoad('js/_preferences.js').
 	($user_acc_nodragdrop ? '' : dcPage::jsLoad('js/_preferences-dragdrop.js')).
 	dcPage::jsLoad('js/jquery/jquery-ui.custom.js').
+	dcPage::jsLoad('js/jquery/jquery.ui.touch-punch.js').
 	dcPage::jsLoad('js/jquery/jquery.pwstrength.js').
 		'<script type="text/javascript">'."\n".
 		"//<![CDATA[\n".
@@ -315,6 +333,7 @@ dcPage::open($page_title,
 				sprintf(__('Password strength: %s'),__('strong'))."', '".
 				sprintf(__('Password strength: %s'),__('very strong'))."']});\n".
 		"});\n".
+        'var formats_by_editor = \''.json_encode($formaters_combo).'\';'.
 		"\n//]]>\n".
 		"</script>\n".
 	dcPage::jsPageTabs($default_tab).
@@ -417,7 +436,7 @@ $core->formNonce().
 echo '<div class="multi-part" id="user-options" title="'.__('My options').'">';
 
 echo
-'<form action="preferences.php" method="post" id="opts-forms">'.
+'<form action="preferences.php#user-options" method="post" id="opts-forms">'.
 '<h3>'.__('My options').'</h3>';
 
 echo
@@ -453,8 +472,11 @@ echo
 '<div class="fieldset">'.
 '<h4>'.__('Edition').'</h4>'.
 
+'<p class="field"><label for="user_editor">'.__('Preferred editor:').'</label>'.
+form::combo('user_editor',array_merge(array(__('Choose an editor') => ''),$editors_combo),$user_options['editor']).'</p>'.
+
 '<p class="field"><label for="user_post_format">'.__('Preferred format:').'</label>'.
-form::combo('user_post_format',$formaters_combo,$user_options['post_format']).'</p>'.
+form::combo('user_post_format',array_merge(array('' => ''), $formaters_combo_editor),$user_options['post_format']).'</p>'.
 
 '<p class="field"><label for="user_post_status">'.__('Default entry status:').'</label>'.
 form::combo('user_post_status',$status_combo,$user_post_status).'</p>'.

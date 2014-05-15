@@ -3,7 +3,7 @@
 #
 # This file is part of Dotclear 2.
 #
-# Copyright (c) 2003-2013 Olivier Meunier & Association Dotclear
+# Copyright (c) 2003-2014 Olivier Meunier & Association Dotclear
 # Licensed under the GPL version 2.0 license.
 # See LICENSE file or
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
@@ -38,6 +38,7 @@ class dcCore
 	public $postmedia;	///< <b>dcPostMedia</b>		dcPostMedia object
 	public $rest;		///< <b>dcRestServer</b>	dcRestServer object
 	public $log;		///< <b>dcLog</b>			dcLog object
+	public $stime;		///< <b>float</b>			starting time
 
 	private $versions = null;
 	private $formaters = array();
@@ -58,6 +59,12 @@ class dcCore
 	*/
 	public function __construct($driver, $host, $db, $user, $password, $prefix, $persist)
 	{
+		if (defined('DC_START_TIME')) {
+			$this->stime=DC_START_TIME;
+		} else {
+			$this->stime = microtime(true);
+		}
+
 		$this->con = dbLayer::init($driver,$host,$db,$user,$password,$persist);
 
 		# define weak_locks for mysql
@@ -93,9 +100,6 @@ class dcCore
 		$this->meta = new dcMeta($this);
 
 		$this->log = new dcLog($this);
-
-		$this->addFormater('xhtml', create_function('$s','return $s;'));
-		$this->addFormater('wiki', array($this,'wikiTransform'));
 	}
 
 	private function authInstance()
@@ -203,6 +207,23 @@ class dcCore
 	}
 	//@}
 
+	/// @name Text Formatters methods
+	//@{
+	/**
+	Adds a new text formater which will call the function <var>$func</var> to
+	transform text. The function must be a valid callback and takes one
+	argument: the string to transform. It returns the transformed string.
+
+	@param	editor_id	<b>string</b>	Editor id (dcLegacyEditor, dcCKEditor, ...)
+	@param	name		<b>string</b>	Formater name
+	@param	func		<b>callback</b>	Function to use, must be a valid and callable callback
+	*/
+	public function addEditorFormater($editor_id,$name,$func)
+	{
+		if (is_callable($func)) {
+			$this->formaters[$editor_id][$name] = $func;
+		}
+	}
 
 	/// @name Text Formatters methods
 	//@{
@@ -216,20 +237,75 @@ class dcCore
 	*/
 	public function addFormater($name,$func)
 	{
-		if (is_callable($func)) {
-			$this->formaters[$name] = $func;
-		}
+		$this->addEditorFormater('dcLegacyEditor',$name,$func);
 	}
 
 	/**
-	Returns formaters list.
+	Returns editors list
 
-	@return	<b>array</b> An array of formaters names in values.
+	@return	<b>array</b> An array of editors values.
 	*/
-	public function getFormaters()
+	public function getEditors()
 	{
-		return array_keys($this->formaters);
+		$editors = array();
+
+		foreach (array_keys($this->formaters) as $editor_id) {
+			$editors[$editor_id] = $this->plugins->moduleInfo($editor_id,'name');
+		}
+
+		return $editors;
 	}
+
+	/**
+	Returns formaters list by editor
+
+	@param	editor_id	<b>string</b>	Editor id (dcLegacyEditor, dcCKEditor, ...)
+	@return	<b>array</b> An array of formaters names in values.
+
+    /**
+    if @param editor_id is empty:
+    return all formaters sorted by actives editors
+    
+    if @param editor_id is not empty
+    return formaters for an editor if editor is active
+    return empty() array if editor is not active. 
+    It can happens when a user choose an editor and admin deactivate that editor later
+	*/
+	public function getFormaters($editor_id='')
+	{
+		$formaters_list = array();
+
+		if (!empty($editor_id)) {
+            if (isset($this->formaters[$editor_id])) {
+                $formaters_list = array_keys($this->formaters[$editor_id]);
+            }
+		} else {
+			foreach ($this->formaters as $editor => $formaters) {
+				$formaters_list[$editor] = array_keys($formaters);
+			}
+		}
+
+		return $formaters_list;
+	}
+
+	/**
+	If <var>$name</var> is a valid formater, it returns <var>$str</var>
+	transformed using that formater.
+
+	@param	editor_id	<b>string</b>	Editor id (dcLegacyEditor, dcCKEditor, ...)
+	@param	name		<b>string</b>		Formater name
+	@param	str		<b>string</b>		String to transform
+	@return	<b>string</b>	String transformed
+	*/
+	public function callEditorFormater($editor_id,$name,$str)
+	{
+		if (isset($this->formaters[$editor_id]) && isset($this->formaters[$editor_id][$name])) {
+			return call_user_func($this->formaters[$editor_id][$name],$str);
+		}
+
+		return $str;
+	}
+	//@}
 
 	/**
 	If <var>$name</var> is a valid formater, it returns <var>$str</var>
@@ -241,11 +317,7 @@ class dcCore
 	*/
 	public function callFormater($name,$str)
 	{
-		if (isset($this->formaters[$name])) {
-			return call_user_func($this->formaters[$name],$str);
-		}
-
-		return $str;
+		return $this->callEditorFormater('dcLegacyEditor',$name,$str);
 	}
 	//@}
 
@@ -640,7 +712,7 @@ class dcCore
 	   - [name] => Blog name
 	   - [url] => Blog URL
 	   - [p]
-	   	- [permission] => true
+		- [permission] => true
 		- ...
 
 	@param	id		<b>string</b>		User ID
@@ -792,6 +864,7 @@ class dcCore
 		return array(
 			'edit_size' => 24,
 			'enable_wysiwyg' => true,
+            'editor' => 'dcLegacyEditor',
 			'post_format' => 'wiki'
 		);
 	}
@@ -808,7 +881,7 @@ class dcCore
 	   - [displayname] => User displayname
 	   - [super] => (true|false) super admin
 	   - [p]
-	   	- [permission] => true
+		- [permission] => true
 		- ...
 
 	@param	id			<b>string</b>		Blog ID
@@ -981,16 +1054,19 @@ class dcCore
 
 	private function getBlogCursor($cur)
 	{
-		if ($cur->blog_id !== null
-		&& !preg_match('/^[A-Za-z0-9._-]{2,}$/',$cur->blog_id)) {
+		if (($cur->blog_id !== null
+			&& !preg_match('/^[A-Za-z0-9._-]{2,}$/',$cur->blog_id)) ||
+			(!$cur->blog_id)) {
 			throw new Exception(__('Blog ID must contain at least 2 characters using letters, numbers or symbols.'));
 		}
 
-		if ($cur->blog_name !== null && $cur->blog_name == '') {
+		if (($cur->blog_name !== null && $cur->blog_name == '') ||
+			(!$cur->blog_name)) {
 			throw new Exception(__('No blog name'));
 		}
 
-		if ($cur->blog_url !== null && $cur->blog_url == '') {
+		if (($cur->blog_url !== null && $cur->blog_url == '') ||
+			(!$cur->blog_url)) {
 			throw new Exception(__('No blog URL'));
 		}
 
@@ -1305,8 +1381,10 @@ class dcCore
 				'Image thumbnail size in media manager'),
 				array('media_img_title_pattern','string','Title ;; Date(%b %Y) ;; separator(, )',
 				'Pattern to set image title when you insert it in a post'),
+				array('nb_post_for_home','integer',20,
+				'Number of entries on first home page'),
 				array('nb_post_per_page','integer',20,
-				'Number of entries on home page and category pages'),
+				'Number of entries on home pages and category pages'),
 				array('nb_post_per_feed','integer',20,
 				'Number of entries on feeds'),
 				array('nb_comment_per_feed','integer',20,
@@ -1321,7 +1399,7 @@ class dcCore
 				'Search engines robots policy'),
 				array('short_feed_items','boolean',false,
 				'Display short feed items'),
-				array('theme','string','default',
+				array('theme','string','berlin',
 				'Blog theme'),
 				array('themes_path','string','themes',
 				'Themes root path'),
@@ -1468,5 +1546,22 @@ class dcCore
 			files::deltree(DC_TPL_CACHE.'/cbtpl');
 		}
 	}
+
+	/**
+	 Return elapsed time since script has been started
+	 @param	  $mtime <b>float</b> timestamp (microtime format) to evaluate delta from
+								  current time is taken if null
+	 @return <b>float</b>		 elapsed time
+	 */
+	public function getElapsedTime ($mtime=null) {
+		if ($mtime !== null) {
+			return $mtime-$this->stime;
+		} else {
+			return microtime(true)-$this->stime;
+		}
+	}
 	//@}
+
+
+
 }

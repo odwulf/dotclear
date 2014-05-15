@@ -74,6 +74,9 @@ if (!empty($_GET['nb_per_page']) && (integer)$_GET['nb_per_page'] > 0) {
 $popup = (integer) !empty($_GET['popup']);
 
 $page_url = 'media.php?popup='.$popup.'&post_id='.$post_id;
+if (($temp = $core->callBehavior('adminMediaURL',$page_url))!='') {
+	$page_url = $temp;
+}
 
 if ($popup) {
 	$open_f = array('dcPage','openPopup');
@@ -361,6 +364,16 @@ if ($popup) {
 		'<img src="images/plus.png" alt="'.__('Attach this file to entry').'" />').'</p></div>';
 }
 
+// Remove hidden directories (unless DC_SHOW_HIDDEN_DIRS is set to true)
+if (!defined('DC_SHOW_HIDDEN_DIRS') || (DC_SHOW_HIDDEN_DIRS == false)) {
+	for ($i = count($dir['dirs']) - 1; $i >= 0; $i--) {
+		if ($dir['dirs'][$i]->d) {
+			if (strpos($dir['dirs'][$i]->relname,'.') !== false) {
+				unset($dir['dirs'][$i]);
+			}
+		}
+	}
+}
 $items = array_values(array_merge($dir['dirs'],$dir['files']));
 
 $fmt_form_media = '<form action="media.php" method="post" id="form-medias">'.
@@ -425,14 +438,14 @@ if (!isset($pager)) {
 echo
 '</div>';
 
+$core_media_archivable = $core->auth->check('media_admin',$core->blog->id) &&
+	!(count($items) == 0 || (count($items) == 1 && $items[0]->parent));
+
 if ($core_media_writable || $core_media_archivable) {
 	echo
 	'<div class="vertical-separator">'.
 	'<h3 class="out-of-screen-if-js">'.sprintf(__('In %s:'),($d == '' ? '“'.__('Media manager').'”' : '“'.$d.'”')).'</h3>';
 }
-
-$core_media_archivable = $core->auth->check('media_admin',$core->blog->id) &&
-	!(count($items) == 0 || (count($items) == 1 && $items[0]->parent));
 
 if ($core_media_writable || $core_media_archivable) {
 	echo
@@ -564,8 +577,10 @@ function mediaItemLine($f,$i)
 			$class .= ' media-folder';
 		}
 	} else {
-		$link =
-		'media_item.php?id='.$f->media_id.'&amp;popup='.$popup.'&amp;post_id='.$post_id;
+		$link = 'media_item.php?id='.$f->media_id.'&amp;popup='.$popup.'&amp;post_id='.$post_id;
+        if (($temp = $core->callBehavior('adminMediaURL',$link))!='') {
+            $link = $temp;
+        }
 	}
 
 	$maxchars = 36;

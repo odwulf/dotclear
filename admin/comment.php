@@ -90,7 +90,7 @@ if (!empty($_REQUEST['id']))
 }
 
 if (!$comment_id && !$core->error->flag()) {
-	$core->error->add(__('No comment'));
+	$core->error->add(__('No comments'));
 }
 
 if (!$core->error->flag() && isset($rs))
@@ -180,8 +180,8 @@ if ($comment_id) {
 
 dcPage::open(__('Edit comment'),
 	dcPage::jsConfirmClose('comment-form').
-	dcPage::jsToolBar().
 	dcPage::jsLoad('js/_comment.js').
+	$core->callBehavior('adminPostEditor').
 	# --BEHAVIOR-- adminCommentHeaders
 	$core->callBehavior('adminCommentHeaders'),
 	$breadcrumb

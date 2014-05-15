@@ -30,6 +30,7 @@ dcPage::check('usage,contentadmin');
 	<link rel="stylesheet" href="style/default.css" type="text/css" media="screen" />
 	<script type="text/javascript" src="js/jquery/jquery.js"></script>
 	<script type="text/javascript" src="js/jquery/jquery-ui.custom.js"></script>
+	<script type="text/javascript" src="js/jquery/jquery.ui.touch-punch.js"></script>
 	<script type="text/javascript" src="js/jquery/jquery.pageTabs.js"></script>
 	<script type="text/javascript" src="js/jquery/jquery.biscuit.js"></script>
 	<script type="text/javascript" src="js/jquery/jquery.bgFade.js"></script>
