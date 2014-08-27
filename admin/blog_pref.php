@@ -25,8 +25,8 @@ if ($standalone)
 	$blog_settings = $core->blog->settings;
 	$blog_url = $core->blog->url;
 
-	$action = 'blog_pref.php';
-	$redir = 'blog_pref.php';
+	$action = $core->adminurl->get("admin.blog.pref");
+	$redir = $core->adminurl->get("admin.blog.pref");
 }
 else
 {
@@ -54,8 +54,8 @@ else
 		$core->error->add($e->getMessage());
 	}
 
-	$action = 'blog.php';
-	$redir = 'blog.php?id=%s';
+	$action = $core->adminurl->get("admin.blog");
+	$redir = $core->adminurl->get("admin.blog",array('id' => "%s"));
 }
 
 # Language codes
@@ -166,6 +166,9 @@ if ($blog_id && !empty($_POST) && $core->auth->check('admin',$blog_id))
 	$media_img_m_size = abs((integer) $_POST['media_img_m_size']);
 	if ($media_img_m_size < 0) { $media_img_m_size = 448; }
 
+	$nb_post_for_home = abs((integer) $_POST['nb_post_for_home']);
+	if ($nb_post_for_home <= 1) { $nb_post_for_home = 1; }
+
 	$nb_post_per_page = abs((integer) $_POST['nb_post_per_page']);
 	if ($nb_post_per_page <= 1) { $nb_post_per_page = 1; }
 
@@ -230,6 +233,7 @@ if ($blog_id && !empty($_POST) && $core->auth->check('admin',$blog_id))
 		$blog_settings->system->put('enable_xmlrpc',!empty($_POST['enable_xmlrpc']));
 		$blog_settings->system->put('note_title_tag',$_POST['note_title_tag']);
 
+		$blog_settings->system->put('nb_post_for_home',$nb_post_for_home);
 		$blog_settings->system->put('nb_post_per_page',$nb_post_per_page);
 		$blog_settings->system->put('use_smilies',!empty($_POST['use_smilies']));
 		$blog_settings->system->put('inc_subcats',!empty($_POST['inc_subcats']));
@@ -276,7 +280,7 @@ if ($standalone) {
 	$breadcrumb = dcPage::breadcrumb(
 		array(
 			__('System') => '',
-			__('Blogs') => 'blogs.php',
+			__('Blogs') => $core->adminurl->get("admin.blogs"),
 			__('Blog settings').' : '.html::escapeHTML($blog_name) => ''
 		));
 }
@@ -291,6 +295,7 @@ dcPage::open(__('Blog settings'),
 	"//]]>".
 	"</script>".
 	dcPage::jsConfirmClose('blog-form').
+	$core->callBehavior('adminPostEditor').
 	dcPage::jsLoad('js/_blog_pref.js').
 
 
@@ -511,6 +516,10 @@ if ($blog_id)
 	'</div>'.
 
 	'<div class="col">'.
+	'<p><label for="nb_post_for_home" class="classic">'.sprintf(__('Display %s entries on home page'),
+	form::field('nb_post_for_home',2,3,$blog_settings->system->nb_post_for_home)).
+	'</label></p>'.
+
 	'<p><label for="nb_post_per_page" class="classic">'.sprintf(__('Display %s entries per page'),
 	form::field('nb_post_per_page',2,3,$blog_settings->system->nb_post_per_page)).
 	'</label></p>'.
@@ -605,7 +614,7 @@ if ($blog_id)
 	if ($core->auth->isSuperAdmin() && $blog_id != $core->blog->id)
 	{
 		echo
-		'<form action="blog_del.php" method="post">'.
+		'<form action="'.$core->adminurl->get("admin.blog.del").'" method="post">'.
 		'<p><input type="submit" class="delete" value="'.__('Delete this blog').'" />'.
 		form::hidden(array('blog_id'),$blog_id).
 		$core->formNonce().'</p>'.
@@ -637,7 +646,7 @@ if ($blog_id)
 	else
 	{
 		if ($core->auth->isSuperAdmin()) {
-			$user_url_p = '<a href="user.php?id=%1$s">%1$s</a>';
+			$user_url_p = '<a href="'.$core->adminurl->get("admin.user",array('id' => '%1$s')).'">%1$s</a>';
 		} else {
 			$user_url_p = '%1$s';
 		}
@@ -709,7 +718,7 @@ if ($blog_id)
 					echo
 					'<form action="users_actions.php" method="post">'.
 					'<p class="change-user-perm"><input type="submit" class="reset" value="'.__('Change permissions').'" />'.
-					form::hidden(array('redir'),'blog_pref.php?id='.$k).
+					form::hidden(array('redir'),$core->adminurl->get("admin.blog.pref",array('id' => $k))).
 					form::hidden(array('action'),'perms').
 					form::hidden(array('users[]'),$k).
 					form::hidden(array('blogs[]'),$blog_id).
