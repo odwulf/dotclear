@@ -219,7 +219,9 @@ if ($step) {
 					dcPage::addSuccessNotice(__('Menu item has been successfully added.'));
 					http::redirect($p_url);
 				} else {
-					throw new Exception(__('Label and URL of menu item are mandatory.'));
+					$step = 3;
+					$item_select_label = $item_label;
+					dcPage::addErrorNotice(__('Label and URL of menu item are mandatory.'));
 				}
 			}
 			catch (Exception $e) {
@@ -346,6 +348,7 @@ if ($step) {
 		if (!$core->auth->user_prefs->accessibility->nodragdrop) {
 			echo
 				dcPage::jsLoad('js/jquery/jquery-ui.custom.js').
+				dcPage::jsLoad('js/jquery/jquery.ui.touch-punch.js').
 				dcPage::jsLoad('index.php?pf=simpleMenu/simplemenu.js');
 		}
 		echo dcPage::jsConfirmClose('additem','menuitems');

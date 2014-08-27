@@ -90,7 +90,7 @@ if (!empty($_REQUEST['id']))
 }
 
 if (!$comment_id && !$core->error->flag()) {
-	$core->error->add(__('No comment'));
+	$core->error->add(__('No comments'));
 }
 
 if (!$core->error->flag() && isset($rs))
@@ -132,7 +132,7 @@ if (!$core->error->flag() && isset($rs))
 			$core->callBehavior('adminAfterCommentUpdate',$cur,$comment_id);
 
 			dcPage::addSuccessNotice(__('Comment has been successfully updated.'));
-			http::redirect('comment.php?id='.$comment_id);
+			http::redirect($core->adminurl->get("admin.comment",array('id' => $comment_id)));
 		}
 		catch (Exception $e)
 		{
@@ -180,8 +180,8 @@ if ($comment_id) {
 
 dcPage::open(__('Edit comment'),
 	dcPage::jsConfirmClose('comment-form').
-	dcPage::jsToolBar().
 	dcPage::jsLoad('js/_comment.js').
+	$core->callBehavior('adminPostEditor').
 	# --BEHAVIOR-- adminCommentHeaders
 	$core->callBehavior('adminCommentHeaders'),
 	$breadcrumb
@@ -204,11 +204,11 @@ if ($comment_id)
 	}
 
 	echo
-	'<form action="comment.php" method="post" id="comment-form">'.
+	'<form action="'.$core->adminurl->get("admin.comment").'" method="post" id="comment-form">'.
 	'<div class="fieldset">'.
 	'<h3>'.__('Information collected').'</h3>'.
 	'<p>'.__('IP address:').' '.
-	'<a href="comments.php?ip='.$comment_ip.'">'.$comment_ip.'</a></p>'.
+	'<a href="'.$core->adminurl->get("admin.comments",array('ip' => $comment_ip)).'">'.$comment_ip.'</a></p>'.
 
 	'<p>'.__('Date:').' '.
 	dt::dt2str(__('%Y-%m-%d %H:%M'),$comment_dt).'</p>'.

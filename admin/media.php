@@ -73,7 +73,10 @@ if (!empty($_GET['nb_per_page']) && (integer)$_GET['nb_per_page'] > 0) {
 
 $popup = (integer) !empty($_GET['popup']);
 
-$page_url = 'media.php?popup='.$popup.'&post_id='.$post_id;
+$page_url = $core->adminurl->get("admin.media",array('popup' => $popup,'post_id' => $post_id));
+if (($temp = $core->callBehavior('adminMediaURL',$page_url))!='') {
+	$page_url = $temp;
+}
 
 if ($popup) {
 	$open_f = array('dcPage','openPopup');
@@ -361,9 +364,19 @@ if ($popup) {
 		'<img src="images/plus.png" alt="'.__('Attach this file to entry').'" />').'</p></div>';
 }
 
+// Remove hidden directories (unless DC_SHOW_HIDDEN_DIRS is set to true)
+if (!defined('DC_SHOW_HIDDEN_DIRS') || (DC_SHOW_HIDDEN_DIRS == false)) {
+	for ($i = count($dir['dirs']) - 1; $i >= 0; $i--) {
+		if ($dir['dirs'][$i]->d) {
+			if (strpos($dir['dirs'][$i]->relname,'.') !== false) {
+				unset($dir['dirs'][$i]);
+			}
+		}
+	}
+}
 $items = array_values(array_merge($dir['dirs'],$dir['files']));
 
-$fmt_form_media = '<form action="media.php" method="post" id="form-medias">'.
+$fmt_form_media = '<form action="'.$core->adminurl->get("admin.media").'" method="post" id="form-medias">'.
 	'<div class="files-group">%s</div>'.
 	'<p class="hidden">'.$core->formNonce() . form::hidden(array('d'),$d).'</p>';
 
@@ -389,7 +402,7 @@ else
 	$pager = new dcPager($page,count($items),$nb_per_page,10);
 
 	echo
-	'<form action="media.php" method="get" id="filters-form">'.
+	'<form action="'.$core->adminurl->get("admin.media").'" method="get" id="filters-form">'.
 	'<p class="two-boxes"><label for="file_sort" class="classic">'.__('Sort files:').'</label> '.
 	form::combo('file_sort',$sort_combo,$file_sort).'</p>'.
 	'<p class="two-boxes"><label for="nb_per_page" class="classic">'.__('Number of elements displayed per page:').'</label> '.
@@ -425,14 +438,14 @@ if (!isset($pager)) {
 echo
 '</div>';
 
+$core_media_archivable = $core->auth->check('media_admin',$core->blog->id) &&
+	!(count($items) == 0 || (count($items) == 1 && $items[0]->parent));
+
 if ($core_media_writable || $core_media_archivable) {
 	echo
 	'<div class="vertical-separator">'.
 	'<h3 class="out-of-screen-if-js">'.sprintf(__('In %s:'),($d == '' ? '“'.__('Media manager').'”' : '“'.$d.'”')).'</h3>';
 }
-
-$core_media_archivable = $core->auth->check('media_admin',$core->blog->id) &&
-	!(count($items) == 0 || (count($items) == 1 && $items[0]->parent));
 
 if ($core_media_writable || $core_media_archivable) {
 	echo
@@ -508,7 +521,7 @@ if ($core_media_writable)
 	if (!$user_ui_enhanceduploader) {
 		echo
 		'<p class="one-file form-help info">'.__('To send several files at the same time, you can activate the enhanced uploader in').
-		' <a href="preferences.php?tab=user-options">'.__('My preferences').'</a></p>';
+		' <a href="'.$core->adminurl->get("admin.user.preferences",array('tab' => 'user-options')).'">'.__('My preferences').'</a></p>';
 	}
 
 	echo
@@ -541,7 +554,7 @@ if ($core_media_writable || $core_media_archivable) {
 
 if (!$popup) {
 	echo '<div class="info"><p>'.sprintf(__('Current settings for medias and images are defined in %s'),
-	'<a href="blog_pref.php#medias-settings">'.__('Blog parameters').'</a>').'</p></div>';
+	'<a href="'.$core->adminurl->get("admin.blog.pref").'#medias-settings">'.__('Blog parameters').'</a>').'</p></div>';
 }
 
 call_user_func($close_f);
@@ -564,8 +577,10 @@ function mediaItemLine($f,$i)
 			$class .= ' media-folder';
 		}
 	} else {
-		$link =
-		'media_item.php?id='.$f->media_id.'&amp;popup='.$popup.'&amp;post_id='.$post_id;
+		$link = $core->adminurl->get("admin.media.item", array('id' => $f->media_id,'popup' => $popup,'post_id' => $post_id));
+        if (($temp = $core->callBehavior('adminMediaURL',$link))!='') {
+            $link = $temp;
+        }
 	}
 
 	$maxchars = 36;
@@ -592,8 +607,9 @@ function mediaItemLine($f,$i)
 
 	if ($post_id && !$f->d) {
 		$act .=
-		'<a class="attach-media" title="'.__('Attach this file to entry').'" href="post_media.php?media_id='.$f->media_id.
-		'&amp;post_id='.$post_id.'&amp;attach=1">'.
+		'<a class="attach-media" title="'.__('Attach this file to entry').'" href="'.
+		$core->adminurl->get("admin.post.media", array('media_id' => $f->media_id, 'post_id' => $post_id,'attach' => 1)).
+		'">'.
 		'<img src="images/plus.png" alt="'.__('Attach this file to entry').'"/>'.
 		'</a>';
 	}
@@ -617,7 +633,7 @@ function mediaItemLine($f,$i)
 	$lst .= ($act != '' ? '<li class="media-action">&nbsp;'.$act.'</li>' : '');
 
 	if ($f->type == 'audio/mpeg3') {
-		$lst .= '<li>'.dcMedia::mp3player($f->file_url,'index.php?pf=player_mp3.swf').'</li>';
+		$lst .= '<li>'.dcMedia::mp3player($f->file_url,$core->adminurl->get("admin.home",array('pf' => 'player_mp3.swf'))).'</li>';
 	}
 
 	$res .=	($lst != '' ? '<ul>'.$lst.'</ul>' : '');

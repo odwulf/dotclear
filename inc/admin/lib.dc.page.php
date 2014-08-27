@@ -65,7 +65,7 @@ class dcPage
 			html::escapeHTML($core->blog->name).'</strong>';
 
 			if ($core->auth->getBlogCount() > 20) {
-				$blog_box .= ' - <a href="blogs.php">'.__('Change blog').'</a>';
+				$blog_box .= ' - <a href="'.$core->adminurl->get("admin.blogs").'">'.__('Change blog').'</a>';
 			}
 			$blog_box .= '</p>';
 		}
@@ -136,19 +136,19 @@ class dcPage
 		'<li><a href="#help">'.__('Go to help').'</a></li>'.
 		'</ul>'."\n".
 		'<div id="header">'.
-		'<h1><a href="index.php"><span class="hidden">'.DC_VENDOR_NAME.'</span></a></h1>'."\n";
+		'<h1><a href="'.$core->adminurl->get("admin.home").'"><span class="hidden">'.DC_VENDOR_NAME.'</span></a></h1>'."\n";
 
 		echo
-		'<form action="index.php" method="post" id="top-info-blog">'.
+		'<form action="'.$core->adminurl->get("admin.home").'" method="post" id="top-info-blog">'.
 		$blog_box.
 		'<p><a href="'.$core->blog->url.'" class="outgoing" title="'.__('Go to site').
 		'">'.__('Go to site').'<img src="images/outgoing.png" alt="" /></a>'.
 		'</p></form>'.
 		'<ul id="top-info-user">'.
-		'<li><a class="'.(preg_match('/index.php$/',$_SERVER['REQUEST_URI']) ? ' active' : '').'" href="index.php">'.__('My dashboard').'</a></li>'.
+		'<li><a class="'.(preg_match('/index.php$/',$_SERVER['REQUEST_URI']) ? ' active' : '').'" href="'.$core->adminurl->get("admin.home").'">'.__('My dashboard').'</a></li>'.
 		'<li><a class="smallscreen'.(preg_match('/preferences.php(\?.*)?$/',$_SERVER['REQUEST_URI']) ? ' active' : '').
-		'" href="preferences.php">'.__('My preferences').'</a></li>'.
-		'<li><a href="index.php?logout=1" class="logout"><span class="nomobile">'.sprintf(__('Logout %s'),$core->auth->userID()).
+		'" href="'.$core->adminurl->get("admin.user.preferences").'">'.__('My preferences').'</a></li>'.
+		'<li><a href="'.$core->adminurl->get("admin.home",array('logout' => 1)).'" class="logout"><span class="nomobile">'.sprintf(__('Logout %s'),$core->auth->userID()).
 		'</span><img src="images/logout.png" alt="" /></a></li>'.
 		'</ul>'.
 		'</div>'; // end header
@@ -254,7 +254,7 @@ class dcPage
 
 		if (!$GLOBALS['__resources']['ctxhelp']) {
 			echo
-			'<p id="help-button"><a href="help.php" class="outgoing" title="'.
+			'<p id="help-button"><a href="'.$core->adminurl->get("admin.help").'" class="outgoing" title="'.
 			__('Global help').'">'.__('Global help').'</a></p>';
 		}
 
@@ -266,7 +266,7 @@ class dcPage
 
 		'<div id="main-menu">'."\n".
 
-		'<form id="search-menu" action="search.php" method="get">'.
+		'<form id="search-menu" action="'.$core->adminurl->get("admin.search").'" method="get">'.
 		'<p><label for="qx" class="hidden">'.__('Search:').' </label>'.form::field('qx',30,255,'').
 		'<input type="submit" value="'.__('OK').'" /></p>'.
 		'</form>';
@@ -373,12 +373,13 @@ class dcPage
 
 	public static function breadcrumb($elements=null,$options=array())
 	{
+		global $core;
 		$with_home_link = isset($options['home_link'])?$options['home_link']:true;
 		$hl = isset($options['hl'])?$options['hl']:true;
 		$hl_pos = isset($options['hl_pos'])?$options['hl_pos']:-1;
 		// First item of array elements should be blog's name, System or Plugins
 		$res = '<h2>'.($with_home_link ?
-			'<a class="go_home" href="index.php"><img src="style/dashboard.png" alt="'.__('Go to dashboard').'" /></a>' :
+			'<a class="go_home" href="'.$core->adminurl->get("admin.home").'"><img src="style/dashboard.png" alt="'.__('Go to dashboard').'" /></a>' :
 			'<img src="style/dashboard-alt.png" alt="" />');
 		$index = 0;
 		if ($hl_pos < 0) {
@@ -472,6 +473,7 @@ class dcPage
 
 	public static function helpBlock()
 	{
+		global $core;
 		$args = func_get_args();
 
 		$args = new ArrayObject($args);
@@ -525,7 +527,7 @@ class dcPage
 		'</div>'.
 		'<div id="helplink"><hr />'.
 		'<p>'.
-		sprintf(__('See also %s'),sprintf('<a href="help.php">%s</a>',__('the global help'))).
+		sprintf(__('See also %s'),sprintf('<a href="'.$core->adminurl->get("admin.help").'">%s</a>',__('the global help'))).
 		'.</p>'.
 		'</div></div>';
 	}
@@ -588,6 +590,7 @@ class dcPage
 
 		'<script type="text/javascript">'."\n".
 		"//<![CDATA[\n".
+		'jsToolBar = {}, jsToolBar.prototype = { elements : {} };'."\n".
 		self::jsVar('dotclear.nonce',$GLOBALS['core']->getNonce()).
 		self::jsVar('dotclear.img_plus_src','images/expand.png').
 		self::jsVar('dotclear.img_plus_alt',__('uncover')).
@@ -827,90 +830,10 @@ class dcPage
 		"</script>\n";
 	}
 
+
 	public static function jsToolBar()
 	{
-		$res =
-		'<link rel="stylesheet" type="text/css" href="style/jsToolBar/jsToolBar.css" />'.
-		'<script type="text/javascript" src="js/jsToolBar/jsToolBar.js"></script>';
-
-		if (isset($GLOBALS['core']->auth) && $GLOBALS['core']->auth->getOption('enable_wysiwyg')) {
-			$res .= '<script type="text/javascript" src="js/jsToolBar/jsToolBar.wysiwyg.js"></script>';
-		}
-
-		$res .=
-		'<script type="text/javascript" src="js/jsToolBar/jsToolBar.dotclear.js"></script>'.
-		'<script type="text/javascript">'."\n".
-		"//<![CDATA[\n".
-		"jsToolBar.prototype.dialog_url = 'popup.php'; ".
-		"jsToolBar.prototype.iframe_css = '".
-		'body{'.
-		'font: 12px "DejaVu Sans","Lucida Grande","Lucida Sans Unicode",Arial,sans-serif;'.
-		'color : #000;'.
-		'background: #f9f9f9;'.
-		'margin: 0;'.
-		'padding : 2px;'.
-		'border: none;'.
-		(l10n::getTextDirection($GLOBALS['_lang']) == 'rtl' ? 'direction:rtl;' : '').
-		'}'.
-		'pre, code, kbd, samp {'.
-		'font-family:"Courier New",Courier,monospace;'.
-		'font-size : 1.1em;'.
-		'}'.
-		'code {'.
-		'color : #666;'.
-		'font-weight : bold;'.
-		'}'.
-		'body > p:first-child {'.
-		'margin-top: 0;'.
-		'}'.
-		"'; ".
-		"jsToolBar.prototype.base_url = '".html::escapeJS($GLOBALS['core']->blog->host)."'; ".
-		"jsToolBar.prototype.switcher_visual_title = '".html::escapeJS(__('visual'))."'; ".
-		"jsToolBar.prototype.switcher_source_title = '".html::escapeJS(__('source'))."'; ".
-		"jsToolBar.prototype.legend_msg = '".
-		html::escapeJS(__('You can use the following shortcuts to format your text.'))."'; ".
-		"jsToolBar.prototype.elements.blocks.options.none = '".html::escapeJS(__('-- none --'))."'; ".
-		"jsToolBar.prototype.elements.blocks.options.nonebis = '".html::escapeJS(__('-- block format --'))."'; ".
-		"jsToolBar.prototype.elements.blocks.options.p = '".html::escapeJS(__('Paragraph'))."'; ".
-		"jsToolBar.prototype.elements.blocks.options.h1 = '".html::escapeJS(__('Level 1 header'))."'; ".
-		"jsToolBar.prototype.elements.blocks.options.h2 = '".html::escapeJS(__('Level 2 header'))."'; ".
-		"jsToolBar.prototype.elements.blocks.options.h3 = '".html::escapeJS(__('Level 3 header'))."'; ".
-		"jsToolBar.prototype.elements.blocks.options.h4 = '".html::escapeJS(__('Level 4 header'))."'; ".
-		"jsToolBar.prototype.elements.blocks.options.h5 = '".html::escapeJS(__('Level 5 header'))."'; ".
-		"jsToolBar.prototype.elements.blocks.options.h6 = '".html::escapeJS(__('Level 6 header'))."'; ".
-		"jsToolBar.prototype.elements.strong.title = '".html::escapeJS(__('Strong emphasis'))."'; ".
-		"jsToolBar.prototype.elements.em.title = '".html::escapeJS(__('Emphasis'))."'; ".
-		"jsToolBar.prototype.elements.ins.title = '".html::escapeJS(__('Inserted'))."'; ".
-		"jsToolBar.prototype.elements.del.title = '".html::escapeJS(__('Deleted'))."'; ".
-		"jsToolBar.prototype.elements.quote.title = '".html::escapeJS(__('Inline quote'))."'; ".
-		"jsToolBar.prototype.elements.code.title = '".html::escapeJS(__('Code'))."'; ".
-		"jsToolBar.prototype.elements.br.title = '".html::escapeJS(__('Line break'))."'; ".
-		"jsToolBar.prototype.elements.blockquote.title = '".html::escapeJS(__('Blockquote'))."'; ".
-		"jsToolBar.prototype.elements.pre.title = '".html::escapeJS(__('Preformated text'))."'; ".
-		"jsToolBar.prototype.elements.ul.title = '".html::escapeJS(__('Unordered list'))."'; ".
-		"jsToolBar.prototype.elements.ol.title = '".html::escapeJS(__('Ordered list'))."'; ".
-
-		"jsToolBar.prototype.elements.link.title = '".html::escapeJS(__('Link'))."'; ".
-		"jsToolBar.prototype.elements.link.href_prompt = '".html::escapeJS(__('URL?'))."'; ".
-		"jsToolBar.prototype.elements.link.hreflang_prompt = '".html::escapeJS(__('Language?'))."'; ".
-
-		"jsToolBar.prototype.elements.img.title = '".html::escapeJS(__('External image'))."'; ".
-		"jsToolBar.prototype.elements.img.src_prompt = '".html::escapeJS(__('URL?'))."'; ".
-
-		"jsToolBar.prototype.elements.img_select.title = '".html::escapeJS(__('Media chooser'))."'; ".
-		"jsToolBar.prototype.elements.post_link.title = '".html::escapeJS(__('Link to an entry'))."'; ".
-
-		"jsToolBar.prototype.elements.removeFormat.title = '".html::escapeJS(__('Remove text formating'))."'; ";
-
-		if (!$GLOBALS['core']->auth->check('media,media_admin',$GLOBALS['core']->blog->id)) {
-			$res .= "jsToolBar.prototype.elements.img_select.disabled = true;\n";
-		}
-
-		$res .=
-		"\n//]]>\n".
-		"</script>\n";
-
-		return $res;
+		# Deprecated but we keep this for plugins.
 	}
 
 	public static function jsUpload($params=array(),$base_url=null)

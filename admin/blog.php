@@ -20,7 +20,7 @@ $blog_name = '';
 $blog_desc = '';
 
 # Create a blog
-if (!isset($_POST['id']) && !empty($_POST['blog_id']))
+if (!isset($_POST['id']) && (isset($_POST['create'])))
 {
 	$cur = $core->con->openCursor($core->prefix.'blog');
 	$blog_id = $cur->blog_id = $_POST['blog_id'];
@@ -51,7 +51,7 @@ if (!isset($_POST['id']) && !empty($_POST['blog_id']))
 		# --BEHAVIOR-- adminAfterBlogCreate
 		$core->callBehavior('adminAfterBlogCreate',$cur,$blog_id,$blog_settings);
 		dcPage::addSuccessNotice(sprintf(__('Blog "%s" successfully created'), html::escapeHTML($cur->blog_name)));
-		http::redirect('blog.php?id='.$cur->blog_id);
+		http::redirect($core->adminurl->get("admin.blog", array('id' => $cur->blog_id)));
 	}
 	catch (Exception $e)
 	{
@@ -70,23 +70,18 @@ else
 		dcPage::breadcrumb(
 			array(
 				__('System') => '',
-				__('Blogs') => 'blogs.php',
+				__('Blogs') => $core->adminurl->get("admin.blogs"),
 				__('New blog') => ''
 			))
 	);
 
 	echo
-	'<form action="blog.php" method="post" id="blog-form">'.
+	'<form action="'.$core->adminurl->get("admin.blog").'" method="post" id="blog-form">'.
 
 	'<div>'.$core->formNonce().'</div>'.
 	'<p><label class="required" for="blog_id"><abbr title="'.__('Required field').'">*</abbr> '.__('Blog ID:').'</label> '.
 	form::field('blog_id',30,32,html::escapeHTML($blog_id)).'</p>'.
 	'<p class="form-note">'.__('At least 2 characters using letters, numbers or symbols.').'</p> ';
-
-	if ($blog_id) {
-		echo
-		'<p class="form-note warn">'.__('Please note that changing your blog ID may require changes in your public index.php file.').'</p>';
-	}
 
 	echo
 	'<p><label class="required" for="blog_name"><abbr title="'.__('Required field').'">*</abbr> '.__('Blog name:').'</label> '.
@@ -98,7 +93,7 @@ else
 	'<p class="area"><label for="blog_desc">'.__('Blog description:').'</label> '.
 	form::textarea('blog_desc',60,5,html::escapeHTML($blog_desc)).'</p>'.
 
-	'<p><input type="submit" accesskey="s" value="'.__('Create').'" /></p>'.
+	'<p><input type="submit" accesskey="s" name="create" value="'.__('Create').'" /></p>'.
 	'</form>';
 
 	dcPage::helpBlock('core_blog_new');

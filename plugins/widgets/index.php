@@ -217,6 +217,7 @@ elseif (!empty($_POST['wreset']))
   <?php
 		echo
 			dcPage::jsLoad('js/jquery/jquery-ui.custom.js').
+			dcPage::jsLoad('js/jquery/jquery.ui.touch-punch.js').
 			dcPage::jsLoad('index.php?pf=widgets/widgets.js');
   ?>
   <?php
@@ -232,6 +233,7 @@ elseif (!empty($_POST['wreset']))
   	__('Are you sure you want to reset sidebars?')); ?>
   //]]>
   </script>
+  <?php echo $core->callBehavior('adminPostEditor');?>
   <?php echo(dcPage::jsConfirmClose('sidebarsWidgets')); ?>
 </head>
 <body>
@@ -365,7 +367,7 @@ function sidebarWidgets($id,$title,$widgets,$pr,$default_widgets,&$j)
 		$downDisabled = $i == count($widgets->elements())-1 ? ' disabled" src="images/disabled_' : '" src="images/';
 		$altUp = $i == 0 ? ' alt=""' : ' alt="'.__('Up the widget').'"';
 		$altDown = $i == count($widgets->elements())-1 ? ' alt=""' : ' alt="'.__('Down the widget').'"';
-
+		
 		$iname = 'w['.$pr.']['.$i.']';
 
 		$res .=

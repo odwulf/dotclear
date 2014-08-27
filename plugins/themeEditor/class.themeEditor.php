@@ -15,11 +15,10 @@ class dcThemeEditor
 {
 	protected $core;
 
-	protected $default_theme;
 	protected $user_theme;
 	protected $parent_theme;
+	protected $tplset_theme;
 
-	protected $default_tpl = array();
 	public $tpl = array();
 	public $css = array();
 	public $js  = array();
@@ -30,10 +29,15 @@ class dcThemeEditor
 		$this->core =& $core;
 		$this->default_theme = path::real($this->core->blog->themes_path.'/default');
 		$this->user_theme = path::real($this->core->blog->themes_path.'/'.$this->core->blog->settings->system->theme);
+		$this->tplset_theme = DC_ROOT.'/inc/public/default-templates/'.DC_DEFAULT_TPLSET;
 		if (null !== $this->core->themes) {
 			$parent_theme = $this->core->themes->moduleInfo($this->core->blog->settings->system->theme,'parent');
 			if ($parent_theme) {
 				$this->parent_theme = path::real($this->core->blog->themes_path.'/'.$parent_theme);
+			}
+			$tplset = $this->core->themes->moduleInfo($this->core->blog->settings->system->theme,'tplset');
+			if ($tplset) {
+				$this->tplset_theme = DC_ROOT.'/inc/public/default-templates/'.$tplset;
 			}
 		}
 		$this->findTemplates();
@@ -42,7 +46,7 @@ class dcThemeEditor
 		$this->findLocales();
 	}
 
-	public function filesList($type,$item='%1$s')
+	public function filesList($type,$item='%1$s',$split=true)
 	{
 		$files = $this->getFilesFromType($type);
 
@@ -51,16 +55,38 @@ class dcThemeEditor
 		}
 
 		$list = '';
-		foreach ($files as $k => $v)
-		{
-			if (strpos($v,$this->user_theme) === 0) {
-				$li = sprintf('<li class="default-file">%s</li>',$item);
-			} elseif ($this->parent_theme && strpos($v,$this->parent_theme) === 0) {
-				$li = sprintf('<li class="parent-file">%s</li>',$item);
-			} else {
-				$li = sprintf('<li>%s</li>',$item);
+		if ($split) {
+			$list_theme = '';	// Files from current theme
+			$list_parent = '';	// Files from parent of current theme
+			$list_tpl = '';		// Files from template set used by current theme
+			foreach ($files as $k => $v)
+			{
+				if (strpos($v,$this->user_theme) === 0) {
+					$li = sprintf('<li class="default-file">%s</li>',$item);
+					$list_theme .= sprintf($li,$k,html::escapeHTML($k));
+				} elseif ($this->parent_theme && strpos($v,$this->parent_theme) === 0) {
+					$li = sprintf('<li class="parent-file">%s</li>',$item);
+					$list_parent .= sprintf($li,$k,html::escapeHTML($k));
+				} else {
+					$li = sprintf('<li>%s</li>',$item);
+					$list_tpl .= sprintf($li,$k,html::escapeHTML($k));
+				}
 			}
-			$list .= sprintf($li,$k,html::escapeHTML($k));
+			$list .= ($list_theme != '' ? sprintf('<li class="group-file">'.__('From theme:').'<ul>%s</ul></li>',$list_theme) : '');
+			$list .= ($list_parent != '' ? sprintf('<li class="group-file">'.__('From parent:').'<ul>%s</ul></li>',$list_parent) : '');
+			$list .= ($list_tpl != '' ? sprintf('<li class="group-file">'.__('From template set:').'<ul>%s</ul></li>',$list_tpl) : '');
+		} else {
+			foreach ($files as $k => $v)
+			{
+				if (strpos($v,$this->user_theme) === 0) {
+					$li = sprintf('<li class="default-file">%s</li>',$item);
+				} elseif ($this->parent_theme && strpos($v,$this->parent_theme) === 0) {
+					$li = sprintf('<li class="parent-file">%s</li>',$item);
+				} else {
+					$li = sprintf('<li>%s</li>',$item);
+				}
+				$list .= sprintf($li,$k,html::escapeHTML($k));
+			}
 		}
 
 		return sprintf('<ul>%s</ul>',$list);
@@ -128,6 +154,57 @@ class dcThemeEditor
 		catch (Exception $e)
 		{
 			throw new Exception(sprintf(__('Unable to write file %s. Please check your theme files and folders permissions.'),$f));
+		}
+	}
+
+	public function deletableFile($type,$f)
+	{
+		if ($type != 'tpl') {
+			// Only tpl files may be deleted
+			return false;
+		}
+
+		$files = $this->getFilesFromType($type);
+		if (isset($files[$f])) {
+			$dest = $this->getDestinationFile($type,$f);
+			if ($dest) {
+				if (file_exists($dest) && is_writable($dest)) {
+					// Is there a model (parent theme or template set) ?
+					if (isset($this->tpl_model[$f])) {
+						return true;
+					}
+				}
+			}
+		}
+		return false;
+	}
+
+	public function deleteFile($type,$f)
+	{
+		if ($type != 'tpl') {
+			// Only tpl files may be deleted
+			return;
+		}
+
+		$files = $this->getFilesFromType($type);
+		if (!isset($files[$f])) {
+			throw new Exception(__('File does not exist.'));
+		}
+
+		try
+		{
+			$dest = $this->getDestinationFile($type,$f);
+			if ($dest) {
+				// File exists and may be deleted
+				unlink($dest);
+
+				// Updating template files list
+				$this->findTemplates();
+			}
+		}
+		catch (Exception $e)
+		{
+			throw new Exception(sprintf(__('Unable to delete file %s. Please check your theme files and folders permissions.'),$f));
 		}
 	}
 
@@ -206,20 +283,19 @@ class dcThemeEditor
 
 	protected function findTemplates()
 	{
-		# First, we look in template paths
-		$this->default_tpl = $this->getFilesInDir($this->default_theme.'/tpl');
-
 		$this->tpl = array_merge(
-			$this->default_tpl,
-			$this->getFilesInDir($this->parent_theme.'/tpl'),
-			$this->getFilesInDir($this->user_theme.'/tpl')
+			$this->getFilesInDir($this->tplset_theme),
+			$this->getFilesInDir($this->parent_theme.'/tpl')
 			);
-		$this->tpl = array_merge($this->getFilesInDir(DC_ROOT.'/inc/public/default-templates'),$this->tpl);
+		$this->tpl_model = $this->tpl;
+
+		$this->tpl = array_merge($this->tpl,$this->getFilesInDir($this->user_theme.'/tpl'));
 
 		# Then we look in 'default-templates' plugins directory
 		$plugins = $this->core->plugins->getModules();
 		foreach ($plugins as $p) {
 			$this->tpl = array_merge($this->getFilesInDir($p['root'].'/default-templates'),$this->tpl);
+			$this->tpl_model = array_merge($this->getFilesInDir($p['root'].'/default-templates'),$this->tpl_model);
 		}
 
 		uksort($this->tpl,array($this,'sortFilesHelper'));

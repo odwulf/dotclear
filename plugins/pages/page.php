@@ -17,6 +17,7 @@ $redir_url = $p_url.'&act=page';
 $post_id = '';
 $post_dt = '';
 $post_format = $core->auth->getOption('post_format');
+$post_editor = $core->auth->getOption('editor');
 $post_password = '';
 $post_url = '';
 $post_lang = $core->auth->getInfo('user_lang');
@@ -57,12 +58,17 @@ $status_combo = dcAdminCombos::getPostStatusesCombo();
 $img_status_pattern = '<img class="img_select_option" alt="%1$s" title="%1$s" src="images/%2$s" />';
 
 # Formaters combo
-$formaters_combo = dcAdminCombos::getFormatersCombo();
+$core_formaters = $core->getFormaters();
+$available_formats = array('' => '');
+foreach ($core_formaters as $editor => $formats) {
+	foreach ($formats as $format) {
+        $available_formats[$format] = $format;
+    }
+}
 
 # Languages combo
 $rs = $core->blog->getLangs(array('order'=>'asc'));
 $lang_combo = dcAdminCombos::getLangsCombo($rs,true);
-
 
 # Validation flag
 $bad_dt = false;
@@ -277,6 +283,11 @@ if (!empty($_GET['co'])) {
 	$default_tab = 'comments';
 }
 
+$admin_post_behavior = '';
+if ($post_editor && !empty($post_editor[$post_format])) {
+	$admin_post_behavior = $core->callBehavior('adminPostEditor', $post_editor[$post_format]);
+}
+
 ?>
 <html>
 <head>
@@ -288,9 +299,9 @@ if (!empty($_GET['co'])) {
   </script>
   <?php echo
   dcPage::jsDatePicker().
-  dcPage::jsToolBar().
   dcPage::jsModal().
   dcPage::jsLoad('js/_post.js').
+  $admin_post_behavior.
   dcPage::jsConfirmClose('entry-form','comment-form').
   # --BEHAVIOR-- adminPageHeaders
   $core->callBehavior('adminPageHeaders').
@@ -403,8 +414,7 @@ if ($can_edit_page)
 				'post_format' =>
 					'<div>'.
 					'<h5 id="label_format"><label for="post_format" class="classic">'.__('Text formatting').'</label></h5>'.
-					'<p>'.form::combo('post_format',$formaters_combo,$post_format,'maximal').
-					'</p>'.
+					'<p>'.form::combo('post_format',$available_formats,$post_format,'maximal').'</p>'.
 					'<p class="format_control control_wiki">'.
 					'<a id="convert-xhtml" class="button'.($post_id && $post_format != 'wiki' ? ' hide' : '').
 					'" href="'.html::escapeURL($redir_url).'&amp;id='.$post_id.'&amp;xconv=1">'.
@@ -609,7 +619,7 @@ if ($post_id)
 	if (!$comments->isEmpty()) {
 		showComments($comments,$has_action);
 	} else {
-		echo '<p>'.__('No comment').'</p>';
+		echo '<p>'.__('No comments').'</p>';
 	}
 
 	if ($has_action) {

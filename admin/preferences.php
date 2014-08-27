@@ -3,7 +3,7 @@
 #
 # This file is part of Dotclear 2.
 #
-# Copyright (c) 2003-2013 Olivier Meunier & Association Dotclear
+# Copyright (c) 2003-2014 Olivier Meunier & Association Dotclear
 # Licensed under the GPL version 2.0 license.
 # See LICENSE file or
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
@@ -26,6 +26,9 @@ $user_tz = $core->auth->getInfo('user_tz');
 $user_post_status = $core->auth->getInfo('user_post_status');
 
 $user_options = $core->auth->getOptions();
+if (empty($user_options['editor']) || !is_array($user_options['editor'])) {
+	$user_options['editor'] = array();
+}
 
 $core->auth->user_prefs->addWorkspace('dashboard');
 $user_dm_doclinks = $core->auth->user_prefs->dashboard->doclinks;
@@ -57,9 +60,25 @@ if (($default_tab != 'user-profile') && ($default_tab != 'user-options') && ($de
 	$default_tab = 'user-profile';
 }
 
-# Formaters combo
-$formaters_combo = dcAdminCombos::getFormatersCombo();
+# Editors combo
+$editors_combo = dcAdminCombos::getEditorsCombo();
+$editors = array_keys($editors_combo);
 
+# Format by editors
+$formaters = $core->getFormaters();
+$format_by_editors = array();
+foreach ($formaters as $editor => $formats) {
+	foreach ($formats as $format) {
+		$format_by_editors[$format][$editor] = $editor;
+	}
+}
+$available_formats = array('' => '');
+foreach (array_keys($format_by_editors) as $format) {
+	$available_formats[$format] = $format;
+	if (!isset($user_options['editor'][$format])) {
+		$user_options['editor'][$format] = '';
+	}
+}
 $status_combo = dcAdminCombos::getPostStatusescombo();
 
 $iconsets_combo = array(__('Default') => '');
@@ -124,7 +143,7 @@ if (isset($_POST['user_name']))
 
 		dcPage::addSuccessNotice(__('Personal information has been successfully updated.'));
 
-		http::redirect('preferences.php');
+		http::redirect($core->adminurl->get("admin.user.preferences"));
 	}
 	catch (Exception $e)
 	{
@@ -133,7 +152,7 @@ if (isset($_POST['user_name']))
 }
 
 # Update user options
-if (isset($_POST['user_post_format']))
+if (isset($_POST['user_editor']))
 {
 	try
 	{
@@ -154,6 +173,7 @@ if (isset($_POST['user_post_format']))
 			$user_options['edit_size'] = 10;
 		}
 		$user_options['post_format'] = $_POST['user_post_format'];
+		$user_options['editor'] = $_POST['user_editor'];
 		$user_options['enable_wysiwyg'] = !empty($_POST['user_wysiwyg']);
 
 		$cur->user_options = new ArrayObject($user_options);
@@ -177,7 +197,7 @@ if (isset($_POST['user_post_format']))
 		$core->callBehavior('adminAfterUserOptionsUpdate',$cur,$core->auth->userID());
 
 		dcPage::addSuccessNotice(__('Personal options has been successfully updated.'));
-		http::redirect('preferences.php#user-options');
+		http::redirect($core->adminurl->get("admin.user.preferences").'#user-options');
 	}
 	catch (Exception $e)
 	{
@@ -203,7 +223,7 @@ if (isset($_POST['db-options'])) {
 		$core->callBehavior('adminAfterDashboardOptionsUpdate',$core->auth->userID());
 
 		dcPage::addSuccessNotice(__('Dashboard options has been successfully updated.'));
-		http::redirect('preferences.php#user-favorites');
+		http::redirect($core->adminurl->get("admin.user.preferences").'#user-favorites');
 	}
 	catch (Exception $e)
 	{
@@ -229,7 +249,7 @@ if (!empty($_POST['appendaction']))
 
 		if (!$core->error->flag()) {
 			dcPage::addSuccessNotice(__('Favorites have been successfully added.'));
-			http::redirect('preferences.php#user-favorites');
+			http::redirect($core->adminurl->get("admin.user.preferences").'#user-favorites');
 		}
 	} catch (Exception $e) {
 		$core->error->add($e->getMessage());
@@ -256,7 +276,7 @@ if (!empty($_POST['removeaction']))
 		$core->favs->setFavoriteIDs(array_keys($user_fav_ids),false);
 		if (!$core->error->flag()) {
 			dcPage::addSuccessNotice(__('Favorites have been successfully removed.'));
-			http::redirect('preferences.php#user-favorites');
+			http::redirect($core->adminurl->get("admin.user.preferences").'#user-favorites');
 		}
 	} catch (Exception $e) {
 		$core->error->add($e->getMessage());
@@ -283,7 +303,7 @@ if (!empty($_POST['saveorder']) && !empty($order))
 	$core->favs->setFavoriteIDs($order,false);
 	if (!$core->error->flag()) {
 		dcPage::addSuccessNotice(__('Favorites have been successfully updated.'));
-		http::redirect('preferences.php#user-favorites');
+		http::redirect($core->adminurl->get("admin.user.preferences").'#user-favorites');
 	}
 }
 
@@ -294,7 +314,7 @@ if (!empty($_POST['replace']) && $core->auth->isSuperAdmin()) {
 
 	if (!$core->error->flag()) {
 		dcPage::addSuccessNotice(__('Default favorites have been successfully updated.'));
-		http::redirect('preferences.php#user-favorites');
+		http::redirect($core->adminurl->get("admin.user.preferences").'#user-favorites');
 	}
 }
 
@@ -304,6 +324,7 @@ dcPage::open($page_title,
 	dcPage::jsLoad('js/_preferences.js').
 	($user_acc_nodragdrop ? '' : dcPage::jsLoad('js/_preferences-dragdrop.js')).
 	dcPage::jsLoad('js/jquery/jquery-ui.custom.js').
+	dcPage::jsLoad('js/jquery/jquery.ui.touch-punch.js').
 	dcPage::jsLoad('js/jquery/jquery.pwstrength.js').
 		'<script type="text/javascript">'."\n".
 		"//<![CDATA[\n".
@@ -314,7 +335,7 @@ dcPage::open($page_title,
 				sprintf(__('Password strength: %s'),__('mediocre'))."', '".
 				sprintf(__('Password strength: %s'),__('strong'))."', '".
 				sprintf(__('Password strength: %s'),__('very strong'))."']});\n".
-		"});\n".
+		"});".
 		"\n//]]>\n".
 		"</script>\n".
 	dcPage::jsPageTabs($default_tab).
@@ -357,7 +378,7 @@ echo '<div class="multi-part" id="user-profile" title="'.__('My profile').'">';
 
 echo
 '<h3>'.__('My profile').'</h3>'.
-'<form action="preferences.php" method="post" id="user-form">'.
+'<form action="'.$core->adminurl->get("admin.user.preferences").'" method="post" id="user-form">'.
 
 '<p><label for="user_name">'.__('Last Name:').'</label>'.
 form::field('user_name',20,255,html::escapeHTML($user_name)).'</p>'.
@@ -417,7 +438,7 @@ $core->formNonce().
 echo '<div class="multi-part" id="user-options" title="'.__('My options').'">';
 
 echo
-'<form action="preferences.php" method="post" id="opts-forms">'.
+'<form action="'.$core->adminurl->get("admin.user.preferences").'#user-options" method="post" id="opts-forms">'.
 '<h3>'.__('My options').'</h3>';
 
 echo
@@ -451,11 +472,21 @@ echo
 
 echo
 '<div class="fieldset">'.
-'<h4>'.__('Edition').'</h4>'.
+'<h4>'.__('Edition').'</h4>';
 
+foreach ($format_by_editors as $format => $editors) {
+	echo
+	'<p class="field"><label for="user_editor">'.sprintf(__('Preferred editor for %s:'),$format).'</label>'.
+	form::combo(
+		'user_editor['.$format.']',
+		array_merge(array(__('Choose an editor') => ''),$editors),$user_options['editor'][$format]
+	).'</p>';
+}
+echo
 '<p class="field"><label for="user_post_format">'.__('Preferred format:').'</label>'.
-form::combo('user_post_format',$formaters_combo,$user_options['post_format']).'</p>'.
+form::combo('user_post_format',$available_formats,$user_options['post_format']).'</p>';
 
+echo
 '<p class="field"><label for="user_post_status">'.__('Default entry status:').'</label>'.
 form::combo('user_post_status',$status_combo,$user_post_status).'</p>'.
 
@@ -487,7 +518,7 @@ echo '<div class="multi-part" id="user-favorites" title="'.__('My dashboard').'"
 $ws = $core->auth->user_prefs->addWorkspace('favorites');
 echo '<h3>'.__('My dashboard').'</h3>';
 
-echo '<form action="preferences.php" method="post" id="favs-form" class="two-boxes odd">';
+echo '<form action="'.$core->adminurl->get("admin.user.preferences").'" method="post" id="favs-form" class="two-boxes odd">';
 
 echo '<div id="my-favs" class="fieldset"><h4>'.__('My favorites').'</h4>';
 
@@ -579,7 +610,7 @@ echo '</div>'; # /available favorites
 echo '</form>';
 
 echo
-'<form action="preferences.php" method="post" id="db-forms" class="two-boxes even">'.
+'<form action="'.$core->adminurl->get("admin.user.preferences").'" method="post" id="db-forms" class="two-boxes even">'.
 
 '<div class="fieldset">'.
 '<h4>'.__('Menu').'</h4>'.
