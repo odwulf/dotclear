@@ -179,16 +179,21 @@ class adminPostList extends adminGenericList
 				$html_block .= '<caption class="hidden">'.__('Entries list').'</caption>';
 			}
 
-			$html_block .= '<tr>'.
-			'<th colspan="2" class="first">'.__('Title').'</th>'.
-			'<th scope="col">'.__('Date').'</th>'.
-			'<th scope="col">'.__('Category').'</th>'.
-			'<th scope="col">'.__('Author').'</th>'.
-			'<th scope="col"><img src="images/comments.png" alt="" title="'.__('Comments').'" /><span class="hidden">'.__('Comments').'</span></th>'.
-			'<th scope="col"><img src="images/trackbacks.png" alt="" title="'.__('Trackbacks').'" /><span class="hidden">'.__('Trackbacks').'</span></th>'.
-			'<th scope="col">'.__('Status').'</th>'.
-			'</tr>%s</table></div>';
+			$cols = array(
+				'title' =>			'<th colspan="2" class="first">'.__('Title').'</th>',
+				'date' =>			'<th scope="col">'.__('Date').'</th>',
+				'category' =>		'<th scope="col">'.__('Category').'</th>',
+				'author' =>			'<th scope="col">'.__('Author').'</th>',
+				'comments' =>		'<th scope="col"><img src="images/comments.png" alt="" title="'.__('Comments').
+									'" /><span class="hidden">'.__('Comments').'</span></th>',
+				'trackbacks' =>		'<th scope="col"><img src="images/trackbacks.png" alt="" title="'.__('Trackbacks').
+									'" /><span class="hidden">'.__('Trackbacks').'</span></th>',
+				'status' =>			'<th scope="col">'.__('Status').'</th>'
+			);
+			$cols = new ArrayObject($cols);
+			$this->core->callBehavior('adminPostListHeader',$this->core,$this->rs,$cols);
 
+			$html_block .= '<tr>'.implode(iterator_to_array($cols)).'</tr>%s</table></div>';
 			if ($enclose_block) {
 				$html_block = sprintf($enclose_block,$html_block);
 			}
@@ -226,18 +231,23 @@ class adminPostList extends adminGenericList
 		}
 
 		$img = '<img alt="%1$s" title="%1$s" src="images/%2$s" />';
+		$sts_class = '';
 		switch ($this->rs->post_status) {
 			case 1:
 				$img_status = sprintf($img,__('Published'),'check-on.png');
+				$sts_class = 'sts-online';
 				break;
 			case 0:
 				$img_status = sprintf($img,__('Unpublished'),'check-off.png');
+				$sts_class = 'sts-offline';
 				break;
 			case -1:
 				$img_status = sprintf($img,__('Scheduled'),'scheduled.png');
+				$sts_class = 'sts-scheduled';
 				break;
 			case -2:
 				$img_status = sprintf($img,__('Pending'),'check-wrn.png');
+				$sts_class = 'sts-pending';
 				break;
 		}
 
@@ -258,21 +268,28 @@ class adminPostList extends adminGenericList
 			$attach = sprintf($img,sprintf($attach_str,$nb_media),'attach.png');
 		}
 
-		$res = '<tr class="line'.($this->rs->post_status != 1 ? ' offline' : '').'"'.
+		$res = '<tr class="line '.($this->rs->post_status != 1 ? 'offline ' : '').$sts_class.'"'.
 		' id="p'.$this->rs->post_id.'">';
 
-		$res .=
-		'<td class="nowrap">'.
-		form::checkbox(array('entries[]'),$this->rs->post_id,$checked,'','',!$this->rs->isEditable()).'</td>'.
-		'<td class="maximal" scope="row"><a href="'.$this->core->getPostAdminURL($this->rs->post_type,$this->rs->post_id).'">'.
-		html::escapeHTML($this->rs->post_title).'</a></td>'.
-		'<td class="nowrap count">'.dt::dt2str(__('%Y-%m-%d %H:%M'),$this->rs->post_dt).'</td>'.
-		'<td class="nowrap">'.$cat_title.'</td>'.
-		'<td class="nowrap">'.html::escapeHTML($this->rs->user_id).'</td>'.
-		'<td class="nowrap count">'.$this->rs->nb_comment.'</td>'.
-		'<td class="nowrap count">'.$this->rs->nb_trackback.'</td>'.
-		'<td class="nowrap status">'.$img_status.' '.$selected.' '.$protected.' '.$attach.'</td>'.
-		'</tr>';
+		$cols = array(
+			'check' =>			'<td class="nowrap">'.
+								form::checkbox(array('entries[]'),$this->rs->post_id,$checked,'','',!$this->rs->isEditable()).
+								'</td>',
+			'title' =>			'<td class="maximal" scope="row"><a href="'.
+								$this->core->getPostAdminURL($this->rs->post_type,$this->rs->post_id).'">'.
+								html::escapeHTML($this->rs->post_title).'</a></td>',
+			'date' =>			'<td class="nowrap count">'.dt::dt2str(__('%Y-%m-%d %H:%M'),$this->rs->post_dt).'</td>',
+			'category' =>		'<td class="nowrap">'.$cat_title.'</td>',
+			'author' =>			'<td class="nowrap">'.html::escapeHTML($this->rs->user_id).'</td>',
+			'comments' =>		'<td class="nowrap count">'.$this->rs->nb_comment.'</td>',
+			'trackbacks' =>		'<td class="nowrap count">'.$this->rs->nb_trackback.'</td>',
+			'status' =>			'<td class="nowrap status">'.$img_status.' '.$selected.' '.$protected.' '.$attach.'</td>'
+		);
+		$cols = new ArrayObject($cols);
+		$this->core->callBehavior('adminPostListValue',$this->core,$this->rs,$cols);
+
+		$res .= implode(iterator_to_array($cols));
+		$res .= '</tr>';
 
 		return $res;
 	}
@@ -292,13 +309,19 @@ class adminPostMiniList extends adminGenericList
 
 			$html_block =
 			'<div class="table-outer clear">'.
-			'<table><caption class="hidden">'.__('Entries list').'</caption><tr>'.
-			'<th scope="col">'.__('Title').'</th>'.
-			'<th scope="col">'.__('Date').'</th>'.
-			'<th scope="col">'.__('Author').'</th>'.
-			'<th scope="col">'.__('Status').'</th>'.
-			'</tr>%s</table></div>';
+			'<table><caption class="hidden">'.__('Entries list').'</caption><tr>';
 
+			$cols = array(
+				'title' =>		'<th scope="col">'.__('Title').'</th>',
+				'date' =>		'<th scope="col">'.__('Date').'</th>',
+				'author' =>		'<th scope="col">'.__('Author').'</th>',
+				'status' =>		'<th scope="col">'.__('Status').'</th>'
+			);
+
+			$cols = new ArrayObject($cols);
+			$this->core->callBehavior('adminPostMiniListHeader',$this->core,$this->rs,$cols);
+
+			$html_block .= '<tr>'.implode(iterator_to_array($cols)).'</tr>%s</table></div>';
 			if ($enclose_block) {
 				$html_block = sprintf($enclose_block,$html_block);
 			}
@@ -323,18 +346,23 @@ class adminPostMiniList extends adminGenericList
 	private function postLine()
 	{
 		$img = '<img alt="%1$s" title="%1$s" src="images/%2$s" />';
+		$sts_class = '';
 		switch ($this->rs->post_status) {
 			case 1:
 				$img_status = sprintf($img,__('Published'),'check-on.png');
+				$sts_class = 'sts-online';
 				break;
 			case 0:
 				$img_status = sprintf($img,__('Unpublished'),'check-off.png');
+				$sts_class = 'sts-offline';
 				break;
 			case -1:
 				$img_status = sprintf($img,__('Scheduled'),'scheduled.png');
+				$sts_class = 'sts-scheduled';
 				break;
 			case -2:
 				$img_status = sprintf($img,__('Pending'),'check-wrn.png');
+				$sts_class = 'sts-pending';
 				break;
 		}
 
@@ -355,17 +383,24 @@ class adminPostMiniList extends adminGenericList
 			$attach = sprintf($img,sprintf($attach_str,$nb_media),'attach.png');
 		}
 
-		$res = '<tr class="line'.($this->rs->post_status != 1 ? ' offline' : '').'"'.
+		$res = '<tr class="line '.($this->rs->post_status != 1 ? 'offline ' : '').$sts_class.'"'.
 		' id="p'.$this->rs->post_id.'">';
 
-		$res .=
-		'<td scope="row" class="maximal"><a href="'.$this->core->getPostAdminURL($this->rs->post_type,$this->rs->post_id).'" '.
-		'title="'.html::escapeHTML($this->rs->getURL()).'">'.
-		html::escapeHTML($this->rs->post_title).'</a></td>'.
-		'<td class="nowrap count">'.dt::dt2str(__('%Y-%m-%d %H:%M'),$this->rs->post_dt).'</td>'.
-		'<td class="nowrap">'.html::escapeHTML($this->rs->user_id).'</td>'.
-		'<td class="nowrap status">'.$img_status.' '.$selected.' '.$protected.' '.$attach.'</td>'.
-		'</tr>';
+		$cols = array(
+			'title' =>		'<td scope="row" class="maximal"><a href="'.
+							$this->core->getPostAdminURL($this->rs->post_type,$this->rs->post_id).'" '.
+							'title="'.html::escapeHTML($this->rs->getURL()).'">'.
+							html::escapeHTML($this->rs->post_title).'</a></td>',
+			'date' =>		'<td class="nowrap count">'.dt::dt2str(__('%Y-%m-%d %H:%M'),$this->rs->post_dt).'</td>',
+			'author' =>		'<td class="nowrap">'.html::escapeHTML($this->rs->user_id).'</td>',
+			'status' =>		'<td class="nowrap status">'.$img_status.' '.$selected.' '.$protected.' '.$attach.'</td>'
+		);
+
+		$cols = new ArrayObject($cols);
+		$this->core->callBehavior('adminPostMiniListValue',$this->core,$this->rs,$cols);
+
+		$res .= implode(iterator_to_array($cols));
+		$res .= '</tr>';
 
 		return $res;
 	}
@@ -421,19 +456,22 @@ class adminCommentList extends adminGenericList
 				$html_block .= '<caption class="hidden">'.__('Comments and trackbacks list').'</caption>';
 			}
 
-			$html_block .= '<tr>'.
-			'<th colspan="2" scope="col" abbr="comm" class="first">'.__('Type').'</th>'.
-			'<th scope="col">'.__('Author').'</th>'.
-			'<th scope="col">'.__('Date').'</th>'.
-			'<th scope="col" class="txt-center">'.__('Status').'</th>';
+			$cols = array(
+				'type' =>	'<th colspan="2" scope="col" abbr="comm" class="first">'.__('Type').'</th>',
+				'author' =>	'<th scope="col">'.__('Author').'</th>',
+				'date' =>	'<th scope="col">'.__('Date').'</th>',
+				'status' =>	'<th scope="col" class="txt-center">'.__('Status').'</th>'
+			);
 			if ($spam) {
-				$html_block .=
-				'<th scope="col">'.__('IP').'</th>'.
-				'<th scope="col">'.__('Spam filter').'</th>';
+				$cols['ip'] = '<th scope="col">'.__('IP').'</th>';
+				$cols['spam_filter'] = '<th scope="col">'.__('Spam filter').'</th>';
 			}
-			$html_block .=
-			'<th scope="col" abbr="entry">'.__('Entry').'</th>'.
-			'</tr>%s</table></div>';
+			$cols['entry'] = '<th scope="col" abbr="entry">'.__('Entry').'</th>';
+
+			$cols = new ArrayObject($cols);
+			$this->core->callBehavior('adminCommentListHeader',$this->core,$this->rs,$cols);
+
+			$html_block .= '<tr>'.implode(iterator_to_array($cols)).'</tr>%s</table></div>';
 
 			if ($enclose_block) {
 				$html_block = sprintf($enclose_block,$html_block);
@@ -478,18 +516,23 @@ class adminCommentList extends adminGenericList
 		$this->core->blog->settings->system->time_format,$this->rs->comment_dt);
 
 		$img = '<img alt="%1$s" title="%1$s" src="images/%2$s" />';
+		$sts_class = '';
 		switch ($this->rs->comment_status) {
 			case 1:
 				$img_status = sprintf($img,__('Published'),'check-on.png');
+				$sts_class = 'sts-online';
 				break;
 			case 0:
 				$img_status = sprintf($img,__('Unpublished'),'check-off.png');
+				$sts_class = 'sts-offline';
 				break;
 			case -1:
 				$img_status = sprintf($img,__('Pending'),'check-wrn.png');
+				$sts_class = 'sts-pending';
 				break;
 			case -2:
 				$img_status = sprintf($img,__('Junk'),'junk.png');
+				$sts_class = 'sts-junk';
 				break;
 		}
 
@@ -501,19 +544,22 @@ class adminCommentList extends adminGenericList
 			$this->rs->comment_trackback ? __('trackback') : __('comment'),
 			html::escapeHTML($this->rs->comment_author));
 
-		$res = '<tr class="line'.($this->rs->comment_status != 1 ? ' offline' : '').'"'.
+		$res = '<tr class="line '.($this->rs->comment_status != 1 ? 'offline ' : '').$sts_class.'"'.
 		' id="c'.$this->rs->comment_id.'">';
 
-		$res .=
-		'<td class="nowrap">'.
-		form::checkbox(array('comments[]'),$this->rs->comment_id,$checked,'','',0).'</td>'.
-		'<td class="nowrap" abbr="'.__('Type and author').'" scope="row">'.
-			'<a href="'.$comment_url.'" title="'.$comment_title.'">'.
-			'<img src="images/edit-mini.png" alt="'.__('Edit').'"/> '.
-			($this->rs->comment_trackback ? __('trackback') : __('comment')).' '.'</a></td>'.
-		'<td class="nowrap maximal"><a href="'.$author_url.'">'.html::escapeHTML($this->rs->comment_author).'</a></td>'.
-		'<td class="nowrap count">'.dt::dt2str(__('%Y-%m-%d %H:%M'),$this->rs->comment_dt).'</td>'.
-		'<td class="nowrap status txt-center">'.$img_status.'</td>';
+		$cols = array(
+			'check' =>	'<td class="nowrap">'.
+						form::checkbox(array('comments[]'),$this->rs->comment_id,$checked,'','',0).'</td>',
+			'type' =>	'<td class="nowrap" abbr="'.__('Type and author').'" scope="row">'.
+						'<a href="'.$comment_url.'" title="'.$comment_title.'">'.
+						'<img src="images/edit-mini.png" alt="'.__('Edit').'"/> '.
+						($this->rs->comment_trackback ? __('trackback') : __('comment')).' '.'</a></td>',
+			'author' =>	'<td class="nowrap maximal"><a href="'.$author_url.'">'.
+						html::escapeHTML($this->rs->comment_author).'</a></td>',
+			'date'	=>	'<td class="nowrap count">'.dt::dt2str(__('%Y-%m-%d %H:%M'),$this->rs->comment_dt).'</td>',
+			'status' =>	'<td class="nowrap status txt-center">'.$img_status.'</td>'
+		);
+
 		if ($spam) {
 			$filter_name = '';
 			if ($this->rs->comment_spam_filter) {
@@ -523,15 +569,18 @@ class adminCommentList extends adminGenericList
 					$filter_name = $this->rs->comment_spam_filter;
 				}
 			}
-			$res .=
-			'<td class="nowrap"><a href="'.$core->adminurl->get("admin.comments",array('ip' => $this->rs->comment_ip)).'">'.$this->rs->comment_ip.'</a></td>'.
-			'<td class="nowrap">'.$filter_name.'</td>';
+			$cols['ip'] = '<td class="nowrap"><a href="'.
+				$core->adminurl->get("admin.comments",array('ip' => $this->rs->comment_ip)).'">'.
+				$this->rs->comment_ip.'</a></td>';
+			$cols['spam_filter'] = '<td class="nowrap">'.$filter_name.'</td>';
 		}
-		$res .=
-		'<td class="nowrap discrete"><a href="'.$post_url.'">'.
-		$post_title.'</a>'.
-		($this->rs->post_type != 'post' ? ' ('.html::escapeHTML($this->rs->post_type).')' : '').'</td>';
+		$cols['entry'] = '<td class="nowrap discrete"><a href="'.$post_url.'">'.$post_title.'</a>'.
+			($this->rs->post_type != 'post' ? ' ('.html::escapeHTML($this->rs->post_type).')' : '').'</td>';
 
+		$cols = new ArrayObject($cols);
+		$this->core->callBehavior('adminCommentListValue',$this->core,$this->rs,$cols);
+
+		$res .= implode(iterator_to_array($cols));
 		$res .= '</tr>';
 
 		return $res;
@@ -564,14 +613,18 @@ class adminUserList extends adminGenericList
 				$html_block .= '<caption class="hidden">'.__('Users list').'</caption>';
 			}
 
-			$html_block .= '<tr>'.
-			'<th colspan="2" scope="col" class="first">'.__('Username').'</th>'.
-			'<th scope="col">'.__('First Name').'</th>'.
-			'<th scope="col">'.__('Last Name').'</th>'.
-			'<th scope="col">'.__('Display name').'</th>'.
-			'<th scope="col" class="nowrap">'.__('Entries (all types)').'</th>'.
-			'</tr>%s</table></div>';
+			$cols = array(
+				'username' =>		'<th colspan="2" scope="col" class="first">'.__('Username').'</th>',
+				'first_name' =>		'<th scope="col">'.__('First Name').'</th>',
+				'last_name' =>		'<th scope="col">'.__('Last Name').'</th>',
+				'display_name' =>	'<th scope="col">'.__('Display name').'</th>',
+				'entries' =>		'<th scope="col" class="nowrap">'.__('Entries (all types)').'</th>'
+			);
 
+			$cols = new ArrayObject($cols);
+			$this->core->callBehavior('adminUserListHeader',$this->core,$this->rs,$cols);
+
+			$html_block .= '<tr>'.implode(iterator_to_array($cols)).'</tr>%s</table></div>';
 			if ($enclose_block) {
 				$html_block = sprintf($enclose_block,$html_block);
 			}
@@ -606,17 +659,29 @@ class adminUserList extends adminGenericList
 		if ($this->rs->user_super) {
 			$img_status = sprintf($img,__('superadmin'),'superadmin.png');
 		}
-		return
-		'<tr class="line">'.
-		'<td class="nowrap">'.form::hidden(array('nb_post[]'),(integer) $this->rs->nb_post).
-		form::checkbox(array('users[]'),$this->rs->user_id).'</td>'.
-		'<td class="maximal" scope="row"><a href="'.$this->core->adminurl->get('admin.user',array('id' => $this->rs->user_id)).'">'.
-		$this->rs->user_id.'</a>&nbsp;'.$img_status.'</td>'.
-		'<td class="nowrap">'.html::escapeHTML($this->rs->user_firstname).'</td>'.
-		'<td class="nowrap">'.html::escapeHTML($this->rs->user_name).'</td>'.
-		'<td class="nowrap">'.html::escapeHTML($this->rs->user_displayname).'</td>'.
-		'<td class="nowrap count"><a href="'.$this->core->adminurl->get('admin.posts',array('user_id' => $this->rs->user_id)).'">'.
-		$this->rs->nb_post.'</a></td>'.
-		'</tr>';
+
+		$res = '<tr class="line">';
+
+		$cols = array(
+			'check' =>			'<td class="nowrap">'.form::hidden(array('nb_post[]'),(integer) $this->rs->nb_post).
+								form::checkbox(array('users[]'),$this->rs->user_id).'</td>',
+			'username' =>		'<td class="maximal" scope="row"><a href="'.
+								$this->core->adminurl->get('admin.user',array('id' => $this->rs->user_id)).'">'.
+								$this->rs->user_id.'</a>&nbsp;'.$img_status.'</td>',
+			'first_name' =>		'<td class="nowrap">'.html::escapeHTML($this->rs->user_firstname).'</td>',
+			'last_name' =>		'<td class="nowrap">'.html::escapeHTML($this->rs->user_name).'</td>',
+			'display_name' =>	'<td class="nowrap">'.html::escapeHTML($this->rs->user_displayname).'</td>',
+			'entries' =>		'<td class="nowrap count"><a href="'.
+								$this->core->adminurl->get('admin.posts',array('user_id' => $this->rs->user_id)).'">'.
+								$this->rs->nb_post.'</a></td>'
+		);
+
+		$cols = new ArrayObject($cols);
+		$this->core->callBehavior('adminUserListValue',$this->core,$this->rs,$cols);
+
+		$res .= implode(iterator_to_array($cols));
+		$res .= '</tr>';
+
+		return $res;
 	}
 }

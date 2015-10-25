@@ -441,6 +441,9 @@ msgstr "Soyez prudent si plusieurs blogs de l'installation partagent la même m�
 msgid "Generated image sizes (in pixels)"
 msgstr "Tailles des miniatures générées (largeur en pixels)"
 
+msgid "Default size of the inserted video (in pixels)"
+msgstr "Taille par defaut des vidéos insérées (en pixels)"
+
 msgid "Default image insertion attributes"
 msgstr "Attributs par défaut pour l'insertion d'image"
 
@@ -1407,21 +1410,30 @@ msgid "Zip file has been successfully extracted."
 msgstr "Le fichier zip a été extrait."
 
 #, php-format
-msgid "Choose a file to attach to entry %s by clicking on %s."
-msgstr "Choisissez un fichier à attacher au billet %s en cliquant sur %s."
+msgid "Choose a file to attach to entry %s by clicking on %s"
+msgstr "Choisissez un fichier à attacher au billet %s en cliquant sur %s"
 
 msgid "Attach this file to entry"
 msgstr "Attacher ce fichier au billet"
 
 #, php-format
-msgid "Choose a file to insert into entry by clicking on %s."
-msgstr "Choisissez un fichier à insérer dans le billet en cliquant sur %s."
+msgid "Choose a file to insert into entry by clicking on %s"
+msgstr "Choisissez un fichier à insérer dans le billet en cliquant sur %s"
+
+msgid "upload a new file"
+msgstr "envoyez un nouveau fichier"
 
 msgid "Remove selected medias"
 msgstr "Supprimer les médias sélectionnés"
 
 msgid "No file."
 msgstr "Aucun fichier."
+
+msgid "Grid display mode"
+msgstr "Afficher sous forme de grille"
+
+msgid "List display mode"
+msgstr "Afficher sous forme de liste"
 
 msgid "Sort files:"
 msgstr "Trier les fichiers :"
@@ -1483,6 +1495,15 @@ msgstr "Envoyer"
 #, php-format
 msgid "Current settings for medias and images are defined in %s"
 msgstr "Les réglages actuels pour les médias et les images sont définis dans les %s"
+
+#, php-format
+msgid "%s file found"
+msgid_plural "%s files found"
+msgstr[0] "%s fichier trouvé"
+msgstr[1] "%s fichiers trouvés"
+
+msgid "Will search into media filename (including path), title and description"
+msgstr "Recherche parmi les noms des fichiers (incluant leur chemin), les titres et descriptions"
 
 msgid "Blog parameters"
 msgstr "Paramètres du blog"
@@ -1951,6 +1972,18 @@ msgstr "Sélectionné"
 
 msgid "Not selected"
 msgstr "Non sélectionné"
+
+msgid "Comments:"
+msgstr "Comentaires :"
+
+msgid "Trackbacks:"
+msgstr "Rétroliens :"
+
+msgid "Opened"
+msgstr "Ouverts"
+
+msgid "Closed"
+msgstr "Fermés"
 
 msgid "With attachments"
 msgstr "Avec annexe(s)"
@@ -3153,6 +3186,12 @@ msgstr "vignette"
 msgid "square"
 msgstr "carrée"
 
+msgid "Width"
+msgstr "Largeur"
+
+msgid "Height"
+msgstr "Hauteur"
+
 msgid "Posts"
 msgstr "Billets"
 
@@ -3670,6 +3709,15 @@ msgstr "Sans mot de passe"
 
 msgid "Format:"
 msgstr "Format :"
+
+msgid "Thumbnail details"
+msgstr "Détails de la miniature"
+
+msgid "Image width:"
+msgstr "Largeur de l'image :"
+
+msgid "Image height:"
+msgstr "Hauteur de l'image :"
 
 #~ msgid "visual"
 #~ msgstr "visuel"
