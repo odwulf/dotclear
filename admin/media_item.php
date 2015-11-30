@@ -378,7 +378,7 @@ if ($popup)
 		}
 
 		$public_player_style = unserialize($core->blog->settings->themes->mp3player_style);
-		$public_player = dcMedia::audioPlayer($file->type,$file->file_url,$core->blog->getQmarkURL().'pf=player_mp3.swf',$public_player_style);
+		$public_player = dcMedia::audioPlayer($file->type,$file->file_url,$core->blog->getQmarkURL().'pf=player_mp3.swf',$public_player_style,null,$core->blog->settings->system->media_flash_fallback);
 		echo form::hidden('public_player',html::escapeHTML($public_player));
 		echo '</p>';
 		echo '</div>';
@@ -393,9 +393,9 @@ if ($popup)
 		'<div class="two-boxes">'.
 		'<h3>'.__('Video size').'</h3>'.
 		'<p><label for="video_w" class="classic">'.__('Width:').'</label> '.
-		form::field('video_w',3,4,400).'  '.
+		form::field('video_w',3,4,$core->blog->settings->system->media_video_width).'  '.
 		'<label for="video_h" class="classic">'.__('Height:').'</label> '.
-		form::field('video_h',3,4,300).
+		form::field('video_h',3,4,$core->blog->settings->system->media_video_height).
 		'</p>'.
 		'</div>';
 
@@ -418,7 +418,7 @@ if ($popup)
 		}
 
 		$public_player_style = unserialize($core->blog->settings->themes->flvplayer_style);
-		$public_player = dcMedia::videoPlayer($file->type,$file->file_url,$core->blog->getQmarkURL().'pf=player_flv.swf',$public_player_style);
+		$public_player = dcMedia::videoPlayer($file->type,$file->file_url,$core->blog->getQmarkURL().'pf=player_flv.swf',$public_player_style,null,$core->blog->settings->system->media_flash_fallback);
 		echo form::hidden('public_player',html::escapeHTML($public_player));
 		echo '</p>';
 		echo '</div>';
@@ -497,23 +497,52 @@ if ($file->media_image)
 	}
 	echo '<a href="'.$core->adminurl->get('admin.media.item',array_merge($page_url_params,array("size" => "o","tab"=>"media-details-tab"))).'">'.__('original').'</a>';
 	echo '</p>';
+
+	if ($thumb_size != 'o' && isset($file->media_thumb[$thumb_size])) {
+		$p = path::info($file->file);
+		$alpha = ($p['extension'] == 'png') || ($p['extension'] == 'PNG');
+		$thumb = sprintf(($alpha ? $core->media->thumb_tp_alpha : $core->media->thumb_tp),$p['dirname'],$p['base'],'%s');
+		$thumb_file = sprintf($thumb,$thumb_size);
+		$T = getimagesize($thumb_file);
+		$stats = stat($thumb_file);
+		echo
+		'<h3>'.__('Thumbnail details').'</h3>'.
+		'<ul>'.
+		'<li><strong>'.__('Image width:').'</strong> '.$T[0].' px</li>'.
+		'<li><strong>'.__('Image height:').'</strong> '.$T[1].' px</li>'.
+		'<li><strong>'.__('File size:').'</strong> '.files::size($stats[7]).'</li>'.
+		'<li><strong>'.__('File URL:').'</strong> <a href="'.$file->media_thumb[$thumb_size].'">'.
+			$file->media_thumb[$thumb_size].'</a></li>'.
+		'</ul>';
+	}
 }
 
 // Show player if relevant
 if ($file_type[0] == 'audio')
 {
-	echo dcMedia::audioPlayer($file->type,$file->file_url,$core->adminurl->get("admin.home",array('pf' => 'player_mp3.swf')));
+	echo dcMedia::audioPlayer($file->type,$file->file_url,$core->adminurl->get("admin.home",array('pf' => 'player_mp3.swf')),
+		null,$core->blog->settings->system->media_flash_fallback);
 }
 if ($file_type[0] == 'video')
 {
-	echo dcMedia::videoPlayer($file->type,$file->file_url,$core->adminurl->get("admin.home",array('pf' => 'player_flv.swf')));
+	echo dcMedia::videoPlayer($file->type,$file->file_url,$core->adminurl->get("admin.home",array('pf' => 'player_flv.swf')),
+		null,$core->blog->settings->system->media_flash_fallback);
 }
 
 echo
 '<h3>'.__('Media details').'</h3>'.
 '<ul>'.
 	'<li><strong>'.__('File owner:').'</strong> '.$file->media_user.'</li>'.
-	'<li><strong>'.__('File type:').'</strong> '.$file->type.'</li>'.
+	'<li><strong>'.__('File type:').'</strong> '.$file->type.'</li>';
+if ($file->media_image)
+{
+	$S = getimagesize($file->file);
+	echo
+	'<li><strong>'.__('Image width:').'</strong> '.$S[0].' px</li>'.
+	'<li><strong>'.__('Image height:').'</strong> '.$S[1].' px</li>';
+	unset($S);
+}
+echo
 	'<li><strong>'.__('File size:').'</strong> '.files::size($file->size).'</li>'.
 	'<li><strong>'.__('File URL:').'</strong> <a href="'.$file->file_url.'">'.$file->file_url.'</a></li>'.
 '</ul>';
