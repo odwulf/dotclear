@@ -176,26 +176,29 @@ class dcPage
 			'</div>';
 		}
 
-		// Display breadcrumb (if given) before any error message
+		// Display breadcrumb (if given) before any error messages
 		echo $breadcrumb;
 
-		if ($core->error->flag()) {
-			echo
-			'<div class="error"><p><strong>'.(count($core->error->getErrors()) > 1 ? __('Errors:') : __('Error:')).'</strong></p>'.
-			$core->error->toHTML().
-			'</div>';
-		}
-
-		// Display notices
+		// Display notices and errors
 		echo self::notices();
 	}
 
 	public static function notices()
 	{
-		// return notices if any
+		global $core;
+		static $error_displayed = false;
 		$res = '';
+
+		// return error messages if any
+		if ($core->error->flag() && !$error_displayed) {
+			$res .= '<div class="error"><p><strong>'.(count($core->error->getErrors()) > 1 ? __('Errors:') : __('Error:')).'</strong></p>'.
+			$core->error->toHTML().
+			'</div>';
+			$error_displayed = true;
+		}
+
+		// return notices if any
 		if (isset($_SESSION['notifications'])) {
-			$notifications = $_SESSION['notifications'];
 			foreach ($_SESSION['notifications'] as $notification) {
 				$res .= self::getNotification($notification);
 			}
@@ -365,12 +368,8 @@ class dcPage
 		// display breadcrumb if given
 		echo $breadcrumb;
 
-		if ($core->error->flag()) {
-			echo
-			'<div class="error" role="alert"><strong>'.__('Errors:').'</strong>'.
-			$core->error->toHTML().
-			'</div>';
-		}
+		// Display notices and errors
+		echo self::notices();
 	}
 
 	public static function closePopup()
@@ -544,41 +543,35 @@ class dcPage
 		'</div></div>';
 	}
 
-	public static function cssLoad($src, $media='screen')
+	public static function cssLoad($src,$media='screen',$v='')
 	{
 		$escaped_src = html::escapeHTML($src);
 		if (!isset(self::$loaded_css[$escaped_src])) {
 			self::$loaded_css[$escaped_src] = true;
-			$escaped_src = self::appendVersion($escaped_src);
+			$escaped_src = self::appendVersion($escaped_src,$v);
 
 			return '<link rel="stylesheet" href="'.$escaped_src.'" type="text/css" media="'.$media.'" />'."\n";
 		}
 	}
 
-	public static function jsLoad($src)
+	public static function jsLoad($src,$v='')
 	{
 		$escaped_src = html::escapeHTML($src);
 		if (!isset(self::$loaded_js[$escaped_src])) {
 			self::$loaded_js[$escaped_src] = true;
-			$escaped_src = self::appendVersion($escaped_src);
+			$escaped_src = self::appendVersion($escaped_src,$v);
 			return '<script type="text/javascript" src="'.$escaped_src.'"></script>'."\n";
 		}
 	}
 
-	private static function appendVersion($src)
+	private static function appendVersion($src,$v='')
 	{
-		if (strpos($src,'?')===false) {
-			$src .= '?v=';
-		} else {
-			$src .= '&v=';
-		}
-
+		$src .= (strpos($src,'?') === false ? '?' : '&amp;').'v=';
 		if (defined('DC_DEV') && DC_DEV === true) {
 			$src .= md5(uniqid());
 		} else {
-			$src .= DC_VERSION;
+			$src .= ($v === '' ? DC_VERSION : $v);
 		}
-
 		return $src;
 	}
 

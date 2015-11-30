@@ -441,6 +441,18 @@ msgstr "Soyez prudent si plusieurs blogs de l'installation partagent la même m�
 msgid "Generated image sizes (in pixels)"
 msgstr "Tailles des miniatures générées (largeur en pixels)"
 
+msgid "Default size of the inserted video (in pixels)"
+msgstr "Taille par defaut des vidéos insérées (en pixels)"
+
+msgid "Flash player"
+msgstr "Lecteur Flash"
+
+msgid "Insert Flash player fallback for video (mp4 or m4v) and audio (mp3) media"
+msgstr "Insérer le lecteur Flash de secours pour les médias vidéo (mp4 ou m4v) et audio (mp3)"
+
+msgid "For flv video, the Flash player will be anyway inserted."
+msgstr "Pour les vidéos Flv, le lecteur Flash sera quoi qu'il en soit inséré."
+
 msgid "Default image insertion attributes"
 msgstr "Attributs par défaut pour l'insertion d'image"
 
@@ -1407,15 +1419,18 @@ msgid "Zip file has been successfully extracted."
 msgstr "Le fichier zip a été extrait."
 
 #, php-format
-msgid "Choose a file to attach to entry %s by clicking on %s."
-msgstr "Choisissez un fichier à attacher au billet %s en cliquant sur %s."
+msgid "Choose a file to attach to entry %s by clicking on %s"
+msgstr "Choisissez un fichier à attacher au billet %s en cliquant sur %s"
 
 msgid "Attach this file to entry"
 msgstr "Attacher ce fichier au billet"
 
 #, php-format
-msgid "Choose a file to insert into entry by clicking on %s."
-msgstr "Choisissez un fichier à insérer dans le billet en cliquant sur %s."
+msgid "Choose a file to insert into entry by clicking on %s"
+msgstr "Choisissez un fichier à insérer dans le billet en cliquant sur %s"
+
+msgid "upload a new file"
+msgstr "envoyez un nouveau fichier"
 
 msgid "Remove selected medias"
 msgstr "Supprimer les médias sélectionnés"
@@ -1423,11 +1438,20 @@ msgstr "Supprimer les médias sélectionnés"
 msgid "No file."
 msgstr "Aucun fichier."
 
+msgid "Grid display mode"
+msgstr "Afficher sous forme de grille"
+
+msgid "List display mode"
+msgstr "Afficher sous forme de liste"
+
 msgid "Sort files:"
 msgstr "Trier les fichiers :"
 
 msgid "Number of elements displayed per page:"
 msgstr "Nombre d'éléments affichés par page :"
+
+msgid "Goto recent folder:"
+msgstr "Aller au dossier récent :"
 
 #, php-format
 msgid "In %s:"
@@ -1483,6 +1507,15 @@ msgstr "Envoyer"
 #, php-format
 msgid "Current settings for medias and images are defined in %s"
 msgstr "Les réglages actuels pour les médias et les images sont définis dans les %s"
+
+#, php-format
+msgid "%s file found"
+msgid_plural "%s files found"
+msgstr[0] "%s fichier trouvé"
+msgstr[1] "%s fichiers trouvés"
+
+msgid "Will search into media filename (including path), title and description"
+msgstr "Recherche parmi les noms des fichiers (incluant leur chemin), les titres et descriptions"
 
 msgid "Blog parameters"
 msgstr "Paramètres du blog"
@@ -1952,6 +1985,18 @@ msgstr "Sélectionné"
 msgid "Not selected"
 msgstr "Non sélectionné"
 
+msgid "Comments:"
+msgstr "Comentaires :"
+
+msgid "Trackbacks:"
+msgstr "Rétroliens :"
+
+msgid "Opened"
+msgstr "Ouverts"
+
+msgid "Closed"
+msgstr "Fermés"
+
 msgid "With attachments"
 msgstr "Avec annexe(s)"
 
@@ -2059,6 +2104,12 @@ msgstr "Si cette option est cochée, des champs numériques permettront d'indiqu
 
 msgid "Number of elements displayed per page in media manager:"
 msgstr "Nombre d'éléments affichés par page dans la médiathèque :"
+
+msgid "Number of recent folders proposed in media manager:"
+msgstr "Nombre de dossiers récents proposés dans la médiathèque :"
+
+msgid "Leave empty to ignore, displayed only if Javascript is enabled in your browser."
+msgstr "Laisser vide pour ignorer ; affiché seulement si Javascript est activé dans votre navigateur."
 
 msgid "Do not use standard favicon"
 msgstr "Ne pas utiliser le favicon standard de Dotclear"
@@ -3153,6 +3204,12 @@ msgstr "vignette"
 msgid "square"
 msgstr "carrée"
 
+msgid "Width"
+msgstr "Largeur"
+
+msgid "Height"
+msgstr "Hauteur"
+
 msgid "Posts"
 msgstr "Billets"
 
@@ -3670,6 +3727,15 @@ msgstr "Sans mot de passe"
 
 msgid "Format:"
 msgstr "Format :"
+
+msgid "Thumbnail details"
+msgstr "Détails de la miniature"
+
+msgid "Image width:"
+msgstr "Largeur de l'image :"
+
+msgid "Image height:"
+msgstr "Hauteur de l'image :"
 
 #~ msgid "visual"
 #~ msgstr "visuel"

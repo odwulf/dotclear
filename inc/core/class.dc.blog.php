@@ -120,7 +120,7 @@ class dcBlog
 	}
 
 	/**
-	Reruens jQuery version selected for the blog.
+	Returns jQuery version selected for the blog.
 	 */
 	public function getJsJQuery()
 	{
@@ -129,6 +129,18 @@ class dcBlog
 			$version = DC_DEFAULT_JQUERY;	// defined in inc/prepend.php
 		}
 		return 'jquery/'.$version;
+	}
+
+	/**
+	Returns public URL of specified plugin file.
+	 */
+	public function getPF($pf, $strip_host=true)
+	{
+		$ret = $this->getQmarkURL().'pf='.$pf;
+		if ($strip_host) {
+			$ret = html::stripHostURL($ret);
+		}
+		return $ret;
 	}
 
 	/**
@@ -995,6 +1007,13 @@ class dcBlog
 
 		# --BEHAVIOR-- coreBlogGetPosts
 		$this->core->callBehavior('coreBlogGetPosts',$rs);
+
+		# --BEHAVIOR-- coreBlogAfterGetPosts
+		$alt = new arrayObject(array('rs' => null,'params' => $params,'count_only' => $count_only));
+		$this->core->callBehavior('coreBlogAfterGetPosts',$rs,$alt);
+		if ($alt['rs'] instanceof record) {
+			$rs = $alt['rs'];
+		}
 
 		return $rs;
 	}
