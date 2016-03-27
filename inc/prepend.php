@@ -141,7 +141,7 @@ if (!defined('DC_DEBUG')) {
 
 # Constants
 define('DC_ROOT',path::real(dirname(__FILE__).'/..'));
-define('DC_VERSION','2.9.1');
+define('DC_VERSION','2.10-dev');
 define('DC_DIGESTS',dirname(__FILE__).'/digests');
 define('DC_L10N_ROOT',dirname(__FILE__).'/../locales');
 define('DC_L10N_UPDATE_URL','http://services.dotclear.net/dc2.l10n/?version=%s');
@@ -188,6 +188,19 @@ if (!defined('DC_NOT_UPDATE')) {
 
 if (!defined('DC_ALLOW_MULTI_MODULES')) {
 	define('DC_ALLOW_MULTI_MODULES',false);
+}
+
+if (!defined('DC_CRYPT_ALGO')) {
+	define('DC_CRYPT_ALGO','sha1');	// As in Dotclear 2.9 and previous
+} else {
+	// Check length of cryptographic algorithm result and exit if less than 40 characters long
+	if (strlen(crypt::hmac(DC_MASTER_KEY,DC_VENDOR_NAME,DC_CRYPT_ALGO)) < 40) {
+		if (!defined('DC_CONTEXT_ADMIN')) {
+			exit('Site temporarily unavailable');
+		} else {
+			exit(DC_CRYPT_ALGO.' cryptographic algorithm configured is not strong enough, please change it.');
+		}
+	}
 }
 
 l10n::init();

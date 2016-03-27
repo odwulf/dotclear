@@ -197,6 +197,7 @@ class dcCore
 
 	public function checkNonce($secret)
 	{
+		// 40 alphanumeric characters min
 		if (!preg_match('/^([0-9a-f]{40,})$/i',$secret)) {
 			return false;
 		}
@@ -1205,6 +1206,7 @@ class dcCore
 			'active_lists' => 1,
 			'active_quote' => 1,
 			'active_pre' => 1,
+			'active_aside' => 1,
 			'active_empty' => 1,
 			'active_auto_br' => 0,
 			'active_auto_urls' => 0,
@@ -1251,6 +1253,7 @@ class dcCore
 			'active_lists' => 0,
 			'active_quote' => 0,
 			'active_pre' => 0,
+			'active_aside' => 0,
 			'active_empty' => 0,
 			'active_auto_br' => 1,
 			'active_auto_urls' => 1,
@@ -1291,6 +1294,7 @@ class dcCore
 			'active_lists' => 1,
 			'active_quote' => 0,
 			'active_pre' => 1,
+			'active_aside' => 0,
 			'active_empty' => 0,
 			'active_auto_br' => 1,
 			'active_auto_urls' => 1,
